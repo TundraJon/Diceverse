@@ -151,3 +151,8 @@ docs/          reference material
 3. **House-rule scope.** All variants as toggles, or a curated handful per game?
 4. **Roll-and-write design.** Original rules to be drafted and approved separately.
 5. **Order of work.** Suggested: core + dice pool + Pig (smallest end-to-end slice) -> push-loop games -> Yacht -> Shut the Box -> Liar's Dice -> roll-and-write.
+
+### Decisions recorded (user)
+1. Delivery: develop as modules, ship one bundled offline HTML file.
+2. House rules: curated, about 3 to 5 per game.
+3. First slice: core + dice pool + Pig (specified as Queue 1 in README.md).

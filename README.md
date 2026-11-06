@@ -10,7 +10,72 @@ Full workflow (lifecycle, cache-busting, commit discipline, Playwright verificat
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 1 — Slice 1: core engine + dice pool + Pig, single-file offline build
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+Decisions behind it (user): modules in source, shipped as one bundled offline HTML file; curated house rules (3 to 5 per game); first slice is core + dice pool + Pig. Design reference: `docs/block-spec.md`. Visual language reference only (no code copied, it has known bugs): `docs/liars-dice-prototype.html`.
+
+**Goal:** the smallest complete, playable game that proves the architecture end to end: pure rules, event stream, bot, UI panels, autosave, bundling, and the test harness. Everything later (Farkle, Zombie-style, etc.) reuses these pieces.
+
+**1. Tooling and layout**
+- `package.json` with `esbuild` as the only dev dependency. `npm run build` bundles `src/` into one file `dist/diceverse.html` (JS and CSS inlined, no external requests of any kind: no CDNs, no web fonts; system font stack).
+- Source layout (only what slice 1 needs): `src/core/` (rng, engine loop, events, scheduler), `src/blocks/` (dice-pool, push-loop), `src/games/pig.js`, `src/ai/` (brain, personalities), `src/ui/` (DiceTray, TurnBar, ScoreStrip, theme), `src/shell/` (menu, rules sheet, house rules sheet, save/resume).
+- Test scripts live in the scratchpad or a git-ignored `scratch/` folder and are never committed (per BUILD.md).
+- Cache-busting: not applicable while `dist/diceverse.html` is a single file with everything inlined. If the build ever emits separate JS/CSS, the BUILD.md version-bump rule applies from that point.
+
+**2. Core (pure, no DOM, no timers, no `Math.random`)**
+- Seeded RNG (e.g. a small PRNG such as mulberry32). Seed is chosen at game start and stored in the save.
+- Engine contract exactly as in `docs/block-spec.md` section 2: `meta`, `setup`, `observe`, `legalActions`, `apply`, `isOver`, `result`. `sampleHidden` is not implemented (Pig has no hidden info).
+- Actions used: `ROLL`, `BANK`. Events emitted: `TURN_STARTED`, `ROLLED`, `SCORED`, `BUSTED`, `BANKED`, `TURN_ENDED`, `GAME_OVER`.
+- State and the action log are plain JSON. Replaying seed + log must reproduce the identical final state.
+- One scheduler object owns every timeout/animation delay. `cancelAll()` is called on restart, quit-to-menu, and game over, so no stale callback can fire into a new game.
+
+**3. Pig rules (standard)**
+- On your turn you roll the die repeatedly. A roll of 2-6 adds that value to your turn points. A roll of 1 ends your turn and your turn points are lost. At any time after at least one successful roll you may BANK: turn points are added to your total and the turn ends.
+- First player whose banked total reaches the target wins immediately (default). `BANK` is only legal when turn points > 0. `ROLL` is always legal on your turn.
+- Curated house rules (shown on a sheet before the game starts; defaults in bold):
+  1. Target score: 50, **100**, 150.
+  2. Dice: **one die**, or two dice. Two-dice mode: a roll with a single 1 loses turn points and ends the turn; double 1s lose the player's entire banked total and end the turn; any other roll adds the sum.
+  3. Equal turns: **off**, or on. When on, if a player banks to reach the target, every seat that has had fewer turns gets exactly one more turn; highest total wins; a tie among leaders triggers another round among only the tied players.
+
+**4. Modes and players**
+- 2 to 4 seats. Modes: **vs Bots** (seat 0 human, others bots), **Pass and Play** (all human; Pig has no hidden info so no blackout screen is needed), **Solo** (1 seat, goal is to reach the target in as few turns as possible; best result saved per target and dice mode under `localStorage`, wrapped in try/catch).
+- Bot names are original (a fixed list of 6 invented names, no names from films or other IP).
+
+**5. Bot (minimal brain, built to be reused)**
+- Receives only `observe()` output and `legalActions()`. Decides ROLL vs BANK by simulating the rest of the turn many times with `apply` and a throwaway RNG, comparing expected gain of one more roll to expected loss.
+- Two dials: `skill` (number of simulations, plus a small noise term on the decision margin so close calls can go either way) and `risk` (shifts the break-even). Three presets: Cautious, Balanced, Bold. Preset picker on the setup sheet.
+- "Thinking" delay 700-1500 ms, longer when the decision is close; never blocks the UI.
+- No rubber-banding: the bot never reads upcoming dice and never changes its logic based on score except through normal observable info (e.g. a bot far behind may reasonably risk more because that is part of the simulation target).
+
+**6. UI (one portrait screen, usable one-handed)**
+- Look: reuse the prototype's visual language: felt-green radial background, gold accents, white dice with CSS pips. A rolled 1 is rendered with a red pip so the danger reads at a glance.
+- Layout top to bottom: header (title, rules button, restart button), ScoreStrip (one chip per seat: name, banked total, highlighted when it is that seat's turn, current turn points shown on the active chip), DiceTray (large die, or two), TurnBar (ROLL and BANK buttons, each at least 48 px tall), short event log (last 3 lines).
+- Roll animation about 600 ms tumble using CSS only. If `prefers-reduced-motion` is set, no tumble; the value just appears.
+- Input safety: ROLL and BANK are disabled while an animation or a bot turn is in progress, so double-taps cannot double-roll. BANK is disabled when turn points are 0.
+- Bust: the die shows the 1, a "BUST" banner shows for about 1200 ms, then the turn passes. Optional `navigator.vibrate(150)` on bust when supported.
+- Game over: banner with the winner, final totals, and two buttons: Play Again (same settings, new seed) and Menu.
+- Accessibility: viewport allows zoom (do not disable user scaling); results announced in an `aria-live="polite"` region; all controls reachable by keyboard.
+- Menu: mode picker, player count, bot preset, house rules button, Start, and Resume (only if a valid save exists).
+
+**7. Autosave and resume**
+- After every applied action write `{version, seed, options, actionLog}` to `localStorage` key `diceverse:pig:save` (try/catch; if storage fails, the game still plays and a small note says progress will not be saved).
+- On launch, if a valid save exists, show Resume and New Game. A corrupted or wrong-version save is ignored silently and cleared.
+- Resume rebuilds state by replaying the log; if replay fails, discard the save.
+
+**8. Verification plan (all scratch scripts, none committed)**
+- Rules, headless: 200,000 simulated one-die turns with a hold-at-20 policy must give a mean around 8.1 points per turn (published figure is about 8.14, so accept 8.0 to 8.3). Two-dice mode: the observed frequency of double 1s over 1,000,000 rolls must be 1/36 within 0.3 percentage points. Same seed + same action log must produce an identical final state (run 100 random games).
+- Fairness: run a bot with an observation object whose private fields throw on read; zero throws. Confirm bot code imports nothing from the engine's internal state.
+- Playwright against `dist/diceverse.html` opened via `file://` with the network blocked: assert zero external requests, zero JS errors; play a full vs-Bots game by real clicks; play a Solo game; play Pass and Play; screenshots at 390x844 and 768x1024 and check no horizontal scroll; reload mid-game and Resume lands in the identical state; hit Restart during a bot's thinking delay and confirm no stale action fires; double-click ROLL rapidly and confirm exactly one roll; emulate `prefers-reduced-motion` and confirm no animation; storage blocked still plays.
+- Bundle: `dist/diceverse.html` under 200 KB.
+- Reproduce-before-fix rule from BUILD.md applies to any bug found.
+
+**9. Out of scope for slice 1 (do not build)**
+Sound, other games, the roll-and-write sheet, bot banter and tells, themes beyond the one table, stats screen, Liar's Dice bluff layer, achievements, the odds overlay.
+
+**10. Deliverables and bookkeeping**
+Source tree above, working `npm run build`, `dist/diceverse.html`, a short "How to build and run" section in this README, a new numbered Build Log entry with the verification results, this Queue entry removed, and Planner 3 and Planner 7 updated, all in one commit.
 
 ## Build Planner
 
@@ -37,7 +102,7 @@ Flags to resolve before any of these are specced:
 
 ### Planner 3 — Tech stack / persistence
 Source suggested: vanilla JS ES modules + Tailwind, CSS Grid/Flexbox, localStorage (high scores, favorite rules, resume an in-progress game).
-Flags: ES modules fail over `file://` and some WebViews, and Tailwind via CDN needs network, which matters for offline/Play Store use. Decided (user): app is a flight companion, so offline-first, no CDNs (self-host fonts/icons/styles), lighter CSS dice (no physics 3D). Still open: single file vs. split files and how split files are served. Cache-busting rules in BUILD.md apply once files are split.
+Flags: ES modules fail over `file://` and some WebViews, and Tailwind via CDN needs network, which matters for offline/Play Store use. Decided (user): app is a flight companion, so offline-first, no CDNs (self-host fonts/icons/styles), lighter CSS dice (no physics 3D). Decided (user): develop as modules and ship a single bundled offline HTML file (see Queue 1). Open: whether sound/fonts/assets ever get hosted separately. Cache-busting rules in BUILD.md apply once files are split.
 
 ### Planner 4 — AI player system (batch 2)
 Source: batch 2 notes. Idea: one AI controller, three reusable strategies instead of 20 separate bots; works with pass-and-play so a phone can mix humans and bots.
@@ -87,7 +152,7 @@ Decision (user): game count is flexible (more or fewer than 20). Games that are 
 Idea: games are recipes over shared mechanic blocks, not separate modules. Candidate blocks: roll modes (roll all / reroll held up to N / set aside scorers and roll rest), gate (required combo before scoring), bust (face or result that wipes the turn), bank-or-stop, scoring (category sheet / ranked hand / sum / target-face count), end condition (race to total / fixed rounds / elimination), compare (high/low/payout table), special engines (hidden-info bidding, toggle tiles, board movement).
 Rough mappings (unverified): Pig = 1 die + bust on 1 + bank + race; Farkle = 6 dice + set-aside + bust on no-score + bank; Yacht/Generala/Balut = 5 dice + 3 rolls + hold + category sheet (likely one module, different category lists); Poker Dice = same shape with ranked hand; Hog/Zilch/Macao likely near-free variants.
 Requested from user's source: matrix, one row per candidate game: dice count/sides, roll and reroll rules, gate, bust, scoring type, end condition, player count/solo viability, hidden info, bot decision depth, known house-rule variants, parent game it varies, BGG rank/rating/weight. Then: find overlaps, define blocks, write the block spec.
-Update: BGG data gathered (Planners 8-9); first draft of the block spec is in `docs/block-spec.md` (engine contract, blocks, 10 v1 recipes, overlap matrix, UI panels, bots, testing, open questions). Not yet in the Build Queue: open questions and a rules-verification pass remain.
+Update: BGG data gathered (Planners 8-9); first draft of the block spec is in `docs/block-spec.md` (engine contract, blocks, 10 v1 recipes, overlap matrix, UI panels, bots, testing, open questions). Decided (user): bundled single-file delivery, curated house rules (3-5 per game), first slice = core + dice pool + Pig (now Queue 1). The rules-verification pass is still required before each later game is queued.
 
 ### Planner 8 — Real BGG data, page 1 of 5 (Dice Rolling mechanic, sorted by Geek Rating)
 Source: user paste of BGG browse page 1 (about 100 rows, includes expansions with N/A rank). Format: BGG rank, Geek rating, avg rating, voters. Only rows relevant to Diceverse are kept here; the rest are heavy/miniatures/worker-placement board games (Castles of Burgundy, Too Many Bones, Oathsworn, Troyes, Kingsburg, etc.) and are out of scope.
