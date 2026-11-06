@@ -29,6 +29,7 @@ Flags to resolve before any of these are specced:
 - Rules for KnuckleDice, Buck Dice, and Twenty-One are vague/unclear as listed; need exact rule sets (or replace them).
 - Hazard and Craps overlap heavily; may merge or keep one.
 - Liar's Dice needs simulated opponents (AI) or pass-and-play multiplayer; different effort from the solo/score games.
+- Liar's Dice (batch 1 follow-up): same game as Perudo/Dudo. Rules noted: 5 dice per player in a cup, hidden rolls; bid = quantity of a face across all cups; each bid must raise quantity or face; ones are wild; calling "Liar" reveals all cups, loser of the challenge loses a die. Pass-and-play on one phone (private peek, then hand off) fits. Basic AI = probability from own hand + total dice in play. Open: exact rules for bids on ones and wild handling (varies by variant), expose as house-rule toggles; bluffing behavior for AI; pirate theming must be generic (no Pirates of the Caribbean / Disney branding).
 - Chicago description in the notes is thin; confirm the exact ruleset.
 - Need to decide which games are solo, pass-and-play, or vs. computer.
 
