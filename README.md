@@ -17,7 +17,29 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 5 — One-line hint under "Scoring" in the Farkle house rules
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Why (user choice, option 1):** the house rules sheet shows "Scoring: Standard / Classic" with no hint of what differs, so the user has to leave the sheet to find out. Add one line of text under the choice so the difference is visible right where the choice is made.
+
+**1. Behavior**
+- In the Farkle house rules sheet, directly under the Standard / Classic buttons, show one muted line: **"Classic leaves out: Straight 1-6, Three pairs, Four of a kind + pair, Two triplets."** *(Wording is Added by Claude. Change before authorizing if wanted.)*
+- The line is always shown (not only for the selected option), so both choices can be compared without tapping.
+- The list of names is **generated from the engine**: every row in `scoreTable('standard')` whose label is not in `scoreTable('classic')`. If the scoring sets ever change, the hint changes with them and cannot drift.
+- No other house rule gets a hint. Pig's house rules sheet is unchanged.
+
+**2. Mechanism** *(Added by Claude. Change before authorizing if wanted.)*
+- A house rule entry in a game's `meta.houseRules` may carry an optional `hint` (a function returning a string). `openHouseRules` in `src/shell/main.js` renders it as a muted `note` paragraph under that rule's buttons when present. Only Farkle's `scoring` rule defines one. Files: `src/games/farkle.js` (the hint), `src/shell/main.js` (render it); rebuilt `index.html`.
+
+**3. Out of scope:** the "See scoring table" link (option 2), hints for other rules, changes to the How to play sheet or the scoring table, any rules or bot change.
+
+**4. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed)**
+- `preflight` clean. In the Farkle house rules sheet: the hint appears under Scoring and only there; its text equals the one generated from the engine tables (asserted against `scoreTable`, and against the literal wording above); it stays visible after switching between Standard and Classic; Pig's house rules sheet has no hint; no horizontal overflow at 390 px and 320 px; one screenshot inspected.
+- Because `openHouseRules` is shared, re-run only the existing browser checks that open the house rules sheet (Pig and Farkle at `?speed=0`), expecting the same results as in Build Log 10.
+- Time budget: under 1 minute.
+
+**5. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry, and this Queue entry removed, all in one commit.
 
 ## Build Planner
 
