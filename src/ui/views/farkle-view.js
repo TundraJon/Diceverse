@@ -30,14 +30,30 @@ export const farkleView = {
       'Solo: reach the target in as few turns as you can.',
     ].filter(Boolean);
     lines.forEach((t) => sheet.appendChild(el('p', null, t)));
-    sheet.appendChild(el('h2', null, `Scoring (${o.scoring === 'classic' ? 'classic' : 'standard'})`));
-    const list = el('div', 'results');
-    scoreTable(o.scoring).forEach((r) => {
-      const row = el('div', 'r');
-      row.append(el('span', null, r.label), el('span', null, fmt(r.points)));
-      list.appendChild(row);
+    // One table with both scoring sets side by side, built from the same constants as the engine.
+    sheet.appendChild(el('h2', null, 'Scoring'));
+    const standard = scoreTable('standard');
+    const classic = new Map(scoreTable('classic').map((r) => [r.label, r.points]));
+    const table = el('table', 'cmp');
+    const head = el('tr');
+    ['Name', 'Classic', 'Standard'].forEach((t, i) => {
+      const th = el('th', i ? 'num' : null, t);
+      th.scope = 'col';
+      head.appendChild(th);
     });
-    sheet.appendChild(list);
+    table.appendChild(el('thead')).appendChild(head);
+    const body = el('tbody');
+    standard.forEach((r) => {
+      const tr = el('tr');
+      const name = el('th', null, r.label);
+      name.scope = 'row';
+      const c = classic.get(r.label);
+      tr.append(name, el('td', 'num' + (c === undefined ? ' dash' : ''), c === undefined ? '\u2014' : fmt(c)), el('td', 'num', fmt(r.points)));
+      body.appendChild(tr);
+    });
+    table.appendChild(body);
+    sheet.appendChild(table);
+    sheet.appendChild(el('p', 'note', 'A dash (\u2014) means that combination does not score in that set.'));
   },
 
   summary(h, mode) {

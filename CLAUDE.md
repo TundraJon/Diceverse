@@ -38,6 +38,7 @@ A design settled in one sitting can skip the Planner and go straight to the Queu
 - **Design out loud first.** Restate what you think the user means and let them confirm or correct it. The user often dictates by voice, so a word may be wrong (a `\` that meant `/`, "camping at 10 dice" that meant "capping"). When something reads oddly, say what you think it meant and check.
 - **Ask at real decision points,** and include a recommendation. Offer "all recommendations" as an easy answer.
 - **Mark your own choices.** In a spec, anything you decided that the user did not say gets "*(Added by Claude. Change before authorizing if wanted.)*".
+- **Show choices side by side.** *(Added at the user's request.)* When the user has to compare options or variants (scoring sets, rule variants, layouts, themes), show them together in one view, never one at a time behind a toggle they have to flip back and forth. The user cares about UI quality, so polish tables and layouts, not just function.
 - **Reuse before inventing.** Check whether existing code already does almost the same thing, and note the reuse in the Log entry.
 - **Log inconsistencies, don't fix them.** Even trivial ones. Surface them and let the user decide.
 - **Cleanup your own build makes obsolete** (a Queue/Planner entry the build just resolved) is removed in the same commit. Unrelated things you notice are logged and left alone.

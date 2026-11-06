@@ -53,8 +53,9 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 
 /* Sheets */
 .sheet-back { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
-.sheet { background: #0e1f1a; border: 1px solid var(--line); border-radius: 18px; padding: 18px; width: 100%; max-width: 420px; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.sheet { background: #0e1f1a; border: 1px solid var(--line); border-radius: 18px; padding: 0 18px 18px; width: 100%; max-width: 420px; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .sheet h2 { margin: 0; color: var(--gold); font-size: 1.1rem; }
+.sheet > :first-child { margin-top: 18px; } /* top spacing as margin so a sticky table header sits flush with the top edge */
 .sheet p { margin: 0; line-height: 1.45; }
 
 /* Game */
@@ -124,3 +125,11 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 
 /* Test speed 0 (?speed=0): nothing animates or waits visually */
 body.fast *, body.fast *::before, body.fast *::after { animation: none !important; transition: none !important; }
+
+/* Farkle scoring comparison table (Name / Classic / Standard) */
+.cmp { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.cmp th, .cmp td { padding: 7px 4px; border-bottom: 1px solid var(--line); text-align: left; font-weight: 400; }
+.cmp thead th { position: sticky; top: 0; background: #0e1f1a; color: var(--gold); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; z-index: 1; }
+.cmp .num { text-align: right; min-width: 4.8em; font-variant-numeric: tabular-nums; }
+.cmp .dash { color: var(--muted); }
+.cmp tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
