@@ -121,7 +121,14 @@ Proposed tiered set (names must be original or public domain; all must work solo
 - **C. Roll-and-write (differentiator, biggest family on BGG):** Clever-style drafting sheet, Qwixx-style shared-roll sheet, Railroad Ink-style route puzzle.
 - **D. Solo adventures:** Roll Through the Ages-style civilization builder, Dungeon Roll / Elder Sign-style dungeon delve.
 About 25 games. New mechanic blocks seen: dice bag with mixed-risk dice (Zombie Dice), asymmetric outcome tables (Pass the Pigs), symbol-matching to fill targets (Age of War), roll-and-write sheet engine, route-drawing puzzle, solo campaign state.
-Open: approve tiers; v1 scope (suggest a small first release on 2-3 engines, then grow); which tier-D and roll-and-write games justify the extra UI work.
+Decisions (user): tiers A-D approved. v1 is "medium" (not small, not the full 25). Proposed reading of medium, awaiting confirmation: about 10 games on 5 engines.
+- Hold/reroll + category sheet: Yacht
+- Push-your-luck/bank family (shares one engine): Farkle, Pig, Zombie Dice-style, Can't Stop-style, Deep Sea-style, Pickomino-style
+- Bluff: Liar's Dice (needs the bluff AI layer, Planner 4/6)
+- Toggle board: Shut the Box
+- Roll-and-write: one Qwixx-style sheet game
+Deferred to v2+: Backgammon, King of Tokyo-style brawl, betting race, Las Vegas-style, BANG!-style, Clever-style, Railroad Ink-style, solo adventures, the remaining classics.
+Waiting on: user fetching BGG's second voters-sorted page ("just in case"); nothing is queued or authorized to build.
 
 ## Build Log 1 (completed)
 
