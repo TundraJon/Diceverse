@@ -32,6 +32,8 @@ Flags to resolve before any of these are specced:
 - Liar's Dice (batch 1 follow-up): same game as Perudo/Dudo. Rules noted: 5 dice per player in a cup, hidden rolls; bid = quantity of a face across all cups; each bid must raise quantity or face; ones are wild; calling "Liar" reveals all cups, loser of the challenge loses a die. Pass-and-play on one phone (private peek, then hand off) fits. Basic AI = probability from own hand + total dice in play. Open: exact rules for bids on ones and wild handling (varies by variant), expose as house-rule toggles; bluffing behavior for AI; pirate theming must be generic (no Pirates of the Caribbean / Disney branding).
 - Chicago description in the notes is thin; confirm the exact ruleset.
 - Need to decide which games are solo, pass-and-play, or vs. computer.
+- Batch 5 ("top 100 dice games") assessed as NOT BGG data: scores invented, citations unverifiable, many entries use special dice, are card games/RPGs, are heavy board games, or are unverified. Not used. User may still paste real BGG ranks/weights.
+- Proposed shortlist (pending user approval): Yacht, Generala, Balut, Poker Dice, Ship Captain & Crew, Going to Boston, Cee-Lo, Mexico, Farkle, Pig, Liar's Dice, Shut the Box, Chicago, Beetle, Craps, Sic Bo, Chuck-a-Luck, Backgammon, Ludo, one original Qwixx-style roll-and-write. Backups: Macao, Zanzibar, Threes, Hazard. Skipped: Bunco (needs ~12 players), Tenzi (real-time/physical). Use public-domain names; avoid Yahtzee, Qwixx, Can't Stop, Kismet branding. All must work solo (high-score chase) for flight use.
 
 ### Planner 3 — Tech stack / persistence
 Source suggested: vanilla JS ES modules + Tailwind, CSS Grid/Flexbox, localStorage (high scores, favorite rules, resume an in-progress game).
