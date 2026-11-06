@@ -1,0 +1,13 @@
+{
+  "name": "diceverse",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Diceverse: offline dice game companion",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
