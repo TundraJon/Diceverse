@@ -17,7 +17,32 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 7 — Reorder the menu: Game, Players, Mode, Bot style
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Why (user):** the menu order is Game, Mode, Players, Bot style, so the Bot style row appears two rows below the Mode choice that controls it. Reorder so Bot style sits right under Mode, before the games grow further.
+
+**1. New order (user's request):** Game, then Players, then Mode, then Bot style.
+
+**2. Behavior**
+- Bot style still appears only when the mode is vs Bots, and now directly under the Mode choice, so picking "vs Bots" visibly reveals it right there.
+- Players still ranges from 2 to 4 for vs Bots and Pass and Play, with the same stepper and the same saved setting.
+- Solo still means one player. *(Added by Claude. Change before authorizing if wanted.)* Because Players is now ABOVE Mode, hiding it in Solo would make the Mode and Bot style rows jump up when you tap Solo. Instead, the Players row stays visible in Solo, shows a fixed "1", and its stepper buttons are disabled; your saved player count is not lost and returns when you switch back to vs Bots or Pass and Play.
+- *(Added by Claude. Change before authorizing if wanted.)* Bot style becomes part of the same panel as Mode (a sub-row under the Mode buttons) instead of its own separate panel, so the two read as one group.
+- Unchanged: the Game choice, house rules, How to play, Start, the summary line and the Resume buttons stay where they are; no rule, bot, or save changes.
+
+**3. Files:** `src/shell/main.js` (`renderMenu` order and the Players/Bot style panels), `src/ui/theme.css` only if the combined panel needs spacing; rebuilt `index.html`.
+
+**4. Out of scope:** any other menu change, new options, or game changes.
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; under 1 minute)**
+- `preflight` clean. For each of Pig, Farkle and Yacht: the panels appear in the order Game, Players, Mode (with Bot style under it when vs Bots), checked from the rendered DOM order; Bot style is present only for vs Bots; switching modes does not move the Players or Mode rows (their top positions are identical across all three modes); in Solo the Players row shows 1 with disabled buttons and the earlier count (for example 4) is restored on returning to vs Bots; the stepper still works in both modes where it applies; settings persist after a reload.
+- Re-run only the existing menu-driven browser steps that select Solo, Pass and Play, and the player count (they use text and aria-labels, so they should be unaffected) at `?speed=0` for one game, to confirm nothing else broke.
+- Screenshots at 390x844 and 320x640 of vs Bots and Solo, inspected; no horizontal overflow.
+
+**6. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry, this Queue entry removed, all in one commit.
+
 
 ## Build Planner
 
