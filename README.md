@@ -17,6 +17,59 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
+### Queue 6 — Yacht: one game, three rule sets (hold-and-reroll engine + category sheet)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Decisions already made (user: "all recommendations", plus the corrected table and the Joker choice):** one game with a **Rule set** house rule, not three games; default rule set is the Yahtzee-style one; set names "Classic Yacht", "Nordic (Yatzy)", "Bonus (Yahtzee-style)", never the bare word "Yahtzee" as a title; traditional Yacht includes **Choice** (sum of all five dice), giving 12 categories; the Hasbro Joker rule is replaced by a **simplified Joker** (defined below). Everything marked *(Added by Claude)* is my own choice: change it before authorizing if wanted. Source tables: the comparison the user supplied in chat plus their correction.
+
+**1. Common rules (all sets)**
+- Five six-sided dice. A turn has up to 3 rolls: roll all five, then up to two more rolls of any dice you choose to re-roll, then you must score one open category (you may stop early and score after roll 1 or 2). Each category is used once per player; a game lasts one round per category (12, 13 or 15). 1-4 seats; modes vs Bots, Pass and Play, Solo (highest score).
+- Highest total wins; an exact tie is shown as a tie between those players *(Added by Claude)*.
+
+**2. Rule sets** (shown side by side in one table, like the Farkle scoring table)
+| Category | Classic Yacht (12 rounds) | Nordic (Yatzy) (15 rounds) | Bonus (Yahtzee-style) (13 rounds) |
+|---|---|---|---|
+| Ones to Sixes | sum of matching dice | sum of matching dice | sum of matching dice |
+| Upper bonus | none | 50 if upper total is 63 or more | 35 if upper total is 63 or more |
+| One Pair | not used | sum of the two dice of the highest pair | not used |
+| Two Pairs | not used | sum of the four dice of two pairs of different values | not used |
+| Three of a Kind | not used | sum of the three matching dice | sum of all five dice |
+| Four of a Kind | sum of the four matching dice | sum of the four matching dice | sum of all five dice |
+| Full House | sum of all five dice | sum of all five dice | 25 |
+| Small Straight | Little Straight, exactly 1-2-3-4-5: 30 | exactly 1-2-3-4-5: 15 | any four in a row: 30 |
+| Large Straight | Big Straight, exactly 2-3-4-5-6: 30 | exactly 2-3-4-5-6: 20 | any five in a row: 40 |
+| Catch-all | Choice: sum of all five dice | Chance: sum of all five dice | Chance: sum of all five dice |
+| Five of a kind | Yacht: 50 | Yatzy: 50 | Five of a Kind: 50 |
+| Extra five of a kind | none | none | +100 bonus and simplified Joker (below) |
+- *(Added by Claude, verify against a rulebook if you care about the details):* a Full House needs three of one value and two of another, so five of a kind is NOT a Full House (except through the Bonus-set Joker); Two Pairs need two different values (four of a kind is not two pairs); if a roll has more matching dice than a category needs (for example five 4s scored as Four of a Kind), only the required count is added in the Classic and Nordic sets (4 x 4 = 16), and all five dice in the Bonus set (20) as its table says; a straight set in "exactly" form means those five dice, in any order.
+- **Simplified Joker (Bonus set only):** when a player rolls an extra five of a kind and their Five of a Kind box already holds 50, they get +100 and may score that roll in ANY open category, where Full House counts 25, Small Straight 30, Large Straight 40, and every other category uses its normal formula. There is no forced-box order. If the Five of a Kind box holds 0 there is no bonus and no Joker; the roll scores by the normal formulas. *(Added by Claude: the simplification itself is mine.)*
+- The score sheet shows, for every open category, what the current dice would score *(Added by Claude)*.
+
+**3. Engine and files**
+- New block `src/blocks/category-sheet.js`: the three rule sets as data (categories, labels, scoring functions), `potential(set, category, dice)`, upper-bonus totals, Joker handling, and bot "par" values. New pure rules module `src/games/yacht.js` (registered in `src/games/index.js`). Phases `start` (only ROLL of all five), `choose` (ROLL with `ids` = the dice to re-roll, while rolls remain; or SCORE with a `category`). Actions: `ROLL {ids}`, `SCORE {category}`. Held dice are view-only and are not saved *(Added by Claude: a reload mid-turn restores the dice and rolls left but clears holds)*.
+- `src/core/engine.js`: `sameAction` must also compare `category` (otherwise any SCORE would count as legal when one is). The saved log already stores full actions.
+- Solo best: `meta.soloBest` ('low' = fewest turns, the existing behavior for Pig and Farkle; 'high' = highest score for Yacht), used by `updateBest` in `src/shell/save.js`; solo key is the rule set. Game-over sheet in `src/shell/main.js` handles ties and a solo score *(Added by Claude)*.
+
+**4. UI** *(all of this is Added by Claude. Change before authorizing if wanted.)*
+- Portrait screen: score strip, five tappable dice (tap toggles HOLD, held dice are visibly raised and labelled), a ROLL button that says how many rolls are left ("ROLL (2 left)"), then the category list for the active player: name, a preview of the score for the current dice, and the scored value. Tapping a category selects it and shows a SCORE button; SCORE confirms (prevents mis-taps). A row shows upper-section progress ("Upper 41 / 63") where the set has a bonus.
+- Tapping another player's chip shows that player's sheet read-only. Rules sheet and "?" show the three-column comparison (short cell text so it fits at 320 px). The house rules sheet has the Rule set choice, with a one-line hint of rounds and bonus per set, using the hint mechanism of Queue 5 (if Queue 5 is not built first, this build adds that mechanism identically).
+- Same input-locking, reduced-motion, zoom and aria-live rules as Pig and Farkle; the instant-speed switch applies.
+
+**5. Bot** *(Added by Claude)*
+- Plans: SCORE each open category, or ROLL a chosen subset to re-roll (deduplicated). Each plan is valued by simulating the rest of the turn and scoring the best category by (points minus that category's "par"), where par is a typical score for the category (upper boxes: three dice of that face, which also steers toward the upper bonus; others from a headless simulation stored as constants). Rollout policy: keep the most frequent face (ties, higher), re-roll the rest, then score the best-value category. Same presets and noise dials as the other games; the Bold preset values staying in for high-value combinations more. Sees only its own observation.
+
+**6. Out of scope:** Generala, Balut and other variants (they become cheap rule sets later); forced-box Joker; options for roll counts; sounds, odds overlay, achievements; a "three rules sets" chooser outside the house rules sheet.
+
+**7. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; keep within the 3-minute budget)**
+- Headless: for all 7,776 ordered rolls, every category in every set equals an independently written reference scorer (different implementation); hand cases per set (for example [2,2,3,3,3]: Full House 13, 13, 25; [2,3,4,5,6]: Large Straight 30, 20, 40; [1,2,3,4,4]: Small Straight 0, 0, 30; [4,4,4,4,2]: Four of a Kind 16, 16, 18; [5,5,5,5,5] is 50 in the five-of-a-kind box in every set and is not a Full House; [2,2,2,2,5] is not Two Pairs); exact counts: five of a kind 6 of 7,776, any five-in-a-row 240 of 7,776; upper bonus at 63 and 62 for both sets with a bonus; Joker scenarios (box 50 vs box 0, and no bonus in the other sets); invalid actions rejected (score a filled category, ROLL with no rolls left or empty/duplicate ids, wrong phase); 100 random games over all sets and seat counts terminate, last the expected number of rounds, and replay identically from seed plus full action log.
+- Bot: observation has no seed/log/RNG; decision time p95 under 150 ms in Node; mean score per set over 2,000 simulated solo games compared with a naive baseline (keep the most frequent face, then score the best-value category) and reported; the Balanced bot must beat the baseline by at least 10%.
+- Browser (`?speed=0`, pinned seed, `preflight` first): a full Solo game in each of the three sets by real taps, a vs Bots game, a Pass and Play game; previews match the engine; the SCORE confirm step works and a filled category cannot be chosen; the roll counter label; upper-progress row; a crafted tie save shows a tie; solo best is the highest score; reload mid-turn restores dice and rolls left; no horizontal overflow at 390 and 320 px; one screenshot each of the game screen, the category list, the rules comparison, and the game-over screen, inspected; zero JS errors.
+- Re-run only what shared-file changes touch: Pig and Farkle at `?speed=0` (engine `sameAction`, save and best handling) and the headless Farkle/RNG/Pig rules suites.
+- A real-device check (touch feel of hold toggles and the category list) is listed as not verifiable here.
+
+**8. Deliverables and bookkeeping:** the files above plus `docs/block-spec.md` and the CLAUDE.md project map updated (I will tell you exactly what changed there), a new numbered Build Log entry with the measured results, this Queue entry removed, all in one commit.
+
 ### Queue 5 — One-line hint under "Scoring" in the Farkle house rules
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
@@ -116,7 +169,7 @@ Decision (user): game count is flexible (more or fewer than 20). Games that are 
 Idea: games are recipes over shared mechanic blocks, not separate modules. Candidate blocks: roll modes (roll all / reroll held up to N / set aside scorers and roll rest), gate (required combo before scoring), bust (face or result that wipes the turn), bank-or-stop, scoring (category sheet / ranked hand / sum / target-face count), end condition (race to total / fixed rounds / elimination), compare (high/low/payout table), special engines (hidden-info bidding, toggle tiles, board movement).
 Rough mappings (unverified): Pig = 1 die + bust on 1 + bank + race; Farkle = 6 dice + set-aside + bust on no-score + bank; Yacht/Generala/Balut = 5 dice + 3 rolls + hold + category sheet (likely one module, different category lists); Poker Dice = same shape with ranked hand; Hog/Zilch/Macao likely near-free variants.
 Requested from user's source: matrix, one row per candidate game: dice count/sides, roll and reroll rules, gate, bust, scoring type, end condition, player count/solo viability, hidden info, bot decision depth, known house-rule variants, parent game it varies, BGG rank/rating/weight. Then: find overlaps, define blocks, write the block spec.
-Update: BGG data gathered (Planners 8-9); first draft of the block spec is in `docs/block-spec.md` (engine contract, blocks, 10 v1 recipes, overlap matrix, UI panels, bots, testing, open questions). Slice 1 (core + dice pool + push loop + Pig) is built, see Build Log 4; Farkle and the multi-game shell are built, see Build Log 7. Decided (user): bundled single-file delivery, curated house rules (3-5 per game), first slice = core + dice pool + Pig (now Queue 1). The rules-verification pass is still required before each later game is queued.
+Update: BGG data gathered (Planners 8-9); first draft of the block spec is in `docs/block-spec.md` (engine contract, blocks, 10 v1 recipes, overlap matrix, UI panels, bots, testing, open questions). Yacht (three rule sets, Generala/Balut as later rule sets) is specified as Queue 6. Slice 1 (core + dice pool + push loop + Pig) is built, see Build Log 4; Farkle and the multi-game shell are built, see Build Log 7. Decided (user): bundled single-file delivery, curated house rules (3-5 per game), first slice = core + dice pool + Pig (now Queue 1). The rules-verification pass is still required before each later game is queued.
 
 ### Planner 8 — Real BGG data, page 1 of 5 (Dice Rolling mechanic, sorted by Geek Rating)
 Source: user paste of BGG browse page 1 (about 100 rows, includes expansions with N/A rank). Format: BGG rank, Geek rating, avg rating, voters. Only rows relevant to Diceverse are kept here; the rest are heavy/miniatures/worker-placement board games (Castles of Burgundy, Too Many Bones, Oathsworn, Troyes, Kingsburg, etc.) and are out of scope.
