@@ -87,6 +87,7 @@ Decision (user): game count is flexible (more or fewer than 20). Games that are 
 Idea: games are recipes over shared mechanic blocks, not separate modules. Candidate blocks: roll modes (roll all / reroll held up to N / set aside scorers and roll rest), gate (required combo before scoring), bust (face or result that wipes the turn), bank-or-stop, scoring (category sheet / ranked hand / sum / target-face count), end condition (race to total / fixed rounds / elimination), compare (high/low/payout table), special engines (hidden-info bidding, toggle tiles, board movement).
 Rough mappings (unverified): Pig = 1 die + bust on 1 + bank + race; Farkle = 6 dice + set-aside + bust on no-score + bank; Yacht/Generala/Balut = 5 dice + 3 rolls + hold + category sheet (likely one module, different category lists); Poker Dice = same shape with ranked hand; Hog/Zilch/Macao likely near-free variants.
 Requested from user's source: matrix, one row per candidate game: dice count/sides, roll and reroll rules, gate, bust, scoring type, end condition, player count/solo viability, hidden info, bot decision depth, known house-rule variants, parent game it varies, BGG rank/rating/weight. Then: find overlaps, define blocks, write the block spec.
+Update: BGG data gathered (Planners 8-9); first draft of the block spec is in `docs/block-spec.md` (engine contract, blocks, 10 v1 recipes, overlap matrix, UI panels, bots, testing, open questions). Not yet in the Build Queue: open questions and a rules-verification pass remain.
 
 ### Planner 8 — Real BGG data, page 1 of 5 (Dice Rolling mechanic, sorted by Geek Rating)
 Source: user paste of BGG browse page 1 (about 100 rows, includes expansions with N/A rank). Format: BGG rank, Geek rating, avg rating, voters. Only rows relevant to Diceverse are kept here; the rest are heavy/miniatures/worker-placement board games (Castles of Burgundy, Too Many Bones, Oathsworn, Troyes, Kingsburg, etc.) and are out of scope.
@@ -154,3 +155,12 @@ Saved the batch 3 prototype as a reference file.
 - [x] Updated Planner 5: noted the file location and recorded the decision to rebuild from scratch on the shared engine.
 
 Verification: docs only, no code changes. Confirmed the file was written and committed.
+
+## Build Log 3 (completed)
+
+Drafted the mechanic-block spec.
+
+- [x] Added `docs/block-spec.md`: design principles, engine contract, shared action/event vocabulary, block list, recipes for the 10 medium-v1 games, overlap matrix, UI panel library, bot approach, persistence/testing plan, proposed folder layout, open questions.
+- [x] Updated Planner 7 to point to the spec.
+
+Verification: docs only, no code. Game rules in the spec are written from memory and are explicitly marked [verify]; they have not been checked against rulebooks.
