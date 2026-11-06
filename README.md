@@ -82,6 +82,12 @@ Proposed AI design:
 - **Human feel:** thinking time scales with decision closeness, visible tells, event-based banter, original named characters. No rubber-band difficulty.
 Open: exact game list; UI approach/WOW features to commit to; phone CPU budget for simulations.
 
+### Planner 7 — Mechanic blocks / game-as-recipe analysis (awaiting matrix from user)
+Decision (user): game count is flexible (more or fewer than 20). Games that are rule-bends of others should be added as variants when cheap.
+Idea: games are recipes over shared mechanic blocks, not separate modules. Candidate blocks: roll modes (roll all / reroll held up to N / set aside scorers and roll rest), gate (required combo before scoring), bust (face or result that wipes the turn), bank-or-stop, scoring (category sheet / ranked hand / sum / target-face count), end condition (race to total / fixed rounds / elimination), compare (high/low/payout table), special engines (hidden-info bidding, toggle tiles, board movement).
+Rough mappings (unverified): Pig = 1 die + bust on 1 + bank + race; Farkle = 6 dice + set-aside + bust on no-score + bank; Yacht/Generala/Balut = 5 dice + 3 rolls + hold + category sheet (likely one module, different category lists); Poker Dice = same shape with ranked hand; Hog/Zilch/Macao likely near-free variants.
+Requested from user's source: matrix, one row per candidate game: dice count/sides, roll and reroll rules, gate, bust, scoring type, end condition, player count/solo viability, hidden info, bot decision depth, known house-rule variants, parent game it varies, BGG rank/rating/weight. Then: find overlaps, define blocks, write the block spec.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
