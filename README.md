@@ -98,7 +98,18 @@ Source: user paste of BGG browse page 1 (about 100 rows, includes expansions wit
 - Other: Macao #571 (the board game, not the pub game), Yspahan #956, Pandemic: The Cure #628, Sky Team #32 (co-op, 35,665 voters), Space Base #231, Tiny Epic Galaxies #406.
 Observations: classics (Yacht/Yahtzee, Farkle, Pig, Shut the Box) are absent from this page; remaining pages 2-5 may hold them. Geek Rating is Bayesian-weighted and favors heavy games, so for an app, sorting by voters and filtering by low weight and solo is more useful. Repeating mechanic families on page 1: roll-and-write (Clever, Railroad Ink), push-your-luck (Can't Stop, Deep Sea Adventure), betting/racing (Camel Up, Long Shot), casino dice placement (Las Vegas), dueling/elimination with a Yacht-like reroll engine (King of Tokyo, BANG!, Dice Throne), co-op (Sky Team, Pandemic Cure), bluffing (Liar's Dice).
 Candidate "bend" games (original names/art; mechanics only): monster-arena brawl on the hold/reroll block, casino dice placement vs bots, camel/horse-style betting race, shared-oxygen push-your-luck dive, Can't Stop-style column climb, Clever-style roll-and-write sheet, route-drawing puzzle (Railroad Ink style).
-Open: user to fetch pages 2-5 or a voters-sorted view; decide which families get in; IP: all named products are commercial, so build only mechanic-inspired originals.
+Page 2 (BGG ranks ~977-1755; the list is ~50 pages long, so the classics rank far deeper): relevant rows, format rank, geek / avg / voters:
+- Roll-and-write: Qwixx #997, 6.661 / 6.88 / 15,941 | Qwinto #1595, 4,568 | Encore! #1370, 6,184 | Clever 4Ever #1280 | On Tour #1567, 6,064 | My City: Roll & Build #1754 | Railroad Ink Shining Yellow #1592 | Rajas of the Ganges: Dice Charmers #1132
+- Push your luck: Pickomino / Heckmeck #1634, 6.392 / 6.59 / 13,230 (target-pickup Farkle cousin) | FUSE #1008 (real-time co-op, 9,337)
+- Solo-capable: Roll Through the Ages: Bronze Age #1102, 6.610 / 6.84 / 12,413 (roll-and-civilize, strong solo high-score candidate) | 20 Strong #1333 (solo, 20 dice) | One Deck Dungeon #1021, 13,136 | Deep Space D-6 #1468 | Hostage Negotiator #1646
+- Poker-dice with economy: Dice Town #1240, 8,277
+- Brawl/arena: King of New York #1025, 17,463 | Strike #1290 | Dice Throne variants | King of Tokyo: Duel #1742
+- Dice trigger cards: Machi Koro #1412, 36,377 voters (avg only 6.59)
+- Classic board: Backgammon #1666, 6.380 / 6.59 / 15,546
+- Dice-building: Quarriors! #1353, 14,164 (custom dice, probably skip)
+New families seen: target-pickup push-your-luck (Pickomino), roll-and-civilize solo (Roll Through the Ages), dice-triggers-cards economy (Machi Koro, Dice City style).
+Still missing: classics (Yacht/Yahtzee, Farkle, Pig, Shut the Box, Ship Captain & Crew, Balut, Cee-Lo, etc.) and weight/complexity. Plan: user looks up the specific titles directly on BGG instead of paging through ranks, with rank, avg rating, voters and weight.
+Open: decide which families get in; IP: all named products are commercial, so build only mechanic-inspired originals.
 
 ## Build Log 1 (completed)
 
