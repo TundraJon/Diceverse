@@ -128,7 +128,13 @@ Decisions (user): tiers A-D approved. v1 is "medium" (not small, not the full 25
 - Toggle board: Shut the Box
 - Roll-and-write: one Qwixx-style sheet game
 Deferred to v2+: Backgammon, King of Tokyo-style brawl, betting race, Las Vegas-style, BANG!-style, Clever-style, Railroad Ink-style, solo adventures, the remaining classics.
-Waiting on: user fetching BGG's second voters-sorted page ("just in case"); nothing is queued or authorized to build.
+BGG voters-sorted page 2 received (rank/avg/voters, about 2,600-5,300 voters each). No new mechanic families; tiers unchanged. Notes:
+- Farkle #12205, 5.69, 3,791 | LCR #31651, 3.74 (very low), 2,680 | Cthulhu Dice #31563, 5.21, 2,871 | Pay Day #31622, 4.90 | Roll For It! #4360, 6.15, 3,419 | Martian Dice #3944, 6.15, 4,598 | Sushizock im Gockelwok #3051, 6.52, 2,798 | Ra: The Dice Game #2278, 6.79, 2,787 | To Court the King #2758, 6.46, 4,115 | Rory's Story Cubes #3873, 6.20, 4,100 | Trek 12 #2266 and Corinth #2220 (roll-and-write) | Alea Iacta Est #2635 (dice placement) | Dicey Waters #3257 | D-Day Dice #1988 (solo/co-op).
+- Cheap variants on existing engines: Martian Dice = Zombie Dice-style engine; Sushizock = Pickomino-style engine.
+- Candidate extras: Roll For It!-style (match dice to target cards), Ra-style (roll + auction), Cthulhu Dice-style (luck elimination), Story Cubes-style picture dice as a non-scoring creative toy.
+- Low-rated pure-luck classics (Yahtzee 5.57, Farkle 5.69, LCR 3.74): keep the good ones as gateway games but do not make them the headline; LCR-style is filler at most.
+BGG data gathering is now sufficient; next step is the mechanic-block spec and v1 game recipes.
+Waiting on: user decision on what to design next; nothing is queued or authorized to build.
 
 ## Build Log 1 (completed)
 
