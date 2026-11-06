@@ -38,7 +38,8 @@ export function createSession(game, options, seed) {
       return game.result(state);
     },
     save() {
-      return { version: 1, seed, options, log: log.slice() };
+      // Array seed -> version 2 (sfc32). Numeric seed -> version 1 (legacy generator, resumed old save).
+      return { version: Array.isArray(seed) ? 2 : 1, seed, options, log: log.slice() };
     },
   };
 }
@@ -46,7 +47,10 @@ export function createSession(game, options, seed) {
 // Rebuild a session by replaying a saved action log. Returns null if replay fails.
 export function replaySession(game, saved) {
   try {
-    if (!saved || saved.version !== 1 || !Array.isArray(saved.log)) return null;
+    if (!saved || !Array.isArray(saved.log)) return null;
+    const v1 = saved.version === 1 && typeof saved.seed === 'number' && Number.isFinite(saved.seed);
+    const v2 = saved.version === 2 && Array.isArray(saved.seed) && saved.seed.length === 4 && saved.seed.every(Number.isInteger);
+    if (!v1 && !v2) return null;
     const s = createSession(game, saved.options, saved.seed);
     for (const a of saved.log) {
       if (s.isOver()) return null;

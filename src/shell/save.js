@@ -23,7 +23,11 @@ export function loadSave() {
   if (!raw) return null;
   try {
     const v = JSON.parse(raw);
-    return v && v.version === 1 ? v : null;
+    const v1 = v && v.version === 1 && typeof v.seed === 'number' && Number.isFinite(v.seed);
+    const v2 = v && v.version === 2 && Array.isArray(v.seed) && v.seed.length === 4 && v.seed.every(Number.isInteger);
+    if ((v1 || v2) && Array.isArray(v.log)) return v;
+    remove(SAVE_KEY);
+    return null;
   } catch { remove(SAVE_KEY); return null; }
 }
 export const writeSave = (saved) => write(SAVE_KEY, JSON.stringify(saved));

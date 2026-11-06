@@ -375,7 +375,9 @@ function afterEvents() {
   render({ tumble: false });
   const seat = st.current;
   const obs = session.observe(seat);
-  const seed = (session.seed + session.log.length * 7919 + seat * 104729) >>> 0;
+  // Numeric bot seed: first word of an array seed (or the legacy number), mixed with progress and seat.
+  const base = Array.isArray(session.seed) ? session.seed[0] : session.seed;
+  const seed = (base ^ (session.log.length * 7919) ^ (seat * 104729)) >>> 0;
   const decision = chooseAction(pig, obs, seat, cur.preset, seed);
   const wait = thinkMs(1 - Math.min(1, Math.abs(decision.margin ?? 5) / 5));
   sched.after(reduced() ? 300 : wait, () => doAction({ type: decision.type }));

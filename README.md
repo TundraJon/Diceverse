@@ -17,42 +17,6 @@ Full workflow (lifecycle, cache-busting, commit discipline, Playwright verificat
 
 ## Build Queue
 
-### Queue 2 — Stronger RNG (128-bit seed, unbiased dice)
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Why:** the current generator (mulberry32, 32-bit seed) allows only about 4 billion distinct games and maps draws to dice with a tiny modulo bias. Longer games and more dice will outgrow that. Goal: more state, exact fairness, and no loss of replay/autosave. This is not a security feature; the generator stays non-cryptographic and deterministic given its seed.
-
-**1. Generator**
-- Replace the core generator in `src/core/rng.js` with **sfc32** (public-domain, 128-bit state, four 32-bit words, passes the standard statistical batteries). Discard the first 12 outputs after seeding (standard warm-up).
-- A game seed becomes an array of four uint32 values. It is plain JSON, so saves keep working.
-- `createRng(seed)`: if `seed` is an array of 4 integers, use sfc32; if `seed` is a single number, use the existing mulberry32 (kept ONLY so old saves and the bot's throwaway simulations keep working). Both return the same interface: `next()`, `die(sides)`, `gauss()`, plus a new `uint32()`.
-- `die(sides)` uses rejection sampling for exact fairness: draw a uint32 `u`; if `u >= floor(2^32 / sides) * sides`, draw again; otherwise return `(u % sides) + 1`. `next()` remains `uint32 / 2^32`.
-- `newSeed()` returns four uint32 from `crypto.getRandomValues(new Uint32Array(4))`. If `crypto` is unavailable, fall back to mixing `Date.now()`, `performance.now()`, and `Math.random()` through a splitmix32 expansion into four words. This fallback is the only place `Math.random` may appear, with a comment saying so. No rules code may call it.
-
-**2. Save format and compatibility**
-- Save `version` becomes 2 and `seed` is the four-word array. `loadSave()` and `replaySession()` accept versions 1 and 2. A version 1 save (numeric seed) must replay on the legacy mulberry32 path and give exactly the same game as before.
-- Anything else (unknown version, wrong seed shape, replay failure) is discarded silently, as today.
-
-**3. Bot seed derivation (must change with it)**
-- `src/shell/main.js` currently builds the bot seed with `session.seed + ...`; with an array seed that would silently become string concatenation. Replace it with a numeric derivation: take `session.seed[0]` if the seed is an array, or the number itself for legacy saves, then xor in `session.log.length * 7919` and `seat * 104729`, unsigned 32-bit. Bots keep using the numeric (mulberry32) path since they only need throwaway randomness, never the game's dice.
-
-**4. Out of scope**
-No gameplay or UI changes, no crypto call per roll (would break replay), no change to Pig's rules, bot logic, or presets.
-
-**5. Verification plan (scratch scripts, none committed)**
-- Known-answer: the first 10 outputs of the new sfc32 for a fixed seed must equal an independent, separately written inline implementation of the published algorithm.
-- Distribution (Node, 6,000,000 rolls each): chi-square for d6, d7 (non-power-of-two), and d20 must be under the p = 0.001 critical values (df 5: 20.52, df 6: 22.46, df 19: 43.82). Rejection sampling must show no visible bias on d6.
-- Serial independence (6,000,000 d6 rolls): lag-1 correlation within +/-0.005, and a 36-cell pair-frequency chi-square under 66.62 (df 35, p = 0.001).
-- Seed independence: first roll of 100,000 games with fresh `newSeed()` values must pass a d6 chi-square; no repeated four-word seeds.
-- Replay: the existing 100 random games must still terminate and replay to identical state using array seeds. A version 1 fixture generated with the current (old) code before the change must, after the change, replay to the identical final state.
-- Pig statistics re-run: hold-at-20 mean 8.0-8.3 over 200,000 turns; double-1 frequency 2.778% +/- 0.3 over 1,000,000 rolls.
-- Playwright against `index.html` (`file://`, network blocked): full existing suite; plus a Resume from an injected version 1 save works and plays on; a version 2 save resumes after reload; a save with an unknown version is ignored without errors; zero JS errors.
-- Reproduce-before-fix rule from BUILD.md applies to any bug found.
-
-**6. Deliverables and bookkeeping**
-Updated `src/core/rng.js`, `src/core/engine.js`, `src/shell/save.js`, `src/shell/main.js`; rebuilt `index.html`; a new numbered Build Log entry with the measured results (chi-square values, correlation, fixture result); this Queue entry removed; all in one commit.
-
 ### Queue 3 — Farkle (second game; multi-game shell)
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Independent of Queue 2: if the RNG change is built first, Farkle uses its array seeds and save version 2; otherwise it uses the current format. The save-version check must be generic either way.
@@ -295,3 +259,23 @@ Correction to Build Log 4: the build output is now `index.html` at the repo root
 - [x] Cause: I chose the output path from the Queue 1 text instead of the repo convention that the playable app is `index.html`; the Queue entry itself named `dist/diceverse.html`, so the error was in the spec I wrote.
 
 Verification: rebuilt (`index.html` 24.2 KB, identical content to the previous bundle) and re-ran the full Playwright suite against `file:///.../index.html` with the network blocked: all scenarios passed again, zero external requests, zero JS errors. The headless rules tests were not re-run because no source under `src/` changed.
+
+## Build Log 6 (completed)
+
+Stronger RNG: 128-bit seed and exactly fair dice (was Queue 2).
+
+- [x] `src/core/rng.js`: new games use **sfc32** (four uint32 words, 12 warm-up outputs discarded); `die(sides)` uses rejection sampling; new `uint32()` on both generators. A single-number seed still selects the legacy mulberry32, kept only for old saves and the bot's throwaway simulations. `newSeed()` returns four words from `crypto.getRandomValues`; the fallback (clock + `Math.random` through splitmix32) is the only place `Math.random` appears, commented as such.
+- [x] `src/core/engine.js`: `save()` writes version 2 with the four-word seed (a resumed version 1 session keeps saving as version 1); `replaySession` accepts versions 1 and 2 and rejects wrong seed shapes.
+- [x] `src/shell/save.js`: `loadSave` validates version and seed shape up front, so an invalid save never shows a Resume button (this was added after the first Playwright run showed a stale Resume button for a version 2 save with a numeric seed).
+- [x] `src/shell/main.js`: bot seed derivation changed to a numeric mix of the first seed word (or the legacy number), log length and seat. Without this, an array seed would have been silently string-concatenated.
+- [x] Cache-busting not applicable (single inlined file). `index.html` rebuilt (25.3 KB).
+
+Verification (scratch scripts, none committed):
+- Known-answer: first 10 sfc32 outputs equal an independently written typed-array implementation of the published algorithm.
+- Distribution, 6,000,000 rolls each: chi-square d6 2.08 (limit 20.52), d7 14.82 (limit 22.46), d20 23.12 (limit 43.82). d6 counts: 999137 999471 1000534 1000189 999829 1000840.
+- Serial independence, 6,000,000 d6 rolls: lag-1 correlation -0.00055 (limit 0.005); 36-cell pair chi-square 50.10 (limit 66.62).
+- Seed independence: 100,000 fresh `newSeed()` values gave first-roll chi-square 5.39 (limit 20.52) and zero duplicate seeds; `die()` stayed in range for sides 2, 3, 5, 6, 7, 100, 1000.
+- Replay: a version 1 fixture generated with the OLD code (seed 424242, 70 actions, totals 82/30/18) replayed to a byte-identical final state with the new code; five malformed saves were all rejected; 100 new array-seed games all terminated, saved as version 2, and replayed identically.
+- Pig statistics re-run on the new generator: hold-at-20 mean 8.156 points/turn (accepted 8.0-8.3); double-1 frequency 2.812% (expected 2.778%, tolerance 0.3); single-1 27.759%; Balanced bot roll probabilities unchanged (99% at 8 down to 5% at 32).
+- Playwright on `index.html` (`file://`, network blocked): full existing suite passes again with zero JS errors; an injected version 1 save resumes with scores identical to the old code's state (82/30/18), plays on, and keeps saving as version 1; a new game saves as version 2 with a four-word seed and resumes after reload; unknown version 99, version 2 with a numeric seed, and corrupt JSON are all ignored with no errors and a usable menu.
+- Not re-run after the last `save.js` validation tweak: the headless rules suite (that file is not used by it; it was run immediately before the tweak). Not verified: real-device behavior, browsers other than Chromium.
