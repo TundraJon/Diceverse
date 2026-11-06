@@ -21,14 +21,14 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
 
-**Decisions already made (user: "all recommendations", plus the corrected table and the Joker choice):** one game with a **Rule set** house rule, not three games; default rule set is the Yahtzee-style one; set names "Classic Yacht", "Nordic (Yatzy)", "Bonus (Yahtzee-style)", never the bare word "Yahtzee" as a title; traditional Yacht includes **Choice** (sum of all five dice), giving 12 categories; the Hasbro Joker rule is replaced by a **simplified Joker** (defined below). Everything marked *(Added by Claude)* is my own choice: change it before authorizing if wanted. Source tables: the comparison the user supplied in chat plus their correction.
+**Decisions already made (user: "all recommendations", plus the corrected table and the Joker choice):** one game with a **Rule set** house rule, not three games; default rule set is the one the user named "Popular (Bonus)"; set names "Classic Yacht", "Nordic (Yatzy)", and **"Popular (Bonus)"** (the user chose this name over lookalike-character spellings; the word "Yahtzee" does not appear in the app's labels); traditional Yacht includes **Choice** (sum of all five dice), giving 12 categories; the Hasbro Joker rule is replaced by a **simplified Joker** (defined below). Everything marked *(Added by Claude)* is my own choice: change it before authorizing if wanted. Source tables: the comparison the user supplied in chat plus their correction.
 
 **1. Common rules (all sets)**
 - Five six-sided dice. A turn has up to 3 rolls: roll all five, then up to two more rolls of any dice you choose to re-roll, then you must score one open category (you may stop early and score after roll 1 or 2). Each category is used once per player; a game lasts one round per category (12, 13 or 15). 1-4 seats; modes vs Bots, Pass and Play, Solo (highest score).
 - Highest total wins; an exact tie is shown as a tie between those players *(Added by Claude)*.
 
 **2. Rule sets** (shown side by side in one table, like the Farkle scoring table)
-| Category | Classic Yacht (12 rounds) | Nordic (Yatzy) (15 rounds) | Bonus (Yahtzee-style) (13 rounds) |
+| Category | Classic Yacht (12 rounds) | Nordic (Yatzy) (15 rounds) | Popular (Bonus) (13 rounds) |
 |---|---|---|---|
 | Ones to Sixes | sum of matching dice | sum of matching dice | sum of matching dice |
 | Upper bonus | none | 50 if upper total is 63 or more | 35 if upper total is 63 or more |
@@ -42,8 +42,8 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 | Catch-all | Choice: sum of all five dice | Chance: sum of all five dice | Chance: sum of all five dice |
 | Five of a kind | Yacht: 50 | Yatzy: 50 | Five of a Kind: 50 |
 | Extra five of a kind | none | none | +100 bonus and simplified Joker (below) |
-- *(Added by Claude, verify against a rulebook if you care about the details):* a Full House needs three of one value and two of another, so five of a kind is NOT a Full House (except through the Bonus-set Joker); Two Pairs need two different values (four of a kind is not two pairs); if a roll has more matching dice than a category needs (for example five 4s scored as Four of a Kind), only the required count is added in the Classic and Nordic sets (4 x 4 = 16), and all five dice in the Bonus set (20) as its table says; a straight set in "exactly" form means those five dice, in any order.
-- **Simplified Joker (Bonus set only):** when a player rolls an extra five of a kind and their Five of a Kind box already holds 50, they get +100 and may score that roll in ANY open category, where Full House counts 25, Small Straight 30, Large Straight 40, and every other category uses its normal formula. There is no forced-box order. If the Five of a Kind box holds 0 there is no bonus and no Joker; the roll scores by the normal formulas. *(Added by Claude: the simplification itself is mine.)*
+- *(Added by Claude, verify against a rulebook if you care about the details):* a Full House needs three of one value and two of another, so five of a kind is NOT a Full House (except through the Popular (Bonus) Joker); Two Pairs need two different values (four of a kind is not two pairs); if a roll has more matching dice than a category needs (for example five 4s scored as Four of a Kind), only the required count is added in the Classic and Nordic sets (4 x 4 = 16), and all five dice in the Bonus set (20) as its table says; a straight set in "exactly" form means those five dice, in any order.
+- **Simplified Joker (Popular (Bonus) set only):** when a player rolls an extra five of a kind and their Five of a Kind box already holds 50, they get +100 and may score that roll in ANY open category, where Full House counts 25, Small Straight 30, Large Straight 40, and every other category uses its normal formula. There is no forced-box order. If the Five of a Kind box holds 0 there is no bonus and no Joker; the roll scores by the normal formulas. *(Added by Claude: the simplification itself is mine.)*
 - The score sheet shows, for every open category, what the current dice would score *(Added by Claude)*.
 
 **3. Engine and files**
