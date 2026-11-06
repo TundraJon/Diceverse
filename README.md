@@ -111,6 +111,18 @@ New families seen: target-pickup push-your-luck (Pickomino), roll-and-civilize s
 Still missing: classics (Yacht/Yahtzee, Farkle, Pig, Shut the Box, Ship Captain & Crew, Balut, Cee-Lo, etc.) and weight/complexity. Plan: user looks up the specific titles directly on BGG instead of paging through ranks, with rank, avg rating, voters and weight.
 Open: decide which families get in; IP: all named products are commercial, so build only mechanic-inspired originals.
 
+### Planner 9 — BGG sorted by voters (page 1) and proposed tiered game set
+Source: user paste, BGG dice list sorted by number of voters. Format: BGG rank, avg rating, voters.
+Most relevant (simple, solo/bot-friendly) by voters: King of Tokyo 512, 7.11, 76,822 | Machi Koro 1412, 6.59, 36,377 | That's Pretty Clever 205, 7.55, 28,629 | BANG! Dice 899, 6.87, 26,772 | Elder Sign 806, 6.97, 26,463 | Can't Stop 767, 6.95, 22,365 | Deep Sea Adventure 957, 6.86, 21,522 | Zombie Dice 2821, 6.23, 19,401 | Camel Up 269, 7.53, 18,768 | Yahtzee 25236, 5.57, 18,076 | King of New York 1025, 17,463 | Liar's Dice 873, 6.93, 17,220 | Qwixx 997, 6.88, 15,941 | Backgammon 1666, 6.59, 15,546 | Railroad Ink 643, 7.14, 15,143 | Pickomino 1634, 6.59, 13,230 | One Deck Dungeon 1021, 6.94, 13,136 | Las Vegas 632, 7.18, 12,646 | Roll Through the Ages 1102, 6.84, 12,413 | Long Shot 379, 7.50, 10,886 | Twice as Clever 481, 7.41, 10,461 | Age of War 2251, 6.44, 9,600 | Boggle 3030, 6.25, 9,067 (letter dice, word game, probably out of scope) | Dungeon Roll 3961, 6.07, 8,570 | Pass the Pigs 31012, 5.51, 7,268 | Catan Dice Game 8007, 5.73, 7,237 | Dice City 1833, 6.70, 5,510 | Dragonwood 2413, 6.57, 5,474.
+Takeaways: BGG skews toward hobby gamers. Classics such as Farkle, Pig and Shut the Box do not appear in the top ~100 by voters (under ~5,400 voters), and Yahtzee is high-voter but low-rated (5.57). So BGG tells us which mechanics hobbyists love, not what casual flyers play. Weight is not shown in this view; estimate unless the user fetches it.
+Proposed tiered set (names must be original or public domain; all must work solo/vs bots):
+- **A. Classics (casual audience):** Yacht, Farkle, Pig, Shut the Box, Liar's Dice, Backgammon, Cee-Lo/Mexico, Ship Captain & Crew, plus a Pass-the-Pigs-style asymmetric-outcome game.
+- **B. BGG-proven mechanics, original versions:** Can't Stop-style climb, Deep Sea-style shared-oxygen dive, Pickomino-style target pickup, Zombie Dice-style (bag of dice with different risk), Camel Up / Long Shot-style betting race, Las Vegas-style dice placement, King of Tokyo-style brawl (hold/reroll engine + health), BANG!-style secret-role elimination vs bots, Age of War-style symbol matching.
+- **C. Roll-and-write (differentiator, biggest family on BGG):** Clever-style drafting sheet, Qwixx-style shared-roll sheet, Railroad Ink-style route puzzle.
+- **D. Solo adventures:** Roll Through the Ages-style civilization builder, Dungeon Roll / Elder Sign-style dungeon delve.
+About 25 games. New mechanic blocks seen: dice bag with mixed-risk dice (Zombie Dice), asymmetric outcome tables (Pass the Pigs), symbol-matching to fill targets (Age of War), roll-and-write sheet engine, route-drawing puzzle, solo campaign state.
+Open: approve tiers; v1 scope (suggest a small first release on 2-3 engines, then grow); which tier-D and roll-and-write games justify the extra UI work.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
