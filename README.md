@@ -17,7 +17,56 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 9 — Shut the Box (tile-board engine, tournament format)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Sources:** the three rules documents the user pasted in chat (a short summary, a detailed rules text with variants, and a scanned manufacturer sheet whose example list is garbled by scanning errors and is not used). **Decided by the user:** the two-player "long game" is dropped; the multi-round "out at 45 / out at 100" format is enough; the user confirmed that "the last player to reach 100 wins" means players are knocked out at the limit and the last player remaining wins. Everything marked *(Added by Claude)* is my choice: change it before authorizing if wanted.
+
+**1. Core rules (all three sources agree)**
+- Tiles 1 to N (default 9), all open at the start of every player's turn. Two six-sided dice. A turn is a loop: roll, then shut a set of open tiles whose numbers add up exactly to the roll; if no set is possible the turn ends. The turn score is the total of the tiles still open (lower is better). Shutting every tile is "shutting the box": score 0 and an immediate round win.
+- 1-4 seats; modes vs Bots, Pass and Play, Solo.
+
+**2. Curated house rules (5), defaults in bold**
+1. **Board size:** **9**, 10, or 12 tiles (source 1 mentions 10 and 12).
+2. **One-die rule:** **Standard** (you may choose to roll one die once every tile above 6 is shut; for 9 tiles that is 7, 8, 9, as in all three sources; *for 10 and 12 tiles I generalize to "every tile above 6" (Added by Claude)*), **Late** (once the open tiles add up to less than 6, source 2's variant), or **Off** (always two dice). When allowed, the player chooses one or two dice on each roll.
+3. **Tiles per roll:** **Any number**, or at most 2 (source 3's variation).
+4. **Scoring:** **Sum** of the open tiles, or **Digits** (the open tiles read left to right as one number: open 1, 5, 9 scores 159; sources 2 and 3). *(Added by Claude: for 10 and 12 tiles the tile numbers are joined as written, so open 1, 10, 12 reads 11012.)*
+5. **Format:** **Single round**, **Out at 45**, or **Out at 100**. In the out-at formats each round every remaining player takes a turn, the turn score is added to a running total, a player whose total reaches the limit is out after that round, and the last player remaining wins. Hidden in Solo (Solo is one turn).
+- Single round: after each player has taken one turn, the lowest score wins. Shutting the box ends the game at once and that player wins, as the sources say.
+- *(Added by Claude)* In the out-at formats a shut box scores 0 for the round and the round still continues, so everyone's turn counts equally (nobody gets 0 for free because they sit after the shutter). *(Added by Claude)* If every remaining player reaches the limit in the same round, the one with the lowest running total wins; exact ties are shared. *(Added by Claude)* Ties in a single round are a shared win and are announced as a tie.
+- *(Added by Claude)* Digits scoring in the out-at formats eliminates players almost at once (one turn can score hundreds); allowed, with the format hint saying so.
+
+**3. Engine** *(structure Added by Claude)*
+- New block `src/blocks/tile-board.js`: `validSets(openTiles, target, maxTiles)` (every subset of the open tiles that sums to the target, optionally at most 2 tiles), `scoreOpen(openTiles, scoring)`, and one-die rule tests. New pure rules module `src/games/shutbox.js` (id `shutbox`), registered in `src/games/index.js`.
+- Phases `roll` and `flip`. Actions: `ROLL {ids}` where `ids` is `[0, 1]` for two dice or `[0]` for one die (only when the one-die rule allows it), and `FLIP {ids}` where `ids` is the tile numbers to shut (sorted). `legalActions` enumerates every valid FLIP. A roll with no valid set ends the turn automatically (event `NO_MOVE`) and scores the open tiles. Events: `ROLLED`, `FLIPPED`, `NO_MOVE`, `BOX_SHUT`, `SCORED`, `ROUND_STARTED`, `ELIMINATED`, `TURN_STARTED`, `TURN_ENDED`, `GAME_OVER`.
+- `result()` lists standings lowest first, `winners` (a tie gives several, `winner: null`), and `soloScore` for one seat.
+- Solo: `meta.soloBest` `'low'` (lowest score is best, 0 means you shut the box), key from board, one-die rule, tile limit and scoring.
+
+**4. Fix included in this build (existing bug):** the solo best-score code treats 0 as "no best", so a shut box would never be saved. `loadBest` in `src/shell/save.js` must return `null` only when nothing is stored and accept 0, and the two places in `src/shell/main.js` that test `if (best)` (the menu's "your best" and the game-over sheet) must test `best !== null`. Pig, Farkle and Yacht scores are always above 0, so they are unaffected.
+
+**5. UI** *(all of this is Added by Claude. Change before authorizing if wanted.)*
+- Portrait screen: score strip, a wooden "box" panel (green baize inside a wood-colored frame) holding the tiles in a grid of 5 columns (9 or 10 tiles) or 6 columns (12 tiles), big enough to tap (at least 44 px), the dice (one or two, tumbling), and a turn line ("Your turn · round 2 · roll the dice" and so on).
+- After a roll showing a total T: tiles that belong to at least one valid set are highlighted; tapping tiles selects them and a line shows the selection's total against T; a FLIP button ("SHUT 3 + 5") is enabled only when the selection is a valid set. Shut tiles flip down with a short animation (none under reduced motion or `?speed=0`).
+- When the one-die rule allows it, the roll button splits into ROLL 2 DICE and ROLL 1 DIE; otherwise it is a single ROLL.
+- Banners: NO MOVE with the turn score, and SHUT THE BOX! in gold. In the out-at formats the strip shows running totals and marks eliminated players OUT.
+- The rules sheet explains the rules in plain text; the house rules sheet gets one-line hints (using the hint mechanism from Build Log 12) for the one-die rule, scoring and format, each listing the choices side by side in one line.
+- Same input-locking, reduced-motion, zoom and aria-live rules as the other games; the instant-speed switch applies.
+
+**6. Bot** *(Added by Claude)*
+- Plans: each valid FLIP set when flipping, and ROLL 1 die or 2 dice when the player has the choice. Each plan is valued by simulating the rest of the turn and taking the (negative) turn score, with the same many-plans hints as Yacht (`turnValue`, `botHints.simsPerPlan`, small `noiseScale`). Rollout policy: flip the valid set that contains the highest tile (fewest tiles on a tie), roll one die when it is allowed and the open tiles add up to 6 or less, otherwise two dice. Sees only its own observation; presets and dials as in the other games.
+
+**7. Out of scope:** the two-player long game (dropped by the user), simultaneous dice for four players, stakes and "double the stake", the physical rules about dice landing flat in the box, any other variants.
+
+**8. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; keep within the 3-minute budget)**
+- Headless: `validSets` equals an independently written brute-force reference for every open-tile set of a 9-tile board against every total from 2 to 12 (and 1 to 6 for one die), plus the 10 and 12 tile boards; hand cases: on a full board a roll of 8 has exactly 6 sets (8; 1+7; 2+6; 3+5; 1+2+5; 1+3+4) and a roll of 9 has exactly 8; the source's example (open 1, 5, 9 and a roll of 4 has no set, so the turn scores 15); the one-die rule for Standard, Late and Off on 9, 10 and 12 tiles, including rejecting a one-die ROLL when not allowed; the 2-tile limit; Sum and Digits scoring (open 1, 5, 9 gives 15 and 159; open 1, 10, 12 digits gives 11012; all shut gives 0); the shut-box flow (single round ends the game at once with later players not playing; in an out-at format the shutter scores 0 and the others still play); out at 45 and out at 100 with the last player winning, all-eliminated-together lowest total wins, shared ties; Solo is one turn; invalid actions rejected (wrong sum, a closed tile, wrong phase, too many tiles, duplicate or unsorted ids); 100 random games over all option combinations and 1-4 seats terminate and replay identically from seed plus full action log.
+- Bot: observation has no seed/log/RNG; decision time p95 under 150 ms in Node; mean turn score over 3,000 simulated turns per setting compared with the rollout-policy baseline, reported; the Balanced bot must score at least 10% lower (better) than the baseline; shut-the-box rates reported (information only).
+- Browser (`?speed=0`, pinned seeds, `preflight` first): a full vs Bots single-round game, a Pass and Play game, and an out-at-45 tournament that ends with a last player standing and shows OUT; highlighted tiles equal the engine's valid-set tiles after each roll; the selection total line, the FLIP button enabling only for a valid set, one-die buttons appearing only when allowed; a crafted save one move from shutting the box shows the SHUT THE BOX banner and the solo best is saved as 0 and shown on the menu as "your best: 0" (this proves the 0 fix); no horizontal overflow at 390 and 320 px for 9, 10 and 12 tiles; screenshots of mid-turn, the box shut, a tournament with an OUT player, and the rules sheet, inspected; zero JS errors.
+- Re-run only what the shared changes touch: the menu's solo best display and the game-over sheet for Pig and Yacht (the existing Yacht browser suite checks solo best), and the headless Pig, Farkle and Yacht rules checks.
+- Real-device checks (touch feel of tiles, animation smoothness, decision pause on a slow phone) listed as not verifiable here.
+
+**9. Deliverables and bookkeeping:** the files above plus `docs/block-spec.md` and the CLAUDE.md project map updated (I will tell you exactly what changed), a new numbered Build Log entry with measured results, this Queue entry removed, all in one commit.
+
 
 ## Build Planner
 
