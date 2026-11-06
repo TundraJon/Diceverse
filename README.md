@@ -88,6 +88,18 @@ Idea: games are recipes over shared mechanic blocks, not separate modules. Candi
 Rough mappings (unverified): Pig = 1 die + bust on 1 + bank + race; Farkle = 6 dice + set-aside + bust on no-score + bank; Yacht/Generala/Balut = 5 dice + 3 rolls + hold + category sheet (likely one module, different category lists); Poker Dice = same shape with ranked hand; Hog/Zilch/Macao likely near-free variants.
 Requested from user's source: matrix, one row per candidate game: dice count/sides, roll and reroll rules, gate, bust, scoring type, end condition, player count/solo viability, hidden info, bot decision depth, known house-rule variants, parent game it varies, BGG rank/rating/weight. Then: find overlaps, define blocks, write the block spec.
 
+### Planner 8 — Real BGG data, page 1 of 5 (Dice Rolling mechanic, sorted by Geek Rating)
+Source: user paste of BGG browse page 1 (about 100 rows, includes expansions with N/A rank). Format: BGG rank, Geek rating, avg rating, voters. Only rows relevant to Diceverse are kept here; the rest are heavy/miniatures/worker-placement board games (Castles of Burgundy, Too Many Bones, Oathsworn, Troyes, Kingsburg, etc.) and are out of scope.
+- Liar's Dice #873, 6.729 / 6.93 / 17,220 | Can't Stop #767, 6.796 / 6.95 / 22,365 | Deep Sea Adventure #957, 6.681 / 6.86 / 21,522
+- King of Tokyo #512, 7.003 / 7.11 / 76,822 (most voters on the page) | BANG! The Dice Game #899, 6.712 / 6.87 / 26,772 | Dice Throne (various)
+- Las Vegas #632, 6.895 / 7.18 / 12,646 | Las Vegas Royale #940 | Camel Up 2nd ed. #269, 7.246 / 7.53 / 18,768 | Long Shot: The Dice Game #379, 7.117 / 7.50 / 10,886
+- Roll-and-write / sheet: That's Pretty Clever #205, 7.358 / 7.55 / 28,629 | Twice as Clever #481, 7.029 / 7.41 | Clever Cubed #883 | Railroad Ink (Deep Blue #643, Blazing Red #975, Lush Green #800) | Dinosaur Island: Rawr 'n Write #634 | Fleet: The Dice Game #669
+- Drafting/placement puzzles: Sagrada #229, 7.325 / 7.47 / 49,168 | Spots #886 | Draftosaurus #687 | Pulsar 2849 #319 | Roll Player #310
+- Other: Macao #571 (the board game, not the pub game), Yspahan #956, Pandemic: The Cure #628, Sky Team #32 (co-op, 35,665 voters), Space Base #231, Tiny Epic Galaxies #406.
+Observations: classics (Yacht/Yahtzee, Farkle, Pig, Shut the Box) are absent from this page; remaining pages 2-5 may hold them. Geek Rating is Bayesian-weighted and favors heavy games, so for an app, sorting by voters and filtering by low weight and solo is more useful. Repeating mechanic families on page 1: roll-and-write (Clever, Railroad Ink), push-your-luck (Can't Stop, Deep Sea Adventure), betting/racing (Camel Up, Long Shot), casino dice placement (Las Vegas), dueling/elimination with a Yacht-like reroll engine (King of Tokyo, BANG!, Dice Throne), co-op (Sky Team, Pandemic Cure), bluffing (Liar's Dice).
+Candidate "bend" games (original names/art; mechanics only): monster-arena brawl on the hold/reroll block, casino dice placement vs bots, camel/horse-style betting race, shared-oxygen push-your-luck dive, Can't Stop-style column climb, Clever-style roll-and-write sheet, route-drawing puzzle (Railroad Ink style).
+Open: user to fetch pages 2-5 or a voters-sorted view; decide which families get in; IP: all named products are commercial, so build only mechanic-inspired originals.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
