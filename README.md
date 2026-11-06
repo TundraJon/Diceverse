@@ -53,6 +53,63 @@ No gameplay or UI changes, no crypto call per roll (would break replay), no chan
 **6. Deliverables and bookkeeping**
 Updated `src/core/rng.js`, `src/core/engine.js`, `src/shell/save.js`, `src/shell/main.js`; rebuilt `index.html`; a new numbered Build Log entry with the measured results (chi-square values, correlation, fixture result); this Queue entry removed; all in one commit.
 
+### Queue 3 — Farkle (second game; multi-game shell)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Independent of Queue 2: if the RNG change is built first, Farkle uses its array seeds and save version 2; otherwise it uses the current format. The save-version check must be generic either way.
+
+**Rules verification note (honest):** I could not reach an authoritative source (Wikipedia and rules sites are outside this session's network allowlist) and the one search that worked confirmed that Farkle has **no official rules**; point values vary by group. Search results agreed on: six dice, target 10,000, hot dice, three-of-a-kind and better must come from a single roll, and a common optional 1,000-point penalty for three Farkles in a row; they showed an entry threshold of about 500 as a variant. The default table below is therefore **my chosen ruleset from commonly used values, not a verified standard**, and the user must confirm or change it before "go".
+
+**1. Rules (defaults in bold)**
+- Six dice. A turn: roll all six. If no die can score, it is a **Farkle**: turn points are lost and the turn ends. Otherwise the player sets aside at least one scoring die (every set-aside die must be part of a scoring combination in that roll; combinations cannot use dice from earlier rolls), then either BANKS the turn points or rolls the remaining dice. If all six dice have been set aside (**hot dice**), the player may bank or roll all six again.
+- Default scoring ("Standard"):
+  - Single 1 = 100; single 5 = 50.
+  - Three of a kind = face x 100, except three 1s = 1,000. Four of a kind = 1,000; five = 2,000; six = 3,000.
+  - Straight 1-2-3-4-5-6 = 1,500. Three distinct pairs = 1,500. Two triplets = 2,500.
+  - "Classic" scoring option: only singles and three-or-more of a kind (no straight, three pairs, or two triplets).
+- Entry threshold: until a seat has banked once, a bank is allowed only if turn points reach the threshold (**500**; options None, 500, 1,000). A seat is "on the board" after its first successful bank.
+- Target: **10,000** (options 2,500 and 5,000 for shorter flight games).
+- Final round (**On**): when a seat banks to the target or more, every OTHER seat gets exactly one more turn; highest total then wins; an exact tie triggers one more turn each among only the tied seats, repeated until there is a single leader. Option Off = first to bank the target wins immediately.
+- Three-Farkle penalty (**Off**; option On): a seat's third consecutive Farkle subtracts 1,000 from its total (not below 0) and resets its streak; any bank also resets the streak.
+- Curated house rules (5): target, entry threshold, scoring set, three-Farkle penalty, final round.
+- Seats 1-4; modes vs Bots, Pass and Play, Solo (fewest turns to reach the target, personal best saved per rule set).
+
+**2. Engine**
+- Pure rules module `src/games/farkle.js`; new block `src/blocks/combo-table.js` (the ComboTable block) exporting `scoreSelection(values, config)` (score only if every selected die is used; else invalid), `hasScoring(values, config)`, and `validSubsets(values, config)`. Scoring config comes from the rule options so the on-screen scoring table can never drift from the engine.
+- Turn phases: `start` (only ROLL: rolls six), `select` (only SET_ASIDE with ids), `decide` (ROLL the remaining dice or hot-dice six, or BANK if the entry threshold allows). Actions: `ROLL`, `SET_ASIDE {ids}`, `BANK`. Events add `FARKLED`, `HOT_DICE`, `PENALTY`, and reuse `ROLLED`, `SCORED`, `BANKED`, `TURN_STARTED`, `TURN_ENDED`, `GAME_OVER`.
+- `legalActions` returns concrete actions (one SET_ASIDE per valid subset). Because actions now carry a payload, the engine's legality check compares type and sorted ids, and the saved action log must store full actions (not just `type`). Old Pig saves (type-only) must still replay.
+- Rolls use the session RNG and the push-loop block's roll/bust/bank flow with Farkle hooks; Farkle is the second consumer of that block, so any gaps in the block get fixed there, not duplicated.
+
+**3. Multi-game shell**
+- `src/games/index.js` registry of games. Menu gets a game picker (Pig, Farkle) at the top; header title, rules sheet, and house rules sheet come from the selected game's `meta`.
+- Per-game storage: saves under `diceverse:<id>:save` (Pig's existing key already fits), per-game settings (migrate current flat `house` settings into `house.pig` on first load), solo best via a per-game `meta.soloKey(options)` (Pig keeps its current key format so existing bests survive). Menu shows a Resume button for each game that has a valid save.
+- Bot hints: each game exports `botHints: { riskScale, catchUpDivisor }`. Pig uses `riskScale 1` so its behavior is unchanged; Farkle uses `riskScale 50` because its values are in the hundreds.
+
+**4. Farkle bot**
+- Same principles as Pig: sees only `observe()` output; throwaway RNG; Cautious / Balanced / Bold presets (same dials, scaled by `riskScale`).
+- Candidate plans = (valid set-aside subset, then BANK or ROLL), pruned to at most 12 (keep the take-everything subset, subsets that keep single 1s/5s back to re-roll more dice, and drop dominated ones). Each plan is valued by simulating the rest of the turn with a simple rollout (take all scoring dice and bank on the next step) for `sims/4` runs, minimum 80. Pick the best value plus preset noise. Includes the Pig-style catch-up nudge. Think time 700-1500 ms as in Pig.
+- Performance budget: decision p95 under 150 ms in Node and under 400 ms in headless Chromium.
+
+**5. UI**
+- Six dice in a tray: dice still in play are tappable (toggle selection, gold ring); dice already set aside move to a dimmed "kept" row. A live badge shows the selection's score ("+350") or "not scoring" in red. A small "Take all scoring" helper selects every scoring die.
+- Buttons: `ROLL` at turn start; after a roll, `SET ASIDE & ROLL (n dice)` and `SET ASIDE & BANK`, each disabled when the selection is invalid or (for bank) the entry threshold is not met; a hint line shows "Need 500 to get on the board" when relevant. The UI sends SET_ASIDE then ROLL/BANK as two actions with a short pause between.
+- Banners: `FARKLE! -N`, `HOT DICE!`, and `-1000 PENALTY`. Only dice that were just rolled tumble; reduced-motion and the input-lock rules from Pig apply. Scoring table sheet (generated from the active scoring config) opens from a button on the game screen and from the rules sheet.
+- Same accessibility rules as Pig: zoom allowed, 48 px+ targets, aria-live announcements.
+
+**6. Verification plan (scratch scripts, none committed)**
+- Scoring, exhaustive: for all 46,656 ordered six-dice rolls (and every 1-5 dice multiset) `hasScoring` must match an independently written brute-force reference scorer for both scoring sets; known cases asserted by hand, e.g. [1,1,1,5,5,2] with the first five selected = 1,100; [2,2,2,2,3,3] selecting all six is invalid; [1,2,3,4,5,6] = 1,500; six 1s = 3,000; two triplets = 2,500; three pairs = 1,500.
+- Farkle probabilities (default scoring) by exhaustive count: 6 dice 2.31% (1,080 of 46,656), 5 dice about 7.72%, 4 about 15.74%, 3 about 27.78%, 2 about 44.44%, 1 about 66.67%; any mismatch is investigated, not tuned away.
+- Rules: 100 random Farkle games across all option combinations (1-4 seats) terminate and replay identically from seed + full action log; threshold, hot dice, penalty, final-round, and tie-break rules each get a hand-built scenario.
+- Pig regression: the Pig test suite (hold-at-20 mean, double-1 frequency, 100-game replay, bot roll-probability table) must give the same results as before the shell change.
+- Bot: fairness (observation has no seed/log/RNG; frozen observation works); Balanced mean points/turn must be at least that of a simple "take all scoring, bank at 300" baseline over 50,000 turns (within 3% noise), reported with the other presets; decision-time budget measured in Node and Chromium.
+- Playwright on `index.html` (`file://`, network blocked): full vs-Bots, Pass and Play, and Solo games; invalid selections keep the buttons disabled; a Farkle shows the banner; hot dice path exercised via a seeded test hook-free route (play until it occurs or use a hand-built resume save); entry threshold blocks banking; reload and Resume mid-turn in both games; per-game saves do not collide; old Pig save and Pig best still work; layout at 390x844 and 768x1024 with no horizontal scroll and no overlap of the six dice and the kept row; zero JS errors; screenshots inspected.
+- Reproduce-before-fix rule from BUILD.md applies.
+
+**7. Out of scope**
+Sound, bot banter and tells, odds overlay, other push-your-luck games, Zilch-style variants beyond the five options, tutorials, themes.
+
+**8. Deliverables and bookkeeping**
+New and changed source files above, rebuilt `index.html`, a new numbered Build Log entry with measured results, this Queue entry removed, and the block-spec doc and Planner 7 updated, all in one commit.
+
 ## Build Planner
 
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
