@@ -35,7 +35,7 @@ Flags to resolve before any of these are specced:
 
 ### Planner 3 — Tech stack / persistence
 Source suggested: vanilla JS ES modules + Tailwind, CSS Grid/Flexbox, localStorage (high scores, favorite rules, resume an in-progress game).
-Flags: ES modules fail over `file://` and some WebViews, and Tailwind via CDN needs network, which matters for offline/Play Store use. Open: serve over http only, bundle later, or use plain CSS. Cache-busting rules in BUILD.md apply once files are split.
+Flags: ES modules fail over `file://` and some WebViews, and Tailwind via CDN needs network, which matters for offline/Play Store use. Decided (user): app is a flight companion, so offline-first, no CDNs (self-host fonts/icons/styles), lighter CSS dice (no physics 3D). Still open: single file vs. split files and how split files are served. Cache-busting rules in BUILD.md apply once files are split.
 
 ### Planner 4 — AI player system (batch 2)
 Source: batch 2 notes. Idea: one AI controller, three reusable strategies instead of 20 separate bots; works with pass-and-play so a phone can mix humans and bots.
@@ -68,6 +68,17 @@ Bugs and gaps found by reading the code (not yet reproduced in a browser):
 - **IP:** bot names "Barbossa", "Davy Jones", "Will Turner" come from Pirates of the Caribbean; replace with original names before any release.
 - **Rules text typo:** "or the 2 face value". **Network:** CDN dependencies mean it needs internet (see Planner 3); Tailwind's CDN build is not meant for production. `user-scalable=no` hurts accessibility.
 Decision (user): start Liar's Dice from scratch on the shared engine; the prototype's look (felt-green table, gold accents, CSS pips with red-star aces, card-per-player layout) is a starting point for the UI, and the user wants the new UI to be better than this one. Still open: what "better" means (see next UI discussion).
+
+### Planner 6 — Product direction and AI "human-ish" design (discussion, not yet specced)
+Product: Diceverse is a **companion for flights**: offline, digital CSS dice, vs-bots as the primary mode, pass-and-play secondary, portrait one-handed, short sessions with autosave/resume. User will fetch BGG data (ranks, ratings, weight) themselves; game list (Planner 2) to be rebuilt from it. Use public-domain game names (Yacht, not Yahtzee; avoid Qwixx, Can't Stop, LCR names/art).
+Proposed architecture: dice table component (roll/hold/cup/animation), rules module per game (setup, legalActions, apply, score, isOver; pure functions), reusable UI panels (category sheet, running total, toggle tiles, bid panel), players/turn manager (human, pass-and-play, bot), shell (menu, house rules, stats, saves).
+Proposed AI design:
+- **No cheating:** bots only receive an observation (own hidden info plus public info); engine rolls all dice; tests make hidden fields throw; optional post-game "what the bot knew" log.
+- **Generic brain:** determinized Monte Carlo (sample plausible hidden info, play out, pick best); difficulty = simulation count; per-game code limited to the rules module plus game-specific heuristics.
+- **Bluff layer for hidden-info games:** simulation alone cannot bluff. Honest, semi-bluff and deliberate-bluff bids; treats opponent bids as evidence; per-opponent honesty record with decay.
+- **Two dials:** skill (sim count + move noise via weighted-random choice) and personality (risk, bluff rate, patience, call threshold, tilt).
+- **Human feel:** thinking time scales with decision closeness, visible tells, event-based banter, original named characters. No rubber-band difficulty.
+Open: exact game list; UI approach/WOW features to commit to; phone CPU budget for simulations.
 
 ## Build Log 1 (completed)
 
