@@ -288,3 +288,11 @@ Farkle scoring comparison table: Name, Classic, Standard side by side (user requ
 Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean; 11 checks passed, 0 failed, 0 JS errors, in 2 seconds, at `?speed=0`: the header cells are Name / Classic / Standard; all 15 rows (name, classic, standard) equal the values generated from the engine tables; exactly four dashes in Classic (Straight 1-6, Three pairs, Four of a kind + pair, Two triplets); spot values (Three 1s 300/300, Four of a kind 1,000/1,000, Two triplets dash/2,500); the old "Scoring (standard)" heading is gone; no horizontal overflow at 390 px and at 320 px; at 320 px the sheet scrolls, the header stays pinned flush at the top and no row shows above it; the in-game "?" shows the same table; the Pig rules sheet is unchanged. Screenshots of the table at 390 px and 320 px inspected. Because the sheet padding rule is shared, the existing browser suites that open sheets were re-run at `?speed=0`: Farkle all pass; Pig passes except the one old "no stale bot action after Menu" check that races at speed 0 (already explained in Build Log 9; its same-task replacement passed there).
 - Bugs found and fixed during verification: at 320 px a sliver of the previous row showed above the pinned header (caused by the sheet's top padding), fixed by the margin change above. Three of my own test checks were wrong and corrected: the first sticky test ran at 390 px where the sheet does not scroll, and two geometry checks mis-measured rows hidden under the opaque header.
 - Not verified: real-device rendering and scroll feel on a phone; browsers other than Chromium.
+
+## Build Log 11 (completed)
+
+Correction note for Build Log 10.
+
+- [x] Build Log 10 (the three-column Farkle scoring table) was built and pushed from a request without a go-ahead; under CLAUDE.md it should have been queued first. The user reviewed this, chose to keep the change as shipped, and confirmed the CLAUDE.md "Show choices side by side" line is wanted (it records a preference they stated, and CLAUDE.md is how it is remembered). No code changed in this entry.
+
+Verification: documentation only.
