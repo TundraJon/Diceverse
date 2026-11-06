@@ -11,7 +11,7 @@ Full workflow (lifecycle, cache-busting, commit discipline, Playwright verificat
 ## How to build and run
 
 - Needs Node 18+ and npm. `npm install` once, then `npm run build`.
-- Output: `dist/diceverse.html`, a single self-contained file (JS and CSS inlined, no network requests). Open it directly in a browser, no server needed; it works offline.
+- Output: `index.html` at the repo root, a single self-contained file (JS and CSS inlined, no network requests). Open it directly in a browser, no server needed; it works offline.
 - Source is modular under `src/` (`core`, `blocks`, `games`, `ai`, `ui`, `shell`). Rules modules are pure and run in Node without a browser, so bots and tests can use them directly.
 - Test scripts are throwaway and are not committed (see BUILD.md).
 
@@ -193,3 +193,13 @@ Verification (scratch scripts, not committed; all re-run after the final change)
 - Bugs found during verification and fixed in this build: (1) every sheet (rules, house rules, game over) never appeared because the sheet was not attached to its backdrop, caught by the first Playwright run; (2) "You's turn" and "You wins" grammar; (3) "BUST! −0" label when no points were lost; (4) Cautious preset banked after almost any roll and Bold rolled to 50+, so presets were retuned (Cautious risk −1, Bold risk +1.2, catch-up nudge capped lower).
 - Test-script bugs (not app bugs) fixed along the way: two buttons named "Menu" in one view, and a loop that kept clicking a disabled ROLL after the game had ended.
 - Not verified: real-device touch and haptics (headless Chromium only); behavior in browsers other than Chromium; the resume check's second run compared an all-zero starting position (the first run compared a mid-game state with non-zero totals and also matched).
+
+## Build Log 5 (completed)
+
+Correction to Build Log 4: the build output is now `index.html` at the repo root, not `dist/diceverse.html`.
+
+- [x] `build.mjs` writes `index.html` at the repo root; the `dist/` folder and `dist/diceverse.html` were removed (no duplicate copy kept).
+- [x] "How to build and run" section updated to point at `index.html`. Build Log 4 is left as written (append-only history); where it says `dist/diceverse.html`, read `index.html`.
+- [x] Cause: I chose the output path from the Queue 1 text instead of the repo convention that the playable app is `index.html`; the Queue entry itself named `dist/diceverse.html`, so the error was in the spec I wrote.
+
+Verification: rebuilt (`index.html` 24.2 KB, identical content to the previous bundle) and re-ran the full Playwright suite against `file:///.../index.html` with the network blocked: all scenarios passed again, zero external requests, zero JS errors. The headless rules tests were not re-run because no source under `src/` changed.

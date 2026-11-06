@@ -1,6 +1,6 @@
-// Bundles src/ into one self-contained dist/diceverse.html (JS + CSS inlined, no external requests).
+// Bundles src/ into one self-contained index.html at the repo root (JS + CSS inlined, no external requests).
 import { build } from 'esbuild';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const result = await build({
   entryPoints: ['src/shell/main.js'],
@@ -19,6 +19,5 @@ const html = template
   .replace('/*__CSS__*/', () => css)
   .replace('/*__JS__*/', () => js);
 
-mkdirSync('dist', { recursive: true });
-writeFileSync('dist/diceverse.html', html);
-console.log(`dist/diceverse.html written (${(html.length / 1024).toFixed(1)} KB)`);
+writeFileSync('index.html', html);
+console.log(`index.html written (${(html.length / 1024).toFixed(1)} KB)`);
