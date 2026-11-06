@@ -3,6 +3,10 @@ import { createRng } from './rng.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
+// Actions may carry an `ids` payload (e.g. Farkle SET_ASIDE); compare type and sorted ids.
+const sortedIds = (a) => (a.ids ? a.ids.slice().sort((x, y) => x - y) : null);
+const sameAction = (a, b) => a.type === b.type && JSON.stringify(sortedIds(a)) === JSON.stringify(sortedIds(b));
+
 export function createSession(game, options, seed) {
   const rng = createRng(seed);
   let state = game.setup(options, rng);
@@ -23,12 +27,12 @@ export function createSession(game, options, seed) {
     },
     dispatch(action) {
       const legal = game.legalActions(state, state.current);
-      if (!legal.some((a) => a.type === action.type)) {
+      if (!legal.some((a) => sameAction(a, action))) {
         throw new Error(`Illegal action ${action.type}`);
       }
       const out = game.apply(state, action, rng);
       state = out.state;
-      log.push({ type: action.type });
+      log.push(clone(action)); // full action, so payloads replay exactly
       return out.events;
     },
     isOver() {
@@ -54,7 +58,7 @@ export function replaySession(game, saved) {
     const s = createSession(game, saved.options, saved.seed);
     for (const a of saved.log) {
       if (s.isOver()) return null;
-      s.dispatch({ type: a.type });
+      s.dispatch(a);
     }
     return s;
   } catch {

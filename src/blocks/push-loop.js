@@ -13,15 +13,20 @@ export function createPushLoop(hooks) {
       state.turn.rolls += 1;
       events.push({ type: 'ROLLED', seat: state.current, dice });
       if (res.bust) {
-        const lost = state.turn.points;
-        state.turn.points = 0;
-        if (res.resetTotal) state.seats[state.current].total = 0;
-        events.push({ type: 'BUSTED', seat: state.current, lost, reset: !!res.resetTotal });
+        this.bust(state, events, { resetTotal: res.resetTotal });
         return { ended: true };
       }
       state.turn.points += res.gain;
       events.push({ type: 'SCORED', seat: state.current, gain: res.gain, turnPoints: state.turn.points });
       return { ended: false };
+    },
+
+    // Shared bust: lose the turn points (and optionally the whole total), emit an event.
+    bust(state, events, { type = 'BUSTED', resetTotal = false } = {}) {
+      const lost = state.turn.points;
+      state.turn.points = 0;
+      if (resetTotal) state.seats[state.current].total = 0;
+      events.push({ type, seat: state.current, lost, reset: !!resetTotal });
     },
 
     bank(state, events) {

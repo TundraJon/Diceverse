@@ -1,5 +1,6 @@
 // Bot brain. Receives ONLY an observation (never the session or the real RNG).
-// Decides by simulating the rest of the turn with the game's own apply().
+// Each candidate plan is valued by simulating the rest of the turn with the game's own
+// apply() and a simple rollout policy; the game supplies the plans and the rollout.
 import { createRng } from '../core/rng.js';
 
 export const PRESETS = {
@@ -8,48 +9,52 @@ export const PRESETS = {
   bold: { label: 'Bold', sims: 600, noise: 1.2, risk: 1.2 },
 };
 
-// Value of a finished simulated turn: the seat's banked total afterwards.
-function simulate(game, obs, seat, firstAction, rng) {
-  let st = JSON.parse(JSON.stringify(obs));
-  let out = game.apply(st, { type: firstAction }, rng);
-  st = out.state;
-  // After a ROLL that did not end the turn, bank immediately (one-step lookahead).
-  if (st.current === seat && !game.isOver(st) && game.legalActions(st, seat).some((a) => a.type === 'BANK')) {
-    st = game.apply(st, { type: 'BANK' }, rng).state;
-  }
-  return st.seats[seat].total;
-}
+// Returns { actions: [...], margin } where actions are dispatched in order (e.g. SET_ASIDE then ROLL).
+// margin = adjusted value gap between the best and second-best plan (small = close call).
+export function decide(game, obs, seat, presetKey, seed) {
+  const plans = game.candidatePlans ? game.candidatePlans(obs, seat) : game.legalActions(obs, seat).map((a) => [a]);
+  if (plans.length === 1) return { actions: plans[0], margin: null };
 
-export function chooseAction(game, obs, seat, presetKey, seed) {
-  const legal = game.legalActions(obs, seat);
-  if (legal.length === 1) return legal[0];
+  const shortcut = game.shortcut ? game.shortcut(obs, seat) : null;
+  if (shortcut) return { actions: [shortcut], margin: Infinity };
+
   const p = PRESETS[presetKey] || PRESETS.balanced;
+  const sc = (game.botHints && game.botHints.riskScale) || 1;
   const rng = createRng(seed);
-
-  // Banking now wins the game outright: take it.
-  const me = obs.seats[seat];
-  const canBank = legal.some((a) => a.type === 'BANK');
-  if (canBank && !obs.options.equalTurns && me.total + obs.turn.points >= obs.options.target) {
-    return { type: 'BANK' };
-  }
-
-  let rollSum = 0;
-  let bankSum = 0;
-  for (let i = 0; i < p.sims; i++) {
-    rollSum += simulate(game, obs, seat, 'ROLL', rng);
-    bankSum += simulate(game, obs, seat, 'BANK', rng);
-  }
-  let margin = (rollSum - bankSum) / p.sims;
+  const turnsAtStart = obs.seats[seat].turns;
+  const sims = plans.length > 2 ? Math.max(80, Math.floor(p.sims / 4)) : p.sims;
 
   // Observable-info nudge: when an opponent is close to the target and ahead, take more risk.
+  const me = obs.seats[seat];
   const bestOpp = Math.max(...obs.seats.map((s, i) => (i === seat ? -1 : s.total)), -1);
   let catchUp = 0;
   if (bestOpp >= obs.options.target * 0.7 && bestOpp > me.total + obs.turn.points) {
-    catchUp = Math.min(3, (bestOpp - me.total - obs.turn.points) / 24);
+    catchUp = Math.min(3, (bestOpp - me.total - obs.turn.points) / (24 * sc)) * sc;
   }
 
-  margin += p.risk + catchUp + rng.gauss() * p.noise;
-  return { type: margin > 0 ? 'ROLL' : 'BANK', margin };
+  const scores = plans.map((plan) => {
+    let sum = 0;
+    for (let i = 0; i < sims; i++) {
+      let st = obs;
+      for (const a of plan) st = game.apply(st, a, rng).state;
+      st = game.rollout(st, seat, rng, turnsAtStart);
+      sum += st.seats[seat].total;
+    }
+    const continues = plan[plan.length - 1].type === 'ROLL';
+    // Per-plan noise of sd noise*sc/sqrt(2): the gap between two plans then has sd noise*sc.
+    return sum / sims + (continues ? p.risk * sc + catchUp : 0) + rng.gauss() * p.noise * sc * Math.SQRT1_2;
+  });
+
+  let best = 0;
+  scores.forEach((v, i) => { if (v > scores[best]) best = i; });
+  const second = scores.reduce((m, v, i) => (i !== best && v > m ? v : m), -Infinity);
+  return { actions: plans[best], margin: (scores[best] - second) / sc };
+}
+
+// Back-compat single-action helper (used by older scratch tests).
+export function chooseAction(game, obs, seat, presetKey, seed) {
+  const d = decide(game, obs, seat, presetKey, seed);
+  return { type: d.actions[0].type, margin: d.margin };
 }
 
 // Thinking time: longer when the call is close.

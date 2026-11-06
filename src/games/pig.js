@@ -11,6 +11,9 @@ export const meta = {
   soloOK: true,
   estMinutes: 5,
   tier: 'A',
+  // Key part for the per-rule-set solo personal best (kept identical to the original format).
+  soloKey: (o) => `${o.target}:${o.dice}`,
+  soloHide: ['equalTurns'], // house rules that make no sense in solo play
   houseRules: [
     { key: 'target', label: 'Target score', options: [{ value: 50, label: '50' }, { value: 100, label: '100' }, { value: 150, label: '150' }], default: 100 },
     { key: 'dice', label: 'Dice', options: [{ value: 1, label: 'One die' }, { value: 2, label: 'Two dice' }], default: 1 },
@@ -138,4 +141,24 @@ export function apply(state, action, rng) {
     throw new Error(`Unknown action ${action.type}`);
   }
   return { state: s, events };
+}
+
+// ---- Bot hooks (used by src/ai/brain.js) ----
+export const botHints = { riskScale: 1 };
+
+// Immediate win by banking: take it.
+export function shortcut(obs, seat) {
+  const me = obs.seats[seat];
+  if (obs.turn.points > 0 && !obs.options.equalTurns && me.total + obs.turn.points >= obs.options.target) {
+    return { type: 'BANK' };
+  }
+  return null;
+}
+
+// Continue the simulated turn with a simple policy: after one roll, bank.
+export function rollout(state, seat, rng, turnsAtStart) {
+  let s = state;
+  if (s.winner !== null || s.seats[seat].turns > turnsAtStart || s.current !== seat) return s;
+  if (legalActions(s, seat).some((a) => a.type === 'BANK')) s = apply(s, { type: 'BANK' }, rng).state;
+  return s;
 }

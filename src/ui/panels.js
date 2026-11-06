@@ -17,23 +17,21 @@ export function renderScoreStrip(container, seats, current, turnPoints) {
     total.textContent = String(s.total);
     const tp = document.createElement('div');
     tp.className = 'tp';
-    tp.textContent = i === current && turnPoints > 0 ? `+${turnPoints} this turn` : '';
+    tp.textContent = i === current && turnPoints > 0 ? `+${turnPoints} this turn` : s.note || '';
     chip.append(name, total, tp);
     container.appendChild(chip);
   });
 }
 
-export function renderTurnBar(container, { canRoll, canBank, onRoll, onBank }) {
+// buttons: [{ label, cls, disabled, onClick, span2 }]
+export function renderTurnBar(container, buttons) {
   container.innerHTML = '';
-  const roll = document.createElement('button');
-  roll.className = 'btn-roll';
-  roll.textContent = 'ROLL';
-  roll.disabled = !canRoll;
-  roll.addEventListener('click', onRoll);
-  const bank = document.createElement('button');
-  bank.className = 'btn-bank';
-  bank.textContent = 'BANK';
-  bank.disabled = !canBank;
-  bank.addEventListener('click', onBank);
-  container.append(roll, bank);
+  buttons.forEach((b) => {
+    const el = document.createElement('button');
+    el.className = b.cls + (b.span2 ? ' span2' : '');
+    el.textContent = b.label;
+    el.disabled = !!b.disabled;
+    el.addEventListener('click', b.onClick);
+    container.appendChild(el);
+  });
 }

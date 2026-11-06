@@ -156,3 +156,8 @@ docs/          reference material
 1. Delivery: develop as modules, ship one bundled offline HTML file.
 2. House rules: curated, about 3 to 5 per game.
 3. First slice: core + dice pool + Pig (specified as Queue 1 in README.md).
+
+### Implementation notes (after Farkle, Build Log 7)
+- ComboTable is implemented as `src/blocks/combo-table.js`; Farkle shares only `bust`, `bank`, `freshTurn` with the push-loop block (its SET_ASIDE phase needs its own roll flow).
+- The bot brain is now generic: games supply `candidatePlans`, `rollout`, `shortcut` and `botHints`.
+- Actions may carry payloads (`ids`); the engine log stores full actions.
