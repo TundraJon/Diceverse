@@ -57,19 +57,20 @@ Updated `src/core/rng.js`, `src/core/engine.js`, `src/shell/save.js`, `src/shell
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Independent of Queue 2: if the RNG change is built first, Farkle uses its array seeds and save version 2; otherwise it uses the current format. The save-version check must be generic either way.
 
-**Rules verification note (honest):** I could not reach an authoritative source (Wikipedia and rules sites are outside this session's network allowlist) and the one search that worked confirmed that Farkle has **no official rules**; point values vary by group. Search results agreed on: six dice, target 10,000, hot dice, three-of-a-kind and better must come from a single roll, and a common optional 1,000-point penalty for three Farkles in a row; they showed an entry threshold of about 500 as a variant. The default table below is therefore **my chosen ruleset from commonly used values, not a verified standard**, and the user must confirm or change it before "go".
+**Rules source:** the user supplied a Farkle rules-and-scoring sheet, saved as `docs/farkle-rules-sheet.png`. It is the authority for the defaults below (Farkle has no official rules, and I could not reach Wikipedia or rules sites from this session, so I had earlier drafted defaults from memory). Where the sheet and my earlier draft differed, the sheet wins: three 1s score 300 (not 1,000), four-of-a-kind plus a pair is its own 1,500 combination, and the three-Farkle penalty is ON by default.
 
 **1. Rules (defaults in bold)**
 - Six dice. A turn: roll all six. If no die can score, it is a **Farkle**: turn points are lost and the turn ends. Otherwise the player sets aside at least one scoring die (every set-aside die must be part of a scoring combination in that roll; combinations cannot use dice from earlier rolls), then either BANKS the turn points or rolls the remaining dice. If all six dice have been set aside (**hot dice**), the player may bank or roll all six again.
-- Default scoring ("Standard"):
+- Default scoring ("Standard", exactly as on the sheet):
   - Single 1 = 100; single 5 = 50.
-  - Three of a kind = face x 100, except three 1s = 1,000. Four of a kind = 1,000; five = 2,000; six = 3,000.
-  - Straight 1-2-3-4-5-6 = 1,500. Three distinct pairs = 1,500. Two triplets = 2,500.
-  - "Classic" scoring option: only singles and three-or-more of a kind (no straight, three pairs, or two triplets).
-- Entry threshold: until a seat has banked once, a bank is allowed only if turn points reach the threshold (**500**; options None, 500, 1,000). A seat is "on the board" after its first successful bank.
+  - Three of a kind: 1s = 300, 2s = 200, 3s = 300, 4s = 400, 5s = 500, 6s = 600. Four of a kind = 1,000; five = 2,000; six = 3,000.
+  - Straight 1-2-3-4-5-6 = 1,500. Three distinct pairs = 1,500. Four of a kind + a pair = 1,500. Two triplets = 2,500.
+  - When a selection can be scored more than one way, the engine uses the highest-scoring decomposition in which every selected die is used.
+  - "Classic" scoring option: only singles and three-or-more of a kind (no straight, three pairs, four-plus-pair, or two triplets).
+- Entry threshold ("500 points minimum to open your score sheet"): until a seat has banked once, a bank is allowed only if turn points reach the threshold (**500**; options None, 500, 1,000). A seat is "on the board" after its first successful bank.
 - Target: **10,000** (options 2,500 and 5,000 for shorter flight games).
-- Final round (**On**): when a seat banks to the target or more, every OTHER seat gets exactly one more turn; highest total then wins; an exact tie triggers one more turn each among only the tied seats, repeated until there is a single leader. Option Off = first to bank the target wins immediately.
-- Three-Farkle penalty (**Off**; option On): a seat's third consecutive Farkle subtracts 1,000 from its total (not below 0) and resets its streak; any bank also resets the streak.
+- Final round (**On**; the sheet: "being first to bank 10,000 doesn't mean you have won, all other players get one final turn"): when a seat banks to the target or more, every OTHER seat gets exactly one more turn; highest total then wins; an exact tie triggers one more turn each among only the tied seats, repeated until there is a single leader. Option Off = first to bank the target wins immediately.
+- Three-Farkle penalty (**On**, per the sheet; option Off): a seat's third consecutive Farkle subtracts 1,000 from its total (not below 0) and resets its streak; any bank also resets the streak.
 - Curated house rules (5): target, entry threshold, scoring set, three-Farkle penalty, final round.
 - Seats 1-4; modes vs Bots, Pass and Play, Solo (fewest turns to reach the target, personal best saved per rule set).
 
@@ -96,8 +97,8 @@ Updated `src/core/rng.js`, `src/core/engine.js`, `src/shell/save.js`, `src/shell
 - Same accessibility rules as Pig: zoom allowed, 48 px+ targets, aria-live announcements.
 
 **6. Verification plan (scratch scripts, none committed)**
-- Scoring, exhaustive: for all 46,656 ordered six-dice rolls (and every 1-5 dice multiset) `hasScoring` must match an independently written brute-force reference scorer for both scoring sets; known cases asserted by hand, e.g. [1,1,1,5,5,2] with the first five selected = 1,100; [2,2,2,2,3,3] selecting all six is invalid; [1,2,3,4,5,6] = 1,500; six 1s = 3,000; two triplets = 2,500; three pairs = 1,500.
-- Farkle probabilities (default scoring) by exhaustive count: 6 dice 2.31% (1,080 of 46,656), 5 dice about 7.72%, 4 about 15.74%, 3 about 27.78%, 2 about 44.44%, 1 about 66.67%; any mismatch is investigated, not tuned away.
+- Scoring, exhaustive: for all 46,656 ordered six-dice rolls (and every 1-5 dice multiset) `hasScoring` must match an independently written brute-force reference scorer for both scoring sets; known cases asserted by hand, e.g. [1,1,1,5,5,2] with the first five selected = 400 (300 + 100); [2,2,2,2,3,4] selecting all six is invalid; [2,2,2,2,3,3] selecting all six = 1,500 (four of a kind + pair); [1,2,3,4,5,6] = 1,500; six 1s = 3,000; two triplets = 2,500; three distinct pairs = 1,500; every row of the sheet's table is asserted individually.
+- Farkle probabilities (default scoring; the extra four-plus-pair combo cannot change the Farkle count because a four-of-a-kind already scores) by exhaustive count: 6 dice 2.31% (1,080 of 46,656), 5 dice about 7.72%, 4 about 15.74%, 3 about 27.78%, 2 about 44.44%, 1 about 66.67%; any mismatch is investigated, not tuned away.
 - Rules: 100 random Farkle games across all option combinations (1-4 seats) terminate and replay identically from seed + full action log; threshold, hot dice, penalty, final-round, and tie-break rules each get a hand-built scenario.
 - Pig regression: the Pig test suite (hold-at-20 mean, double-1 frequency, 100-game replay, bot roll-probability table) must give the same results as before the shell change.
 - Bot: fairness (observation has no seed/log/RNG; frozen observation works); Balanced mean points/turn must be at least that of a simple "take all scoring, bank at 300" baseline over 50,000 turns (within 3% noise), reported with the other presets; decision-time budget measured in Node and Chromium.
