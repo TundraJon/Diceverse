@@ -16,7 +16,25 @@ _Empty — nothing queued right now._
 
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
 
-_Empty — nothing backlogged right now._
+### Planner 1 — Universal engine + game-definition architecture
+Source: batch 1 of notes. One shared dice/scoring engine; each game is a small config/script plugged in. Proposed layers:
+- **DiceEngine** — dice count, sides (d6, d20...), held/locked dice, values, roll animation.
+- **Scorecard engine** — generic templates: category-based (Yahtzee, Balut, Generala), accumulation/bust (Farkle, Pig), toggle/board (Shut the Box).
+- **Game configs** — plain objects (name, diceCount, maxRounds, categories, scoreCalculator).
+Open questions: single-file HTML vs. multiple files (see Planner 3); which scorecard buckets cover games outside the three above (Liar's Dice, Beetle, Cee-Lo, Craps).
+
+### Planner 2 — Candidate game list (20)
+Yahtzee, Farkle, Pig, Shut the Box, Perudo/Liar's Dice, Left Center Right, Ship Captain & Crew, Bunco, Generala, KnuckleDice, Chicago, Threes, Twenty-One, Hazard, Beetle, Cee-Lo, Buck Dice, Mexico, Going to Boston, Craps (simplified).
+Flags to resolve before any of these are specced:
+- Rules for KnuckleDice, Buck Dice, and Twenty-One are vague/unclear as listed; need exact rule sets (or replace them).
+- Hazard and Craps overlap heavily; may merge or keep one.
+- Liar's Dice needs simulated opponents (AI) or pass-and-play multiplayer; different effort from the solo/score games.
+- Chicago description in the notes is thin; confirm the exact ruleset.
+- Need to decide which games are solo, pass-and-play, or vs. computer.
+
+### Planner 3 — Tech stack / persistence
+Source suggested: vanilla JS ES modules + Tailwind, CSS Grid/Flexbox, localStorage (high scores, favorite rules, resume an in-progress game).
+Flags: ES modules fail over `file://` and some WebViews, and Tailwind via CDN needs network, which matters for offline/Play Store use. Open: serve over http only, bundle later, or use plain CSS. Cache-busting rules in BUILD.md apply once files are split.
 
 ## Build Log 1 (completed)
 
