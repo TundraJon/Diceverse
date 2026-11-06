@@ -158,3 +158,6 @@ body.fast *, body.fast *::before, body.fast *::after { animation: none !importan
 .cmp.wide th, .cmp.wide td { padding: 6px 3px; font-size: 0.8rem; }
 .seg button { line-height: 1.15; padding-top: 6px; padding-bottom: 6px; }
 .table.compact { flex: none; min-height: 150px; padding: 6px 0; }
+
+/* Bot style sub-row inside the Mode panel */
+.row.sub { margin-top: 10px; }

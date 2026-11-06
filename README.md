@@ -17,32 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 7 — Reorder the menu: Game, Players, Mode, Bot style
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Why (user):** the menu order is Game, Mode, Players, Bot style, so the Bot style row appears two rows below the Mode choice that controls it. Reorder so Bot style sits right under Mode, before the games grow further.
-
-**1. New order (user's request):** Game, then Players, then Mode, then Bot style.
-
-**2. Behavior**
-- Bot style still appears only when the mode is vs Bots, and now directly under the Mode choice, so picking "vs Bots" visibly reveals it right there.
-- Players still ranges from 2 to 4 for vs Bots and Pass and Play, with the same stepper and the same saved setting.
-- Solo still means one player. *(Added by Claude. Change before authorizing if wanted.)* Because Players is now ABOVE Mode, hiding it in Solo would make the Mode and Bot style rows jump up when you tap Solo. Instead, the Players row stays visible in Solo, shows a fixed "1", and its stepper buttons are disabled; your saved player count is not lost and returns when you switch back to vs Bots or Pass and Play.
-- *(Added by Claude. Change before authorizing if wanted.)* Bot style becomes part of the same panel as Mode (a sub-row under the Mode buttons) instead of its own separate panel, so the two read as one group.
-- Unchanged: the Game choice, house rules, How to play, Start, the summary line and the Resume buttons stay where they are; no rule, bot, or save changes.
-
-**3. Files:** `src/shell/main.js` (`renderMenu` order and the Players/Bot style panels), `src/ui/theme.css` only if the combined panel needs spacing; rebuilt `index.html`.
-
-**4. Out of scope:** any other menu change, new options, or game changes.
-
-**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; under 1 minute)**
-- `preflight` clean. For each of Pig, Farkle and Yacht: the panels appear in the order Game, Players, Mode (with Bot style under it when vs Bots), checked from the rendered DOM order; Bot style is present only for vs Bots; switching modes does not move the Players or Mode rows (their top positions are identical across all three modes); in Solo the Players row shows 1 with disabled buttons and the earlier count (for example 4) is restored on returning to vs Bots; the stepper still works in both modes where it applies; settings persist after a reload.
-- Re-run only the existing menu-driven browser steps that select Solo, Pass and Play, and the player count (they use text and aria-labels, so they should be unaffected) at `?speed=0` for one game, to confirm nothing else broke.
-- Screenshots at 390x844 and 320x640 of vs Bots and Solo, inspected; no horizontal overflow.
-
-**6. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry, this Queue entry removed, all in one commit.
-
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -353,3 +328,13 @@ Verification (scratch scripts using `tests-helpers.cjs`, none committed):
 - Test-script mistakes fixed along the way: a "ready" wait that expected ROLL enabled after the third roll; a pass-and-play step that rolled before handing control to the policy; two tie scenarios that set totals instead of card values.
 - Unexplained, stated plainly: the old Farkle browser script failed twice (a missing "Take all scoring" button after the first roll, which also happens if that roll is a Farkle, 2.3% of runs) while other heavy processes were running, then passed three times in a row, and a 40-run probe of that exact step never failed; I could not prove the cause.
 - Not verified or differing from the Queue plan: bot averages used 400 games per set for Balanced (the plan said 2,000) because of run time; bot decision time was measured in Node only, so a short pause on a slow phone is possible (needs a real-device check, along with the feel of the hold taps, the category list and the sticky button bar and a phone's browser bar); browsers other than Chromium; fractional `?speed` values. One observation, not changed: the Rule set hint is a long single paragraph.
+
+## Build Log 14 (completed)
+
+Menu reorder: Game, Players, Mode, Bot style (was Queue 7).
+
+- [x] `src/shell/main.js` `renderMenu`: the panels are now Game, Players, Mode, with Bot style as a sub-row inside the Mode panel, directly under the Mode buttons and only for vs Bots (it was a separate panel two rows below Mode).
+- [x] Players is always shown (it used to be hidden in Solo). In Solo it shows a fixed "1" with both stepper buttons disabled, so the Mode row never moves when you change modes; your saved player count (`settings.players`) is not touched and returns when you switch back. Same stepper, same 2-4 range, same saved setting otherwise.
+- [x] `src/ui/theme.css`: `.row.sub` spacing for the Bot style sub-row. The Game choice, summary line, House rules, How to play, Start and Resume buttons are unchanged; no rules, bot, or save changes. Both of the "Added by Claude" choices in the spec (Players visible as 1 in Solo, Bot style inside the Mode panel) were built as written. `index.html` rebuilt (62.6 KB); cache-busting not applicable.
+
+Verification (scratch script using `tests-helpers.cjs`; none committed): `preflight` clean; 29 checks passed, 0 failed, 0 JS errors, 3 seconds. For each of Pig, Farkle and Yacht: the panel order read from the DOM is Game, Players, Mode; Bot style exists only in vs Bots, inside the Mode panel and within 40 px under its buttons; the Players and Mode tops are identical in vs Bots, Pass and Play, and Solo; in Solo, Players shows 1 with both buttons disabled. The stepper goes 3 to 4 and disables plus at 4; Solo shows 1 and returning to Pass and Play restores 4; the stepper works in Pass and Play; players, mode and bot style persist after a reload; a 3-player vs Bots game starts with 3 chips; no horizontal overflow at 390 or 320 px in vs Bots and Solo. Screenshots of 390 vs Bots and 320 Solo inspected. The existing Yacht browser suite (which drives Solo, Pass and Play, vs Bots and the player stepper) was re-run at `?speed=0`: 43 of 43 passed. Test-script mistakes fixed along the way: a wrong expected value in one composite check, and a second click on a "More players" button that is correctly disabled at 4. Not verified: real-device rendering; browsers other than Chromium.

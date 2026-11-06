@@ -106,6 +106,27 @@ function renderMenu() {
   gamePanel.appendChild(gseg);
   screen.appendChild(gamePanel);
 
+  // Players: always shown. In Solo it shows a fixed 1 with disabled buttons, so the rows below never move.
+  const solo = settings.mode === 'solo';
+  const pp = el('div', 'panel');
+  const prow = el('div', 'row');
+  prow.appendChild(el('span', null, 'Players'));
+  const st = el('div', 'stepper');
+  const minus = el('button', null, '−');
+  minus.setAttribute('aria-label', 'Fewer players');
+  const count = el('span', null, solo ? '1' : String(settings.players));
+  const plus = el('button', null, '+');
+  plus.setAttribute('aria-label', 'More players');
+  minus.disabled = solo || settings.players <= 2;
+  plus.disabled = solo || settings.players >= 4;
+  minus.addEventListener('click', () => { settings.players--; persistSettings(); renderMenu(); });
+  plus.addEventListener('click', () => { settings.players++; persistSettings(); renderMenu(); });
+  st.append(minus, count, plus);
+  prow.appendChild(st);
+  pp.appendChild(prow);
+  screen.appendChild(pp);
+
+  // Mode, with Bot style directly under it (only for vs Bots)
   const modePanel = el('div', 'panel');
   modePanel.appendChild(el('h2', null, 'Mode'));
   const seg = el('div', 'seg');
@@ -116,31 +137,8 @@ function renderMenu() {
     seg.appendChild(b);
   });
   modePanel.appendChild(seg);
-  screen.appendChild(modePanel);
-
-  if (settings.mode !== 'solo') {
-    const pp = el('div', 'panel');
-    const row = el('div', 'row');
-    row.appendChild(el('span', null, 'Players'));
-    const st = el('div', 'stepper');
-    const minus = el('button', null, '−');
-    minus.setAttribute('aria-label', 'Fewer players');
-    const count = el('span', null, String(settings.players));
-    const plus = el('button', null, '+');
-    plus.setAttribute('aria-label', 'More players');
-    minus.disabled = settings.players <= 2;
-    plus.disabled = settings.players >= 4;
-    minus.addEventListener('click', () => { settings.players--; persistSettings(); renderMenu(); });
-    plus.addEventListener('click', () => { settings.players++; persistSettings(); renderMenu(); });
-    st.append(minus, count, plus);
-    row.appendChild(st);
-    pp.appendChild(row);
-    screen.appendChild(pp);
-  }
-
   if (settings.mode === 'bots') {
-    const bp = el('div', 'panel');
-    const row = el('div', 'row');
+    const row = el('div', 'row sub');
     row.appendChild(el('label', null, 'Bot style'));
     const sel = el('select');
     sel.setAttribute('aria-label', 'Bot style');
@@ -152,9 +150,9 @@ function renderMenu() {
     });
     sel.addEventListener('change', () => { settings.preset = sel.value; persistSettings(); });
     row.appendChild(sel);
-    bp.appendChild(row);
-    screen.appendChild(bp);
+    modePanel.appendChild(row);
   }
+  screen.appendChild(modePanel);
 
   const h = settings.house[gameId];
   const summary = el('p', 'note');
