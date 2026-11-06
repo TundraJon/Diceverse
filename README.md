@@ -6,18 +6,40 @@ Ultimate dice game companion game
 
 > You own editing the Build Log, Build Queue, and Build Planner sections of this file as part of doing the work. Update them yourself, as you go — don't wait for me to write them, and don't ask me to.
 
-Full workflow (lifecycle, cache-busting, commit discipline, Playwright verification): see [BUILD.md](BUILD.md). Read it before starting work.
+Rules of engagement (standing rule, lifecycle, commit discipline, verification and fast-testing rules): see [CLAUDE.md](CLAUDE.md). Read it before starting work.
 
 ## How to build and run
 
 - Needs Node 18+ and npm. `npm install` once, then `npm run build`.
 - Output: `index.html` at the repo root, a single self-contained file (JS and CSS inlined, no network requests). Open it directly in a browser, no server needed; it works offline.
 - Source is modular under `src/` (`core`, `blocks`, `games`, `ai`, `ui`, `shell`). Rules modules are pure and run in Node without a browser, so bots and tests can use them directly.
-- Test scripts are throwaway and are not committed (see BUILD.md).
+- Test scripts are throwaway and are not committed (see CLAUDE.md); the shared plumbing for them is `tests-helpers.cjs`.
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 4 — Instant-speed switch for testing (`?speed=0`)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Why:** the browser tests are slow because the app's delays are real time (dice tumble 650 ms, bust banner 1,200 ms, bot thinking 700-1,500 ms, and so on); reduced-motion still leaves about 1-2 seconds per turn. A full bot game takes minutes to drive. CLAUDE.md's budget is 3 minutes at most for a new game. This adds a hidden test speed so whole games can be driven in seconds. It changes presentation timing only, never rules or bot decisions.
+
+**1. Behavior** *(all of this is Added by Claude. Change before authorizing if wanted.)*
+- The page reads `?speed=N` from the address. `N` is a number from 0 to 1; default 1 (unchanged behavior). Anything missing, non-numeric, negative or above 1 is treated as 1.
+- `createScheduler` gets a time scale: every `after(ms, fn)` waits `ms * scale`. At scale 0 callbacks still run asynchronously (a 0 ms timeout), so event ordering, the busy lock and "cancelAll on menu/restart" all behave exactly as before.
+- At scale 0 the page also gets a `fast` class on `<body>` and the stylesheet turns off CSS animations and transitions under it, so nothing visually waits.
+- The reduced-motion path is unchanged. The switch is not shown in the UI, not saved to settings or saves, and not mentioned in the rules or menu. A player typing it into the address just gets a faster game, which is harmless.
+
+**2. Files:** `src/core/scheduler.js` (time scale), `src/shell/main.js` (read the param, create the scheduler with the scale, set the body class), `src/ui/theme.css` (the `.fast` rule), rebuilt `index.html`.
+
+**3. Out of scope:** any test hook that exposes internal state (CLAUDE.md says to drive the UI like a user); changes to rules, bots, saves or visuals at normal speed.
+
+**4. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed)**
+- Preflight clean, then: at default speed the delay between clicking ROLL and the controls re-enabling is still at least 600 ms (normal timing unchanged), and a double-click on ROLL still performs exactly one roll.
+- At `?speed=0`: a full vs-Bots Pig game and a full vs-Bots Farkle game (seeded with `T.force`, target 2,500) each finish in under 15 seconds, with zero JS errors; no `.tumble` animation is running; Menu during a bot turn still causes no stale action; reload and Resume still restore identical state; invalid values (`?speed=abc`, `?speed=-1`, `?speed=5`) behave like normal speed.
+- Same seed plus same human choices gives the identical final scores at speed 0 and speed 1 (timing must not change outcomes).
+- Report the measured time of the Pig and Farkle suites before and after, against the 3-minute budget.
+
+**5. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry with measured times, this Queue entry removed, `CLAUDE.md` fast-testing item 4 updated to say the switch exists, all in one commit.
 
 ## Build Planner
 
@@ -243,3 +265,14 @@ Verification (scratch scripts, none committed; final headless suites and the bro
 - Farkle bot: decision time over 300 sampled decision points in Node: p50 2.2 ms, p95 4.3 ms, max 7.8 ms (Balanced), far under the 150 ms budget. Mean points per turn (solo, no entry minimum, no penalty): baseline "take all scoring, bank at 300" 449.4 (50,000 turns); Cautious 517.9, Balanced 512.8, Bold 510.5 (20,000 turns each), so the bots beat the baseline by about 14%. The presets differ in behavior, not mean: Farkle rate / average bank were 11.5% / 577 (Cautious), 17.3% / 626 (Balanced), 25.7% / 696 (Bold) versus 19.1% / 555 for the baseline.
 - Playwright on `index.html` (`file://`, network blocked): all 37 Farkle checks passed with zero JS errors and zero external requests, covering full solo, vs Bots (final round), and Pass and Play (Classic, no penalty, no entry) games by real clicks; the generated scoring table; the entry threshold enabling BANK exactly when the selection reaches 500; selecting a non-scoring die showing "Not scoring" with both buttons disabled; a double-click doing exactly one set-aside plus one roll and the saved log holding full actions; reload mid-turn restoring identical dice and kept dice; a Resume button per game with the two saves kept separate; a replayable hot-dice save (generated with the real engine) showing ROLL (6) and then six free dice; the FARKLE banner appearing; migration of the old flat Pig settings and best key; 768 px layout; reduced motion; blocked storage. The Pig browser suites (including the version 1 save checks) were re-run after the shell refactor and pass. Screenshots inspected (mid-turn layout: kept row above the dice, no overlap, all five dice inside the 390 px width).
 - Not verified or differing from the Queue plan, stated plainly: bot quality was measured over 20,000 turns per preset (50,000 only for the baseline) because of run time; decision time was measured in Node (p95 4.3 ms), not separately in Chromium, though full bot games ran in Chromium without any stall; the hot-dice path was exercised through a real, replayable saved game rather than a live roll; the first overlap check measured a hidden kept row, so a separate mid-turn geometry check was added; two assertions in my own test script were wrong (classic two-triplet value, table row count) and were corrected after confirming the engine against the independent reference; no real-device touch or haptics testing; Chromium only.
+
+## Build Log 8 (completed)
+
+Adopted the user-supplied `CLAUDE.md` and `tests-helpers.js`, adapted for this repo (docs and test plumbing only; no app code changed).
+
+- [x] Added `CLAUDE.md` at the repo root (read automatically at session start). Changes I made to the supplied file: replaced the intro line; filled the branch rule ("direct to `main`, no pull requests"); filled the App-specific section (single bundled `index.html`, no cache-busting, GitHub Pages address and caching note, charset declared so non-ASCII is fine, touch-first input at 390x844 and 768x1024); renamed the helper to `tests-helpers.cjs` everywhere and explained why; rewrote Fast testing item 1 to the new `preflight`, and item 4 to mention seed pinning and pure-module statistics in Node; deleted items that do not apply to this app (long-press menus, "raw non-ASCII characters in JavaScript", "promising what browsers cannot do" about file pickers, "saving while a finger is down"); reworded the full-regression-run example to my own 10-minute run; added the mistake "building to the wrong path" (marked Added by Claude); added a "Project map" line (marked Added by Claude). Everything else is the supplied text.
+- [x] Added `tests-helpers.cjs` (renamed from `.js` because `package.json` is `"type": "module"`, which makes a `.js` CommonJS file fail to load). Changes to the supplied helper: `preflight()` rewritten for a single bundled `index.html` (parses inline scripts, requires a charset in the first 1,024 bytes, flags external URLs in tags, flags a bundle older than `src/` or `build.mjs`); removed `versions()` (no cache-bust numbers here); the random stub now pins every slot of a `Uint32Array` (so `force(page, [a, b, c, d])` pins a whole game seed, where before only the first slot was pinned); header and usage comment updated. No scenarios were added.
+- [x] Removed `BUILD.md` (its lifecycle, commit, and verification content is in `CLAUDE.md`; its cache-busting section does not apply to a single inlined file). It remains in git history. Updated the README pointer and the "How to build and run" note; older Build Log entries still name BUILD.md as history.
+- [x] Queued the instant-speed switch as Queue 4.
+
+Verification: ran a scratch script using the helper: preflight clean on the repo; a future-dated source file made `preflight` report the stale bundle, and a rebuild cleared it; a synthetic bad bundle was flagged for missing charset, broken inline script and external URL; in a real browser, `force(page, [1, 2, 3, 4])` before Start produced the saved seed `[1,2,3,4]` and a first Pig roll equal to the Node engine's first roll for the same seed. 8 checks passed, 0 failed, 0 JS errors, 3 seconds. Not verified: the `?speed` switch (not built), and the helper's `touchTools`, `png`, `px` and `blockStorage` options (unchanged from the supplied file and not exercised here).

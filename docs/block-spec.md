@@ -130,7 +130,7 @@ Panels are reusable; a game's config lists which ones it uses.
 
 - State and action log are JSON. Autosave after every action; resume from last state. Seed + log = replay (also enables a final-roll slow-motion replay).
 - **Rules tests (no UI):** simulate thousands of bot-vs-bot games per recipe; check invariants (scores never negative, game always terminates) and known probabilities (for example Pig average turn behavior, Farkle bust rates by dice count).
-- **UI tests:** Playwright per BUILD.md, driving the real UI against realistic state, zero JS errors as the bar.
+- **UI tests:** Playwright per CLAUDE.md, driving the real UI against realistic state, zero JS errors as the bar.
 
 ## 10. Proposed layout (not built)
 
