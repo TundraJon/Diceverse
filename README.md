@@ -17,7 +17,27 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 8 — Menu order correction: Game, Mode, Players (Bot style stays under Mode)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Why (user):** Queue 7 / Build Log 14 put Players above Mode. The user clarified they want the Players bar at the bottom, after Mode: **Game, Mode, Players**.
+
+**1. New order:** Game, then Mode, then Players. Bot style stays directly under the Mode buttons, inside the Mode panel, and only for vs Bots (that part of Queue 7 stays). *(My reading: the user's "Game, Mode, Players" did not mention Bot style, and their earlier goal was Bot style right under Mode. Change before authorizing if wanted.)*
+
+**2. Players in Solo** *(Added by Claude. Change before authorizing if wanted.)*: Queue 7 kept the Players row visible as a fixed "1" in Solo only because Players sat above Mode and hiding it would have moved the rows below it. With Players last, nothing sits below it that can jump, so I recommend going back to the original behavior: Players is hidden in Solo and shown (2-4 stepper, same saved setting) in vs Bots and Pass and Play. Alternative: keep the fixed "1" with disabled buttons.
+
+**3. Unchanged:** the Game choice, summary line, House rules, How to play, Start and Resume buttons; no rules, bot, save, or settings changes.
+
+**4. Files:** `src/shell/main.js` (`renderMenu` panel order and the Solo behavior of the Players panel); rebuilt `index.html`.
+
+**5. Verification plan (scratch script using `tests-helpers.cjs`, adapted from the Build Log 14 menu check; none committed; under 1 minute)**
+- `preflight` clean. For Pig, Farkle and Yacht: the panel order read from the DOM is Game, Mode, Players; Bot style exists only in vs Bots, inside the Mode panel directly under its buttons; Players is the last panel; in Solo the Players panel is absent (or shows 1, disabled, if the alternative is chosen); the stepper works in vs Bots and Pass and Play; the earlier count (for example 4) returns when leaving Solo; players, mode and bot style persist after a reload; a 3-player vs Bots game starts with 3 chips.
+- Re-run the existing Yacht browser suite at `?speed=0` (it drives the menu's mode and player-count steps) and confirm 43 of 43 still pass.
+- Screenshots at 390x844 and 320x640 of vs Bots and Solo, inspected; no horizontal overflow.
+
+**6. Deliverables and bookkeeping:** the files above and a new numbered Build Log entry (Build Log 14 stays as written), this Queue entry removed, all in one commit.
+
 
 ## Build Planner
 
