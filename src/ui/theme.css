@@ -133,3 +133,28 @@ body.fast *, body.fast *::before, body.fast *::after { animation: none !importan
 .cmp .num { text-align: right; min-width: 4.8em; font-variant-numeric: tabular-nums; }
 .cmp .dash { color: var(--muted); }
 .cmp tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+
+/* Yacht */
+.controls.sticky { position: sticky; bottom: 0; padding: 8px 0 10px; background: linear-gradient(to top, #08211a 70%, rgba(8,33,26,0)); z-index: 5; }
+.dice.yacht { gap: 6px; flex-wrap: nowrap; }
+.dice.yacht .die { --s: min(56px, calc((100vw - 96px) / 5)); } /* five dice always fit the width */
+.dwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.holdTag { font-size: 0.62rem; letter-spacing: 0.08em; color: var(--gold); font-weight: 700; min-height: 0.9em; }
+.dieBtn.held { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--gold); background: rgba(251,191,36,0.18); }
+.catsheet { margin: 8px 0 4px; }
+.cathead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; color: var(--gold); font-size: 0.85rem; }
+.cathead span { color: var(--muted); font-size: 0.75rem; }
+.catlist { display: flex; flex-direction: column; gap: 4px; }
+.catRow { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 12px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.catRow:disabled { cursor: default; }
+.catRow.scored { opacity: 0.6; }
+.catRow.sel { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.3); background: rgba(251,191,36,0.14); }
+.catRow .val { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); }
+.catRow .val.prev { color: var(--gold); }
+.catRow .val.zero { color: #fca5a5; font-weight: 600; }
+.catNote { color: var(--muted); font-size: 0.8rem; text-align: right; padding: 2px 4px; }
+.catNote.total { color: var(--text); font-weight: 800; font-size: 1rem; }
+.cmp.wide .num { min-width: 3.6em; font-size: 0.78rem; }
+.cmp.wide th, .cmp.wide td { padding: 6px 3px; font-size: 0.8rem; }
+.seg button { line-height: 1.15; padding-top: 6px; padding-bottom: 6px; }
+.table.compact { flex: none; min-height: 150px; padding: 6px 0; }

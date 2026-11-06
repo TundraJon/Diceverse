@@ -160,7 +160,7 @@ function renderMenu() {
   const summary = el('p', 'note');
   summary.textContent = gview.summary(h, settings.mode);
   const best = settings.mode === 'solo' ? loadBest(gameId, mod.meta.soloKey(h)) : null;
-  if (best) summary.textContent += ` · your best: ${best} turns`;
+  if (best) summary.textContent += ` · your best: ${(mod.meta.soloLabel || ((v) => `${v} turns`))(best)}`;
   screen.appendChild(summary);
 
   const hr = el('button', 'secondary', 'House rules');
@@ -275,7 +275,7 @@ function enterGame() {
   G.view.build(ui);
   ui.controls = el('div', 'controls');
   ui.log = el('div', 'log');
-  screen.append(bar, ui.scores, ui.table, ui.controls, ui.log);
+  screen.append(bar, ui.scores, ui.table, ...(ui.after ? [ui.after] : []), ui.controls, ui.log);
   app.appendChild(screen);
 
   if (!storageAvailable() && !storageWarned) { storageWarned = true; addLog('Progress cannot be saved on this device.'); }
@@ -362,16 +362,22 @@ function showGameOver() {
   const st = session.state;
   const solo = st.seats.length === 1;
   persistSession();
-  const soloKey = G.mod.meta.soloKey(st.options);
+  const meta = G.mod.meta;
+  const soloKey = meta.soloKey(st.options);
+  const value = (meta.soloValue || ((r) => r.soloTurns))(res);
+  const soloTitle = (meta.soloTitle || ((v) => `Done in ${v} turns`))(value);
+  const soloLabel = meta.soloLabel || ((v) => `${v} turns`);
   let newBest = false;
-  if (solo) newBest = updateBest(G.id, soloKey, res.soloTurns);
-  const who = st.seats[res.winner]?.name;
-  announce(solo ? `You reached ${st.options.target} in ${res.soloTurns} turns` : `${who} ${who === 'You' ? 'win' : 'wins'}`);
+  if (solo) newBest = updateBest(G.id, soloKey, value, meta.soloBest || 'low');
+  const winners = res.winners || (res.winner !== null && res.winner !== undefined ? [res.winner] : []);
+  const names = winners.map((i) => st.seats[i].name);
+  const winText = winners.length > 1 ? `It's a tie: ${names.join(' and ')}` : `${names[0]} ${names[0] === 'You' ? 'win' : 'wins'}`;
+  announce(solo ? soloTitle : winText);
   openSheet((sheet, close) => {
-    sheet.appendChild(el('h2', null, solo ? `Done in ${res.soloTurns} turns` : `🏆 ${who} ${who === 'You' ? 'win' : 'wins'}!`));
+    sheet.appendChild(el('h2', null, solo ? soloTitle : winners.length > 1 ? `\u{1F91D} ${winText}` : `\u{1F3C6} ${winText}!`));
     if (solo) {
       const best = loadBest(G.id, soloKey);
-      sheet.appendChild(el('p', null, newBest ? 'New personal best!' : best ? `Your best: ${best} turns` : ''));
+      sheet.appendChild(el('p', null, newBest ? 'New personal best!' : best ? `Your best: ${soloLabel(best)}` : ''));
     }
     const list = el('div', 'results');
     res.standings.forEach((r) => {

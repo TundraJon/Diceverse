@@ -19,30 +19,36 @@ export function decide(game, obs, seat, presetKey, seed) {
   if (shortcut) return { actions: [shortcut], margin: Infinity };
 
   const p = PRESETS[presetKey] || PRESETS.balanced;
-  const sc = (game.botHints && game.botHints.riskScale) || 1;
+  const hints = game.botHints || {};
+  const sc = hints.riskScale || 1;
+  const nsc = hints.noiseScale === undefined ? sc : hints.noiseScale; // per-game scale for the random noise
   const rng = createRng(seed);
   const turnsAtStart = obs.seats[seat].turns;
-  const sims = plans.length > 2 ? Math.max(80, Math.floor(p.sims / 4)) : p.sims;
+  const sims = plans.length > 2 ? (hints.simsPerPlan ? hints.simsPerPlan(p.sims) : Math.max(80, Math.floor(p.sims / 4))) : p.sims;
+  // Hook name is turnValue (not valueOf: bundled modules inherit Object.prototype.valueOf).
+  const turnValue = game.turnValue || ((st, who) => st.seats[who].total);
 
   // Observable-info nudge: when an opponent is close to the target and ahead, take more risk.
   const me = obs.seats[seat];
   const bestOpp = Math.max(...obs.seats.map((s, i) => (i === seat ? -1 : s.total)), -1);
   let catchUp = 0;
-  if (bestOpp >= obs.options.target * 0.7 && bestOpp > me.total + obs.turn.points) {
-    catchUp = Math.min(3, (bestOpp - me.total - obs.turn.points) / (24 * sc)) * sc;
+  const turnPts = obs.turn.points || 0;
+  if (obs.options.target && bestOpp >= obs.options.target * 0.7 && bestOpp > me.total + turnPts) {
+    catchUp = Math.min(3, (bestOpp - me.total - turnPts) / (24 * sc)) * sc;
   }
 
   const scores = plans.map((plan) => {
     let sum = 0;
-    for (let i = 0; i < sims; i++) {
+    const n = game.isDeterministic && game.isDeterministic(plan) ? 1 : sims;
+    for (let i = 0; i < n; i++) {
       let st = obs;
       for (const a of plan) st = game.apply(st, a, rng).state;
       st = game.rollout(st, seat, rng, turnsAtStart);
-      sum += st.seats[seat].total;
+      sum += turnValue(st, seat);
     }
     const continues = plan[plan.length - 1].type === 'ROLL';
-    // Per-plan noise of sd noise*sc/sqrt(2): the gap between two plans then has sd noise*sc.
-    return sum / sims + (continues ? p.risk * sc + catchUp : 0) + rng.gauss() * p.noise * sc * Math.SQRT1_2;
+    // Per-plan noise of sd noise*nsc/sqrt(2): the gap between two plans then has sd noise*nsc.
+    return sum / n + (continues ? p.risk * sc + catchUp : 0) + rng.gauss() * p.noise * nsc * Math.SQRT1_2;
   });
 
   let best = 0;

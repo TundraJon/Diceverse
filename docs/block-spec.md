@@ -161,3 +161,5 @@ docs/          reference material
 - ComboTable is implemented as `src/blocks/combo-table.js`; Farkle shares only `bust`, `bank`, `freshTurn` with the push-loop block (its SET_ASIDE phase needs its own roll flow).
 - The bot brain is now generic: games supply `candidatePlans`, `rollout`, `shortcut` and `botHints`.
 - Actions may carry payloads (`ids`); the engine log stores full actions.
+- CategorySheet is implemented as `src/blocks/category-sheet.js` (Yacht, Build Log 13); the hold-and-reroll flow is part of `src/games/yacht.js` (ROLL carries the dice to re-roll).
+- Bot hooks added for many-plan games: `turnValue`, `isDeterministic`, `botHints.noiseScale`, `botHints.simsPerPlan`.

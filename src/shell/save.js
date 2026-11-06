@@ -45,8 +45,9 @@ export function loadBest(id, soloKey) {
   const n = Number(read(bestKey(id, soloKey)));
   return Number.isFinite(n) && n > 0 ? n : null;
 }
-export function updateBest(id, soloKey, turns) {
+// dir 'low': fewer is better (turns); 'high': more is better (score).
+export function updateBest(id, soloKey, value, dir = 'low') {
   const prev = loadBest(id, soloKey);
-  if (prev === null || turns < prev) { write(bestKey(id, soloKey), String(turns)); return true; }
+  if (prev === null || (dir === 'high' ? value > prev : value < prev)) { write(bestKey(id, soloKey), String(value)); return true; }
   return false;
 }

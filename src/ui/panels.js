@@ -1,5 +1,5 @@
 // Reusable panels: ScoreStrip and TurnBar.
-export function renderScoreStrip(container, seats, current, turnPoints) {
+export function renderScoreStrip(container, seats, current, turnPoints, onSeatClick) {
   container.innerHTML = '';
   container.className = 'scores' + (seats.length === 1 ? ' one' : '');
   seats.forEach((s, i) => {
@@ -19,6 +19,14 @@ export function renderScoreStrip(container, seats, current, turnPoints) {
     tp.className = 'tp';
     tp.textContent = i === current && turnPoints > 0 ? `+${turnPoints} this turn` : s.note || '';
     chip.append(name, total, tp);
+    if (onSeatClick) {
+      chip.tabIndex = 0;
+      chip.setAttribute('role', 'button');
+      chip.setAttribute('aria-label', `Show ${s.name}'s sheet`);
+      chip.style.cursor = 'pointer';
+      chip.addEventListener('click', () => onSeatClick(i));
+      chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSeatClick(i); } });
+    }
     container.appendChild(chip);
   });
 }
