@@ -217,6 +217,7 @@ function openHouseRules() {
         seg.appendChild(b);
       });
       wrap.appendChild(seg);
+      if (rule.hint) wrap.appendChild(el('p', 'note', rule.hint()));
       sheet.appendChild(wrap);
     });
     const ok = el('button', 'primary', 'Done');

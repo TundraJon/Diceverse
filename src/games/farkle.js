@@ -2,7 +2,7 @@
 // Rules per the supplied sheet (docs/farkle-rules-sheet.png); see Build Queue/Log in README.
 import { createPool, rollPool } from '../blocks/dice-pool.js';
 import { createPushLoop } from '../blocks/push-loop.js';
-import { scoreSelection, validSubsets, hasScoring, bestSelection } from '../blocks/combo-table.js';
+import { scoreSelection, validSubsets, hasScoring, bestSelection, scoreTable } from '../blocks/combo-table.js';
 
 export const meta = {
   id: 'farkle',
@@ -16,7 +16,14 @@ export const meta = {
   houseRules: [
     { key: 'target', label: 'Target score', options: [{ value: 2500, label: '2,500' }, { value: 5000, label: '5,000' }, { value: 10000, label: '10,000' }], default: 10000 },
     { key: 'entry', label: 'Points to get on the board', options: [{ value: 0, label: 'None' }, { value: 500, label: '500' }, { value: 1000, label: '1,000' }], default: 500 },
-    { key: 'scoring', label: 'Scoring', options: [{ value: 'standard', label: 'Standard' }, { value: 'classic', label: 'Classic' }], default: 'standard' },
+    {
+      key: 'scoring', label: 'Scoring', options: [{ value: 'standard', label: 'Standard' }, { value: 'classic', label: 'Classic' }], default: 'standard',
+      // One line under the choice: what Classic leaves out, generated from the engine tables so it cannot drift.
+      hint: () => {
+        const classic = new Set(scoreTable('classic').map((r) => r.label));
+        return `Classic leaves out: ${scoreTable('standard').filter((r) => !classic.has(r.label)).map((r) => r.label).join(', ')}.`;
+      },
+    },
     { key: 'penalty', label: '3 Farkles in a row: −1,000', options: [{ value: true, label: 'On' }, { value: false, label: 'Off' }], default: true },
     { key: 'finalRound', label: 'Final round', options: [{ value: true, label: 'On' }, { value: false, label: 'Off' }], default: true },
   ],
