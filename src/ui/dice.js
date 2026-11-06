@@ -8,9 +8,9 @@ const PIPS = {
   6: [1, 3, 4, 6, 7, 9],
 };
 
-export function renderDie(value, { tumble = false, danger = true } = {}) {
+export function renderDie(value, { tumble = false, danger = true, cls = '' } = {}) {
   const el = document.createElement('div');
-  el.className = 'die' + (value == null ? ' blank' : '') + (tumble ? ' tumble' : '');
+  el.className = 'die' + (value == null ? ' blank' : '') + (tumble ? ' tumble' : '') + (cls ? ' ' + cls : '');
   el.setAttribute('role', 'img');
   el.setAttribute('aria-label', value == null ? 'Die, not rolled' : `Die showing ${value}`);
   const spots = PIPS[value] || [];

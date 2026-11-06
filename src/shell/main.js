@@ -28,7 +28,10 @@ function loadAllSettings() {
   const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {} }, loadSettings() || {});
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
-  GAME_ORDER.forEach((id) => { s.house[id] = Object.assign(GAMES[id].defaultOptions(), s.house[id] || {}); });
+  GAME_ORDER.forEach((id) => {
+    s.house[id] = Object.assign(GAMES[id].defaultOptions(), s.house[id] || {});
+    if (GAMES[id].normalizeOptions) s.house[id] = GAMES[id].normalizeOptions(s.house[id]); // e.g. Digits needs the 9-tile board
+  });
   return s;
 }
 let settings = loadAllSettings();
@@ -66,7 +69,7 @@ function buildOptions() {
       Array.from({ length: settings.players - 1 }, (_, i) => ({ name: BOT_NAMES[i], isBot: true, preset: settings.preset }))
     );
   }
-  return { ...house, seats };
+  return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats } : { ...house, seats };
 }
 
 /* ---------- menu ---------- */
@@ -159,7 +162,7 @@ function renderMenu() {
   const summary = el('p', 'note');
   summary.textContent = gview.summary(h, settings.mode);
   const best = settings.mode === 'solo' ? loadBest(gameId, mod.meta.soloKey(h)) : null;
-  if (best) summary.textContent += ` · your best: ${(mod.meta.soloLabel || ((v) => `${v} turns`))(best)}`;
+  if (best !== null) summary.textContent += ` · your best: ${(mod.meta.soloLabel || ((v) => `${v} turns`))(best)}`;
   screen.appendChild(summary);
 
   const hr = el('button', 'secondary', 'House rules');
@@ -200,25 +203,45 @@ function openHouseRules() {
   const mod = GAMES[gameId];
   openSheet((sheet, close) => {
     sheet.appendChild(el('h2', null, `${mod.meta.name} house rules`));
+    const refreshers = [];
+    const refreshAll = () => refreshers.forEach((f) => f());
     mod.meta.houseRules.forEach((rule) => {
       if ((mod.meta.soloHide || []).includes(rule.key) && settings.mode === 'solo') return;
       const wrap = el('div', 'panel');
       wrap.appendChild(el('h2', null, rule.label));
       const seg = el('div', 'seg');
-      rule.options.forEach((opt) => {
+      const buttons = rule.options.map((opt) => {
         const b = el('button', null, opt.label);
-        b.setAttribute('aria-pressed', String(settings.house[gameId][rule.key] === opt.value));
         b.addEventListener('click', () => {
+          if (b.disabled) return;
           settings.house[gameId][rule.key] = opt.value;
+          // a choice can make another one invalid (e.g. Digits on a bigger board): let the game fix it
+          if (mod.normalizeOptions) settings.house[gameId] = mod.normalizeOptions(settings.house[gameId]);
           persistSettings();
-          seg.querySelectorAll('button').forEach((x, i) => x.setAttribute('aria-pressed', String(rule.options[i].value === opt.value)));
+          refreshAll();
         });
         seg.appendChild(b);
+        return b;
       });
       wrap.appendChild(seg);
       if (rule.hint) wrap.appendChild(el('p', 'note', rule.hint()));
+      const note = rule.options.some((o) => o.disabled) ? el('p', 'note') : null;
+      if (note) wrap.appendChild(note);
       sheet.appendChild(wrap);
+      refreshers.push(() => {
+        const cur = settings.house[gameId];
+        rule.options.forEach((opt, i) => {
+          buttons[i].setAttribute('aria-pressed', String(cur[rule.key] === opt.value));
+          buttons[i].disabled = !!(opt.disabled && opt.disabled(cur));
+        });
+        if (note) {
+          const d = rule.options.find((o) => o.disabled && o.disabled(cur));
+          note.textContent = d ? d.disabledNote || '' : '';
+          note.hidden = !d;
+        }
+      });
     });
+    refreshAll();
     const ok = el('button', 'primary', 'Done');
     ok.addEventListener('click', () => { close(); renderMenu(); });
     sheet.appendChild(ok);
@@ -376,7 +399,7 @@ function showGameOver() {
     sheet.appendChild(el('h2', null, solo ? soloTitle : winners.length > 1 ? `\u{1F91D} ${winText}` : `\u{1F3C6} ${winText}!`));
     if (solo) {
       const best = loadBest(G.id, soloKey);
-      sheet.appendChild(el('p', null, newBest ? 'New personal best!' : best ? `Your best: ${soloLabel(best)}` : ''));
+      sheet.appendChild(el('p', null, newBest ? 'New personal best!' : best !== null ? `Your best: ${soloLabel(best)}` : ''));
     }
     const list = el('div', 'results');
     res.standings.forEach((r) => {

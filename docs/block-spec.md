@@ -163,3 +163,4 @@ docs/          reference material
 - Actions may carry payloads (`ids`); the engine log stores full actions.
 - CategorySheet is implemented as `src/blocks/category-sheet.js` (Yacht, Build Log 13); the hold-and-reroll flow is part of `src/games/yacht.js` (ROLL carries the dice to re-roll).
 - Bot hooks added for many-plan games: `turnValue`, `isDeterministic`, `botHints.noiseScale`, `botHints.simsPerPlan`.
+- TileBoard is implemented as `src/blocks/tile-board.js` (Shut the Box, Build Log 16). House-rule options can be disabled by another choice (`disabled(options)`, `normalizeOptions`).

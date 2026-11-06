@@ -42,8 +42,10 @@ export const writeSettings = (s) => write(SETTINGS_KEY, JSON.stringify(s));
 // Solo personal best per game and rule set (Pig keeps its original key format).
 const bestKey = (id, soloKey) => `diceverse:${id}:best:${soloKey}`;
 export function loadBest(id, soloKey) {
-  const n = Number(read(bestKey(id, soloKey)));
-  return Number.isFinite(n) && n > 0 ? n : null;
+  const raw = read(bestKey(id, soloKey));
+  if (raw === null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : null; // 0 is a valid best (a shut box)
 }
 // dir 'low': fewer is better (turns); 'high': more is better (score).
 export function updateBest(id, soloKey, value, dir = 'low') {
