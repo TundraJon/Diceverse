@@ -121,3 +121,6 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .hint { color: var(--muted); font-size: 0.85rem; text-align: center; min-height: 1.2em; }
 .banner.hot { background: var(--gold); color: var(--ink); }
 .sheet h2 + .results, .sheet p + h2 { margin-top: 4px; }
+
+/* Test speed 0 (?speed=0): nothing animates or waits visually */
+body.fast *, body.fast *::before, body.fast *::after { animation: none !important; transition: none !important; }

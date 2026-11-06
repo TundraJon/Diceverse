@@ -9,7 +9,18 @@ import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, 
 const BOT_NAMES = ['Pip', 'Dottie', 'Rook', 'Mabel', 'Juno', 'Fitch'];
 const app = document.getElementById('app');
 const live = document.getElementById('live');
-const sched = createScheduler();
+// Hidden test speed: ?speed=N (0 to 1, default 1) scales every presentation delay. Rules and bot decisions are unaffected.
+function readSpeed() {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('speed');
+    if (raw === null || raw.trim() === '') return 1;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 && n <= 1 ? n : 1;
+  } catch { return 1; }
+}
+const speed = readSpeed();
+if (speed === 0) document.body.classList.add('fast');
+const sched = createScheduler({ scale: speed });
 const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- settings (per-game house rules; migrates the old Pig-only layout) ---------- */

@@ -17,29 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 4 — Instant-speed switch for testing (`?speed=0`)
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Why:** the browser tests are slow because the app's delays are real time (dice tumble 650 ms, bust banner 1,200 ms, bot thinking 700-1,500 ms, and so on); reduced-motion still leaves about 1-2 seconds per turn. A full bot game takes minutes to drive. CLAUDE.md's budget is 3 minutes at most for a new game. This adds a hidden test speed so whole games can be driven in seconds. It changes presentation timing only, never rules or bot decisions.
-
-**1. Behavior** *(all of this is Added by Claude. Change before authorizing if wanted.)*
-- The page reads `?speed=N` from the address. `N` is a number from 0 to 1; default 1 (unchanged behavior). Anything missing, non-numeric, negative or above 1 is treated as 1.
-- `createScheduler` gets a time scale: every `after(ms, fn)` waits `ms * scale`. At scale 0 callbacks still run asynchronously (a 0 ms timeout), so event ordering, the busy lock and "cancelAll on menu/restart" all behave exactly as before.
-- At scale 0 the page also gets a `fast` class on `<body>` and the stylesheet turns off CSS animations and transitions under it, so nothing visually waits.
-- The reduced-motion path is unchanged. The switch is not shown in the UI, not saved to settings or saves, and not mentioned in the rules or menu. A player typing it into the address just gets a faster game, which is harmless.
-
-**2. Files:** `src/core/scheduler.js` (time scale), `src/shell/main.js` (read the param, create the scheduler with the scale, set the body class), `src/ui/theme.css` (the `.fast` rule), rebuilt `index.html`.
-
-**3. Out of scope:** any test hook that exposes internal state (CLAUDE.md says to drive the UI like a user); changes to rules, bots, saves or visuals at normal speed.
-
-**4. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed)**
-- Preflight clean, then: at default speed the delay between clicking ROLL and the controls re-enabling is still at least 600 ms (normal timing unchanged), and a double-click on ROLL still performs exactly one roll.
-- At `?speed=0`: a full vs-Bots Pig game and a full vs-Bots Farkle game (seeded with `T.force`, target 2,500) each finish in under 15 seconds, with zero JS errors; no `.tumble` animation is running; Menu during a bot turn still causes no stale action; reload and Resume still restore identical state; invalid values (`?speed=abc`, `?speed=-1`, `?speed=5`) behave like normal speed.
-- Same seed plus same human choices gives the identical final scores at speed 0 and speed 1 (timing must not change outcomes).
-- Report the measured time of the Pig and Farkle suites before and after, against the 3-minute budget.
-
-**5. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry with measured times, this Queue entry removed, `CLAUDE.md` fast-testing item 4 updated to say the switch exists, all in one commit.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -276,3 +254,22 @@ Adopted the user-supplied `CLAUDE.md` and `tests-helpers.js`, adapted for this r
 - [x] Queued the instant-speed switch as Queue 4.
 
 Verification: ran a scratch script using the helper: preflight clean on the repo; a future-dated source file made `preflight` report the stale bundle, and a rebuild cleared it; a synthetic bad bundle was flagged for missing charset, broken inline script and external URL; in a real browser, `force(page, [1, 2, 3, 4])` before Start produced the saved seed `[1,2,3,4]` and a first Pig roll equal to the Node engine's first roll for the same seed. 8 checks passed, 0 failed, 0 JS errors, 3 seconds. Not verified: the `?speed` switch (not built), and the helper's `touchTools`, `png`, `px` and `blockStorage` options (unchanged from the supplied file and not exercised here).
+
+## Build Log 9 (completed)
+
+Instant-speed switch for testing, `?speed=N` (was Queue 4).
+
+- [x] `src/core/scheduler.js`: `createScheduler({ scale })`; every `after(ms, fn)` waits `ms * scale` (default 1). At scale 0 callbacks still run asynchronously, so ordering, the busy lock and `cancelAll()` behave as before.
+- [x] `src/shell/main.js`: `readSpeed()` reads `?speed=` (a number from 0 to 1; missing, empty, non-numeric, negative or above 1 means 1), creates the scheduler with that scale, and adds a `fast` class to `<body>` when the speed is exactly 0.
+- [x] `src/ui/theme.css`: `body.fast` turns off all CSS animations and transitions. The reduced-motion path is unchanged. The switch is not in the UI, not saved to settings or saves, and not mentioned in the menu or rules. Rules, bots and saves are untouched.
+- [x] `CLAUDE.md` fast-testing item 4 updated to say the switch exists and to keep a real-speed check for timing behavior (I am telling you because that file is mine to edit and you should know).
+- [x] `index.html` rebuilt (43.4 KB). Cache-busting not applicable (single inlined file).
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean, then a 17-check script (38 s, 0 failures, 0 JS errors):
+- Default speed unchanged: after a ROLL the controls re-enable only after at least 600 ms; a double-click on ROLL performs exactly one roll.
+- Invalid values `?speed=abc`, `-1`, `5` and an empty value behave like normal speed (no `fast` class, same delay).
+- At `?speed=0` with a pinned seed: a full vs-Bots Pig game (target 50) finished in 1,269 ms and a full vs-Bots Farkle game (target 2,500) in 1,208 ms; `document.getAnimations()` is empty after a roll; pressing BANK and Menu in the same task leaves no stale bot action (saved log length unchanged after 800 ms) and the menu stays; reload plus Resume restores identical scores; the same seed and choices give identical Farkle standings on two speed-0 runs.
+- The same seed and the same human choices give identical Pig final standings at speed 0 and at default speed (reduced-motion), so timing does not change outcomes.
+- Suite time against the 3-minute budget: the old Pig browser suite went from 236 s (default speed, all checks pass on this build) to 31 s at `?speed=0`; the old Farkle suite went from 627 s (the earlier full run) to 33 s at `?speed=0`.
+- Things that did not carry over at speed 0, stated plainly (test expectations, not app bugs): in the old Pig script, "no stale bot action after leaving to Menu" read the saved log before clicking Menu, and at speed 0 the bots had already moved in that gap (3 to 6), so the deterministic same-task version above replaces it; the old Farkle script's FARKLE-banner check cannot work at speed 0 because the banner is shown for 0 ms, so it was skipped for the speed-0 timing and the banner stays a real-speed check (it passed at default speed in Build Log 7; it was not re-run on this build).
+- Not verified: fractional speeds between 0 and 1 (allowed, not tested); the Farkle suite at default speed on this build (the change only affects the delay scale, default 1); real-device behavior; browsers other than Chromium.
