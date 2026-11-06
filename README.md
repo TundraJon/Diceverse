@@ -54,7 +54,7 @@ Known problems in the supplied draft code (fix when specced, do not copy as-is):
 Open: which games get bots in v1; difficulty levels beyond personality; ES module/file:// issue from Planner 3 applies here too.
 
 ### Planner 5 — Liar's Dice working prototype (batch 3)
-Source: batch 3, a complete single-file HTML Liar's Dice (Tailwind/FontAwesome/Google Fonts via CDN, vanilla JS, no modules). Not saved in the repo, so only this summary exists; ask the user to resend or approve saving it as a reference file if needed.
+Source: batch 3, a complete single-file HTML Liar's Dice (Tailwind/FontAwesome/Google Fonts via CDN, vanilla JS, no modules). Saved unmodified at `docs/liars-dice-prototype.html` as a reference only (contains the bugs listed below; do not ship).
 What it has: setup modal (vs AI bots or pass-and-play, 2-4 players, AI personality select), 5 dice per player, CSS pips with a red star for aces, bid steppers (quantity/face), Raise and Call Liar, reveal of all cups, loser drops a die, elimination until one player is left, game log, rules modal, "Odds" modal (binomial probability of the current/staged bid), pass-and-play shield screen, and a simple AI (opening bid on its most common face, call if odds under 0.35/0.22/0.12 else raise face+1).
 Bugs and gaps found by reading the code (not yet reproduced in a browser):
 - **Pass-and-play privacy leak:** after a bid the shield screen shows but the player cards are not re-rendered, so the previous player's dice stay visible behind it. The Odds modal also always uses player 1's hand, so it shows player 1's odds to everyone.
@@ -67,7 +67,7 @@ Bugs and gaps found by reading the code (not yet reproduced in a browser):
 - **AI weaknesses:** same as Planner 4 (raises face+1 blindly, never bids aces, ignores own wild 1s on the opening bid).
 - **IP:** bot names "Barbossa", "Davy Jones", "Will Turner" come from Pirates of the Caribbean; replace with original names before any release.
 - **Rules text typo:** "or the 2 face value". **Network:** CDN dependencies mean it needs internet (see Planner 3); Tailwind's CDN build is not meant for production. `user-scalable=no` hurts accessibility.
-Open: use this as the base for the Liar's Dice module or rebuild it on the shared engine (Planner 1)?
+Decision (user): start Liar's Dice from scratch on the shared engine; the prototype's look (felt-green table, gold accents, CSS pips with red-star aces, card-per-player layout) is a starting point for the UI, and the user wants the new UI to be better than this one. Still open: what "better" means (see next UI discussion).
 
 ## Build Log 1 (completed)
 
@@ -78,3 +78,12 @@ Project scaffolding: adopted the Build Workflow from the Startpage project.
 - [x] Cache-busting section retained in `BUILD.md` because the app is expected to split into separate JS/CSS files.
 
 Verification: docs only, no code. Confirmed file contents by re-reading them.
+
+## Build Log 2 (completed)
+
+Saved the batch 3 prototype as a reference file.
+
+- [x] Added `docs/liars-dice-prototype.html`, a verbatim copy of the supplied Liar's Dice prototype (not linked from any page, not part of the app).
+- [x] Updated Planner 5: noted the file location and recorded the decision to rebuild from scratch on the shared engine.
+
+Verification: docs only, no code changes. Confirmed the file was written and committed.

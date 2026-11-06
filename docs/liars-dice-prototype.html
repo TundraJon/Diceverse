@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liar's Dice (Perudo / Dudo)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        felt: '#0f382c',
+                        'felt-dark': '#08211a',
+                        gold: '#fbbf24',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(circle at center, #134e3a 0%, #08211a 100%);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Dynamic 3D CSS Dice Styling */
+        .dice-3d {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 10px;
+            box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.4), inset -2px -2px 3px rgba(0,0,0,0.1), inset 2px 2px 3px rgba(255,255,255,0.8);
+            display: inline-grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            padding: 5px;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .dice-dot {
+            background-color: #1e293b;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            align-self: center;
+            justify-self: center;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.6);
+        }
+
+        .dice-dot.ace-star {
+            background-color: #dc2626;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            width: 10px;
+            height: 10px;
+        }
+
+        .rolling-anim {
+            animation: rollDice 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes rollDice {
+            0% { transform: translateY(-20px) rotate(0deg) scale(0.8); opacity: 0.5; }
+            50% { transform: translateY(10px) rotate(180deg) scale(1.1); }
+            100% { transform: translateY(0) rotate(360deg) scale(1); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col font-sans overflow-x-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="w-full bg-black/40 backdrop-blur-md border-b border-white/10 px-4 py-3 flex justify-between items-center z-20">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-gold text-slate-900 flex items-center justify-center font-black text-xl shadow-lg">🎲</div>
+            <h1 class="font-extrabold text-lg tracking-wide bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">LIAR'S DICE</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="btn-probability" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 text-xs px-3 py-1.5 rounded-full flex items-center space-x-1 transition active:scale-95">
+                <i class="fa-solid fa-calculator"></i>
+                <span class="hidden sm:inline">Odds</span>
+            </button>
+            <button id="btn-rules" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-full transition active:scale-95">
+                <i class="fa-solid fa-circle-question"></i>
+            </button>
+            <button id="btn-restart" class="bg-red-900/60 hover:bg-red-800 text-red-200 text-xs px-3 py-1.5 rounded-full border border-red-500/30 transition active:scale-95">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Viewport -->
+    <main class="flex-1 max-w-md w-full mx-auto flex flex-col justify-between p-3 relative">
+
+        <!-- Status & Current Bid Banner -->
+        <div id="status-banner" class="bg-black/50 border border-white/10 rounded-2xl p-3 text-center shadow-xl backdrop-blur-md">
+            <div id="round-indicator" class="text-[11px] uppercase tracking-widest text-amber-400 font-semibold mb-0.5">Round 1</div>
+            <div id="turn-announcement" class="text-base font-extrabold text-white">Setup Game...</div>
+            <div id="current-bid-display" class="mt-2 text-xs text-slate-300 bg-white/5 py-1.5 px-3 rounded-xl border border-white/5 inline-flex items-center gap-2">
+                <span>Current Bid:</span>
+                <span id="bid-text" class="font-bold text-amber-400 text-sm">None</span>
+            </div>
+        </div>
+
+        <!-- Players Cards Grid -->
+        <div id="players-container" class="grid grid-cols-2 gap-2 my-3">
+            <!-- Dynamic Player Cards rendered via JavaScript -->
+        </div>
+
+        <!-- Controls & Action Area -->
+        <div id="action-panel" class="bg-black/60 border border-white/15 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md flex flex-col gap-3">
+
+            <!-- Human Interactive Controls -->
+            <div id="human-controls" class="space-y-3">
+                <div class="text-[11px] font-semibold text-slate-300 flex justify-between items-center">
+                    <span>RAISE OR BID</span>
+                    <span id="wild-status" class="text-[10px] bg-red-900/80 text-red-200 px-2 py-0.5 rounded-full border border-red-500/30">★ 1s are Wild</span>
+                </div>
+
+                <!-- Quantity & Die Face Steppers -->
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Quantity Stepper -->
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-white/10 text-center">
+                        <span class="text-[10px] text-slate-400 block mb-1">DICE QUANTITY</span>
+                        <div class="flex items-center justify-between">
+                            <button id="qty-minus" class="w-8 h-8 bg-slate-800 rounded-lg text-lg font-bold text-slate-200 hover:bg-slate-700 active:scale-90 transition">-</button>
+                            <span id="qty-val" class="text-xl font-black text-amber-400">1</span>
+                            <button id="qty-plus" class="w-8 h-8 bg-slate-800 rounded-lg text-lg font-bold text-slate-200 hover:bg-slate-700 active:scale-90 transition">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Die Face Stepper -->
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-white/10 text-center">
+                        <span class="text-[10px] text-slate-400 block mb-1">DIE FACE</span>
+                        <div class="flex items-center justify-between">
+                            <button id="face-minus" class="w-8 h-8 bg-slate-800 rounded-lg text-lg font-bold text-slate-200 hover:bg-slate-700 active:scale-90 transition">-</button>
+                            <span id="face-val" class="text-xl font-black text-amber-400">2</span>
+                            <button id="face-plus" class="w-8 h-8 bg-slate-800 rounded-lg text-lg font-bold text-slate-200 hover:bg-slate-700 active:scale-90 transition">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bid & Call Liar Buttons -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button id="btn-place-bid" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 px-3 rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-gavel"></i>
+                        <span>RAISE BID</span>
+                    </button>
+                    <button id="btn-call-liar" class="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-black py-3 px-3 rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-skull"></i>
+                        <span>CALL LIAR!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pass & Play Privacy Masking Screen -->
+            <div id="pass-shield" class="hidden text-center py-4 space-y-3">
+                <i class="fa-solid fa-user-ninja text-3xl text-amber-400 animate-bounce"></i>
+                <div class="text-sm font-bold text-white">Pass Phone to <span id="next-player-name" class="text-amber-400">Player 2</span></div>
+                <button id="btn-reveal-hand" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition">
+                    Tap to View Hand & Play
+                </button>
+            </div>
+
+            <!-- AI Thought Spinner -->
+            <div id="ai-thinking" class="hidden text-center py-4 space-y-2">
+                <div class="inline-flex items-center gap-2 text-amber-400 text-sm font-semibold">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span id="ai-thinking-text">AI is evaluating the table...</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Activity Feed / Game Log -->
+        <div class="mt-2 bg-black/40 border border-white/5 rounded-xl p-2.5 max-h-24 overflow-y-auto text-xs space-y-1" id="game-log">
+            <div class="text-slate-400 italic text-[11px]">Game started. Roll your dice!</div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Setup / New Game -->
+    <div id="modal-setup" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-5">
+            <div class="text-center space-y-1">
+                <div class="text-3xl">🎲</div>
+                <h2 class="text-2xl font-black text-amber-400">LIAR'S DICE</h2>
+                <p class="text-xs text-slate-400">Perudo / Dudo Bluffing Game</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-2">GAME MODE</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="mode-vs-ai" class="mode-btn active bg-amber-500 text-slate-950 font-bold py-2 px-3 rounded-xl text-xs border border-amber-400">
+                            🤖 vs AI Bots
+                        </button>
+                        <button id="mode-pass-play" class="mode-btn bg-slate-800 text-slate-300 font-bold py-2 px-3 rounded-xl text-xs border border-white/10">
+                            📱 Pass & Play
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">TOTAL PLAYERS (2-4)</label>
+                    <div class="flex items-center justify-between bg-slate-800 rounded-xl p-2">
+                        <button id="setup-players-minus" class="w-8 h-8 bg-slate-700 rounded-lg text-slate-200 font-bold">-</button>
+                        <span id="setup-players-count" class="font-black text-lg text-amber-400">3</span>
+                        <button id="setup-players-plus" class="w-8 h-8 bg-slate-700 rounded-lg text-slate-200 font-bold">+</button>
+                    </div>
+                </div>
+
+                <div id="ai-difficulty-box">
+                    <label class="text-xs font-bold text-slate-300 block mb-1">AI PERSONALITY</label>
+                    <select id="ai-difficulty" class="w-full bg-slate-800 text-slate-200 rounded-xl p-2 text-xs border border-white/10 focus:outline-none">
+                        <option value="balanced">Balanced (Standard Odds)</option>
+                        <option value="cautious">Cautious (Strictly Probability)</option>
+                        <option value="aggressive">Aggressive (High Bluffing)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="btn-start-game" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 rounded-xl shadow-lg transition active:scale-95">
+                START GAME
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Real-Time Odds Calculator -->
+    <div id="modal-probability" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator"></i> Probability Assistant
+                </h3>
+                <button id="close-prob" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div class="bg-slate-800 p-3 rounded-xl space-y-1">
+                    <div class="text-slate-400">Target Bid Being Calculated:</div>
+                    <div id="prob-bid-target" class="font-bold text-white text-sm">--</div>
+                </div>
+
+                <div class="bg-slate-800/60 p-3 rounded-xl space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Total Hidden Opponent Dice:</span>
+                        <span id="prob-unknown-dice" class="font-bold text-slate-200">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Needed from Other Cups:</span>
+                        <span id="prob-needed-dice" class="font-bold text-slate-200">0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-white/10 pt-2">
+                        <span class="text-amber-400 font-bold">Odds of Being True:</span>
+                        <span id="prob-percentage" class="font-black text-amber-400 text-sm">0%</span>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-slate-500 italic">Includes Wild 1s (Aces) in calculations unless 1s were bid directly.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Rules -->
+    <div id="modal-rules" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <h3 class="text-sm font-bold text-amber-400">Rules of Liar's Dice</h3>
+                <button id="close-rules" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <div class="overflow-y-auto space-y-3 text-xs text-slate-300 pr-1">
+                <p><strong>Goal:</strong> Be the last player remaining with dice!</p>
+                <p><strong>1. Rolling:</strong> Every player secretly rolls 5 dice under their cup.</p>
+                <p><strong>2. Bidding:</strong> Players take turns making higher bids on how many dice of a face value exist across <em>ALL</em> hidden cups combined.</p>
+                <p><strong>3. Wild 1s (Aces):</strong> 1s count as wild cards for any die face bid, unless 1s themselves are bid.</p>
+                <p><strong>4. Escalating Bids:</strong> You must raise either the <em>quantity</em> (e.g. four 3s → five 3s) or the 2 face value (e.g. four 3s → four 4s).</p>
+                <p><strong>5. Calling "Liar":</strong> If you believe the previous player's bid is higher than the true count on the table, call <strong>LIAR!</strong> All cups reveal.</p>
+                <p>If the bidder was wrong, they lose 1 die. If they were right, the caller loses 1 die!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Game Logic -->
+    <script>
+        // Game Engine Core State
+        const gameState = {
+            mode: 'vs-ai', // 'vs-ai' or 'pass-play'
+            playerCount: 3,
+            aiPersonality: 'balanced',
+            players: [], // Array of { id, name, isAI, dice: [], diceCount: 5, active: true }
+            currentTurnIndex: 0,
+            currentBid: null, // { quantity: 3, face: 4, bidderIndex: 0 }
+            round: 1,
+            isGameOver: false,
+            wildOnes: true,
+            humanDiceRevealed: true,
+            stagedBid: { quantity: 1, face: 2 }
+        };
+
+        // Cache UI Elements
+        let DOM = {};
+
+        // DOM Initialization & Binding after Window Load
+        window.addEventListener('load', () => {
+            DOM = {
+                playersContainer: document.getElementById('players-container'),
+                statusBanner: document.getElementById('status-banner'),
+                turnAnnouncement: document.getElementById('turn-announcement'),
+                roundIndicator: document.getElementById('round-indicator'),
+                bidText: document.getElementById('bid-text'),
+                qtyVal: document.getElementById('qty-val'),
+                faceVal: document.getElementById('face-val'),
+                qtyMinus: document.getElementById('qty-minus'),
+                qtyPlus: document.getElementById('qty-plus'),
+                faceMinus: document.getElementById('face-minus'),
+                facePlus: document.getElementById('face-plus'),
+                btnPlaceBid: document.getElementById('btn-place-bid'),
+                btnCallLiar: document.getElementById('btn-call-liar'),
+                gameLog: document.getElementById('game-log'),
+                humanControls: document.getElementById('human-controls'),
+                passShield: document.getElementById('pass-shield'),
+                aiThinking: document.getElementById('ai-thinking'),
+                nextPlayerName: document.getElementById('next-player-name'),
+                btnRevealHand: document.getElementById('btn-reveal-hand'),
+                modalSetup: document.getElementById('modal-setup'),
+                modalProbability: document.getElementById('modal-probability'),
+                modalRules: document.getElementById('modal-rules'),
+                wildStatus: document.getElementById('wild-status'),
+                btnProbability: document.getElementById('btn-probability'),
+                btnRules: document.getElementById('btn-rules'),
+                btnRestart: document.getElementById('btn-restart'),
+                btnStartGame: document.getElementById('btn-start-game'),
+                closeProb: document.getElementById('close-prob'),
+                closeRules: document.getElementById('close-rules'),
+                modeVsAi: document.getElementById('mode-vs-ai'),
+                modePassPlay: document.getElementById('mode-pass-play'),
+                setupPlayersMinus: document.getElementById('setup-players-minus'),
+                setupPlayersPlus: document.getElementById('setup-players-plus'),
+                setupPlayersCount: document.getElementById('setup-players-count')
+            };
+
+            bindEvents();
+        });
+
+        // Bind all UI Actions & Event Listeners safely
+        function bindEvents() {
+            DOM.qtyMinus.addEventListener('click', () => adjustQty(-1));
+            DOM.qtyPlus.addEventListener('click', () => adjustQty(1));
+            DOM.faceMinus.addEventListener('click', () => adjustFace(-1));
+            DOM.facePlus.addEventListener('click', () => adjustFace(1));
+
+            DOM.btnPlaceBid.addEventListener('click', handleHumanBid);
+            DOM.btnCallLiar.addEventListener('click', handleHumanCallLiar);
+
+            DOM.btnProbability.addEventListener('click', showProbabilityModal);
+            DOM.closeProb.addEventListener('click', () => DOM.modalProbability.classList.add('hidden'));
+
+            DOM.btnRules.addEventListener('click', () => DOM.modalRules.classList.remove('hidden'));
+            DOM.closeRules.addEventListener('click', () => DOM.modalRules.classList.add('hidden'));
+
+            DOM.btnRestart.addEventListener('click', () => DOM.modalSetup.classList.remove('hidden'));
+            DOM.btnStartGame.addEventListener('click', initGame);
+
+            DOM.btnRevealHand.addEventListener('click', () => {
+                gameState.humanDiceRevealed = true;
+                updateTurnUI();
+            });
+
+            // Setup Screen Bindings
+            DOM.modeVsAi.addEventListener('click', (e) => {
+                gameState.mode = 'vs-ai';
+                DOM.modeVsAi.className = 'mode-btn active bg-amber-500 text-slate-950 font-bold py-2 px-3 rounded-xl text-xs border border-amber-400';
+                DOM.modePassPlay.className = 'mode-btn bg-slate-800 text-slate-300 font-bold py-2 px-3 rounded-xl text-xs border border-white/10';
+                document.getElementById('ai-difficulty-box').classList.remove('hidden');
+            });
+
+            DOM.modePassPlay.addEventListener('click', (e) => {
+                gameState.mode = 'pass-play';
+                DOM.modePassPlay.className = 'mode-btn active bg-amber-500 text-slate-950 font-bold py-2 px-3 rounded-xl text-xs border border-amber-400';
+                DOM.modeVsAi.className = 'mode-btn bg-slate-800 text-slate-300 font-bold py-2 px-3 rounded-xl text-xs border border-white/10';
+                document.getElementById('ai-difficulty-box').classList.add('hidden');
+            });
+
+            DOM.setupPlayersMinus.addEventListener('click', () => {
+                if (gameState.playerCount > 2) {
+                    gameState.playerCount--;
+                    DOM.setupPlayersCount.innerText = gameState.playerCount;
+                }
+            });
+
+            DOM.setupPlayersPlus.addEventListener('click', () => {
+                if (gameState.playerCount < 4) {
+                    gameState.playerCount++;
+                    DOM.setupPlayersCount.innerText = gameState.playerCount;
+                }
+            });
+        }
+
+        // Render 3D Dice Graphic
+        function createDiceElement(value, hidden = false, animate = false) {
+            const dice = document.createElement('div');
+            dice.className = 'dice-3d' + (animate ? ' rolling-anim' : '');
+
+            if (hidden) {
+                dice.style.background = 'linear-gradient(145deg, #1e293b, #0f172a)';
+                dice.innerHTML = `<div class="col-span-3 row-span-3 flex items-center justify-center text-slate-500 font-bold text-base"><i class="fa-solid fa-question"></i></div>`;
+                return dice;
+            }
+
+            const dotPositions = {
+                1: [5],
+                2: [1, 9],
+                3: [1, 5, 9],
+                4: [1, 3, 7, 9],
+                5: [1, 3, 5, 7, 9],
+                6: [1, 3, 4, 6, 7, 9]
+            };
+
+            const positions = dotPositions[value] || [];
+            for (let i = 1; i <= 9; i++) {
+                const dot = document.createElement('div');
+                if (positions.includes(i)) {
+                    dot.className = value === 1 ? 'dice-dot ace-star' : 'dice-dot';
+                }
+                dice.appendChild(dot);
+            }
+            return dice;
+        }
+
+        // Binomial Probability Math
+        function combinations(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            let c = 1;
+            for (let i = 1; i <= k; i++) c = c * (n - (k - i)) / i;
+            return c;
+        }
+
+        function calculateBidProbability(bidQuantity, bidFace, knownHand, totalDiceInPlay) {
+            const wildActive = gameState.wildOnes && bidFace !== 1;
+            const knownMatches = knownHand.filter(d => d === bidFace || (wildActive && d === 1)).length;
+
+            const neededFromOthers = bidQuantity - knownMatches;
+            if (neededFromOthers <= 0) return 1.0;
+
+            const unknownDice = totalDiceInPlay - knownHand.length;
+            if (neededFromOthers > unknownDice) return 0.0;
+
+            const p = wildActive ? (1 / 3) : (1 / 6);
+
+            let accumProb = 0;
+            for (let k = neededFromOthers; k <= unknownDice; k++) {
+                accumProb += combinations(unknownDice, k) * Math.pow(p, k) * Math.pow(1 - p, unknownDice - k);
+            }
+            return accumProb;
+        }
+
+        // Initialize Game Session
+        function initGame() {
+            gameState.players = [];
+            gameState.round = 1;
+            gameState.currentBid = null;
+            gameState.isGameOver = false;
+
+            const names = ['You', 'Barbossa', 'Davy Jones', 'Will Turner'];
+
+            for (let i = 0; i < gameState.playerCount; i++) {
+                gameState.players.push({
+                    id: i,
+                    name: gameState.mode === 'pass-play' ? `Player ${i + 1}` : (i === 0 ? 'You' : names[i]),
+                    isAI: gameState.mode === 'vs-ai' ? i !== 0 : false,
+                    diceCount: 5,
+                    dice: [],
+                    active: true
+                });
+            }
+
+            gameState.currentTurnIndex = 0;
+            DOM.modalSetup.classList.add('hidden');
+            logMessage('🎲 Game started! Cups are rolled.');
+            startNewRound();
+        }
+
+        // Start New Round
+        function startNewRound() {
+            gameState.currentBid = null;
+            gameState.wildOnes = true;
+            DOM.wildStatus.innerText = '★ 1s are Wild';
+            DOM.wildStatus.className = 'text-[10px] bg-red-900/80 text-red-200 px-2 py-0.5 rounded-full border border-red-500/30';
+
+            let activeCount = 0;
+            gameState.players.forEach(p => {
+                if (p.diceCount > 0) {
+                    p.active = true;
+                    p.dice = Array.from({ length: p.diceCount }, () => Math.floor(Math.random() * 6) + 1).sort((a,b) => a - b);
+                    activeCount++;
+                } else {
+                    p.active = false;
+                }
+            });
+
+            const activePlayers = gameState.players.filter(p => p.active);
+            if (activePlayers.length <= 1) {
+                endGame(activePlayers[0]);
+                return;
+            }
+
+            gameState.stagedBid = { quantity: 1, face: 2 };
+            updateBidControlsUI();
+
+            gameState.humanDiceRevealed = gameState.mode === 'vs-ai';
+
+            renderPlayers(false, true);
+            updateTurnUI();
+        }
+
+        // Render Player Boards
+        function renderPlayers(revealAll = false, animateDice = false) {
+            DOM.playersContainer.innerHTML = '';
+
+            gameState.players.forEach((p, idx) => {
+                if (!p.active) return;
+
+                const card = document.createElement('div');
+                const isCurrent = idx === gameState.currentTurnIndex;
+
+                card.className = `bg-black/50 border ${isCurrent ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-white/10'} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md transition-all`;
+
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center mb-1.5';
+                header.innerHTML = `
+                    <span class="font-bold text-xs ${isCurrent ? 'text-amber-400' : 'text-slate-200'} flex items-center gap-1">
+                        ${p.isAI ? '🤖' : '👤'} ${p.name}
+                    </span>
+                    <span class="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full">${p.diceCount} dice</span>
+                `;
+                card.appendChild(header);
+
+                const diceRow = document.createElement('div');
+                diceRow.className = 'flex flex-wrap gap-1.5 justify-center py-1';
+
+                const shouldHide = !revealAll && (p.isAI || (gameState.mode === 'pass-play' && (!gameState.humanDiceRevealed || idx !== gameState.currentTurnIndex)));
+
+                p.dice.forEach(val => {
+                    diceRow.appendChild(createDiceElement(val, shouldHide, animateDice));
+                });
+
+                card.appendChild(diceRow);
+                DOM.playersContainer.appendChild(card);
+            });
+        }
+
+        // Update UI Turn State
+        function updateTurnUI() {
+            const currentPlayer = gameState.players[gameState.currentTurnIndex];
+            DOM.roundIndicator.innerText = `ROUND ${gameState.round}`;
+            DOM.bidText.innerText = gameState.currentBid
+                ? `${gameState.currentBid.quantity} × [ Face ${gameState.currentBid.face} ] (${gameState.players[gameState.currentBid.bidderIndex].name})`
+                : 'None';
+
+            DOM.btnCallLiar.disabled = !gameState.currentBid;
+            if (gameState.currentBid) {
+                DOM.btnCallLiar.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                DOM.btnCallLiar.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentPlayer.isAI) {
+                DOM.turnAnnouncement.innerText = `${currentPlayer.name}'s Turn`;
+                DOM.humanControls.classList.add('hidden');
+                DOM.passShield.classList.add('hidden');
+                DOM.aiThinking.classList.remove('hidden');
+
+                setTimeout(processAITurn, 1100);
+            } else {
+                DOM.aiThinking.classList.add('hidden');
+
+                if (gameState.mode === 'pass-play' && !gameState.humanDiceRevealed) {
+                    DOM.humanControls.classList.add('hidden');
+                    DOM.passShield.classList.remove('hidden');
+                    DOM.nextPlayerName.innerText = currentPlayer.name;
+                } else {
+                    DOM.turnAnnouncement.innerText = `Your Turn, ${currentPlayer.name}!`;
+                    DOM.passShield.classList.add('hidden');
+                    DOM.humanControls.classList.remove('hidden');
+                    renderPlayers();
+                }
+            }
+        }
+
+        function nextTurn() {
+            do {
+                gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.players.length;
+            } while (!gameState.players[gameState.currentTurnIndex].active);
+
+            if (gameState.mode === 'pass-play') {
+                gameState.humanDiceRevealed = false;
+            }
+
+            updateTurnUI();
+        }
+
+        // Stepper Handlers
+        function adjustQty(delta) {
+            const minQty = gameState.currentBid ? gameState.currentBid.quantity : 1;
+            const totalDiceInPlay = gameState.players.reduce((sum, p) => sum + (p.active ? p.diceCount : 0), 0);
+            const newQty = gameState.stagedBid.quantity + delta;
+
+            if (newQty >= minQty && newQty <= totalDiceInPlay) {
+                gameState.stagedBid.quantity = newQty;
+                updateBidControlsUI();
+            }
+        }
+
+        function adjustFace(delta) {
+            const newFace = gameState.stagedBid.face + delta;
+            if (newFace >= 1 && newFace <= 6) {
+                gameState.stagedBid.face = newFace;
+                updateBidControlsUI();
+            }
+        }
+
+        function updateBidControlsUI() {
+            DOM.qtyVal.innerText = gameState.stagedBid.quantity;
+            DOM.faceVal.innerText = gameState.stagedBid.face;
+        }
+
+        function isValidBid(newBid, currentBid) {
+            if (!currentBid) return true;
+            if (newBid.quantity > currentBid.quantity) return true;
+            if (newBid.quantity === currentBid.quantity && newBid.face > currentBid.face) return true;
+            return false;
+        }
+
+        function handleHumanBid() {
+            if (!isValidBid(gameState.stagedBid, gameState.currentBid)) {
+                logMessage('⚠️ Bid must raise quantity or face value!');
+                return;
+            }
+            executeBid(gameState.stagedBid.quantity, gameState.stagedBid.face, gameState.currentTurnIndex);
+        }
+
+        function executeBid(quantity, face, playerIndex) {
+            const player = gameState.players[playerIndex];
+
+            if (face === 1) {
+                gameState.wildOnes = false;
+                DOM.wildStatus.innerText = '🚫 1s are NOT Wild';
+                DOM.wildStatus.className = 'text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-white/10';
+            }
+
+            gameState.currentBid = { quantity, face, bidderIndex: playerIndex };
+            logMessage(`🗣️ <strong>${player.name}</strong> bid ${quantity} × [${face}s]`);
+
+            gameState.stagedBid = { quantity, face: face < 6 ? face + 1 : face };
+            if (face === 6) {
+                gameState.stagedBid.quantity = quantity + 1;
+                gameState.stagedBid.face = 2;
+            }
+            updateBidControlsUI();
+
+            nextTurn();
+        }
+
+        function handleHumanCallLiar() {
+            executeCallLiar(gameState.currentTurnIndex);
+        }
+
+        function executeCallLiar(callerIndex) {
+            const caller = gameState.players[callerIndex];
+            const bidder = gameState.players[gameState.currentBid.bidderIndex];
+
+            logMessage(`💥 <strong>${caller.name}</strong> called LIAR on ${bidder.name}!`);
+
+            renderPlayers(true);
+
+            const targetFace = gameState.currentBid.face;
+            let actualCount = 0;
+
+            gameState.players.forEach(p => {
+                if (!p.active) return;
+                p.dice.forEach(d => {
+                    if (d === targetFace || (gameState.wildOnes && d === 1 && targetFace !== 1)) {
+                        actualCount++;
+                    }
+                });
+            });
+
+            const bidQuantity = gameState.currentBid.quantity;
+            logMessage(`🔍 Reveal: Found <strong>${actualCount}</strong> [${targetFace}s] on table (Bid: ${bidQuantity}).`);
+
+            let loser;
+            if (actualCount >= bidQuantity) {
+                loser = caller;
+                logMessage(`❌ Bid was valid! <strong>${caller.name}</strong> loses a die.`);
+            } else {
+                loser = bidder;
+                logMessage(`🎯 Caught bluff! <strong>${bidder.name}</strong> loses a die.`);
+            }
+
+            loser.diceCount--;
+            gameState.round++;
+
+            setTimeout(() => {
+                if (loser.diceCount <= 0) {
+                    logMessage(`☠️ <strong>${loser.name}</strong> is eliminated!`);
+                }
+                startNewRound();
+            }, 3500);
+        }
+
+        // AI Logic Engine
+        function processAITurn() {
+            const ai = gameState.players[gameState.currentTurnIndex];
+            const totalDiceInPlay = gameState.players.reduce((sum, p) => sum + (p.active ? p.diceCount : 0), 0);
+
+            if (!gameState.currentBid) {
+                const faceCounts = {};
+                ai.dice.forEach(d => faceCounts[d] = (faceCounts[d] || 0) + 1);
+
+                let bestFace = 2;
+                let maxC = 0;
+                for (let f = 2; f <= 6; f++) {
+                    if ((faceCounts[f] || 0) > maxC) {
+                        maxC = faceCounts[f];
+                        bestFace = f;
+                    }
+                }
+
+                const safeQty = Math.max(1, Math.floor(totalDiceInPlay / 3.5));
+                executeBid(safeQty, bestFace, ai.id);
+                return;
+            }
+
+            const prob = calculateBidProbability(
+                gameState.currentBid.quantity,
+                gameState.currentBid.face,
+                ai.dice,
+                totalDiceInPlay
+            );
+
+            const thresholds = { cautious: 0.35, balanced: 0.22, aggressive: 0.12 };
+            const cutoff = thresholds[gameState.aiPersonality] || 0.22;
+
+            if (prob < cutoff) {
+                executeCallLiar(ai.id);
+            } else {
+                let nextQty = gameState.currentBid.quantity;
+                let nextFace = gameState.currentBid.face + 1;
+
+                if (nextFace > 6) {
+                    nextQty += 1;
+                    nextFace = 2;
+                }
+
+                if (gameState.aiPersonality === 'aggressive' && Math.random() < 0.2) {
+                    nextQty += 1;
+                }
+
+                executeBid(nextQty, nextFace, ai.id);
+            }
+        }
+
+        // Display Probability Assistant Modal
+        function showProbabilityModal() {
+            const totalDiceInPlay = gameState.players.reduce((sum, p) => sum + (p.active ? p.diceCount : 0), 0);
+            const humanHand = gameState.players[0].dice;
+
+            const targetBid = gameState.currentBid || gameState.stagedBid;
+            document.getElementById('prob-bid-target').innerText = `${targetBid.quantity} × [${targetBid.face}s]`;
+
+            const prob = calculateBidProbability(targetBid.quantity, targetBid.face, humanHand, totalDiceInPlay);
+
+            const unknownCount = totalDiceInPlay - humanHand.length;
+            const wildActive = gameState.wildOnes && targetBid.face !== 1;
+            const knownMatches = humanHand.filter(d => d === targetBid.face || (wildActive && d === 1)).length;
+
+            document.getElementById('prob-unknown-dice').innerText = unknownCount;
+            document.getElementById('prob-needed-dice').innerText = Math.max(0, targetBid.quantity - knownMatches);
+            document.getElementById('prob-percentage').innerText = `${(prob * 100).toFixed(1)}%`;
+
+            DOM.modalProbability.classList.remove('hidden');
+        }
+
+        // Logger Helper
+        function logMessage(msg) {
+            if (!DOM.gameLog) return;
+            const entry = document.createElement('div');
+            entry.className = 'text-slate-300 py-0.5 border-b border-white/5 last:border-none';
+            entry.innerHTML = msg;
+            DOM.gameLog.appendChild(entry);
+            DOM.gameLog.scrollTop = DOM.gameLog.scrollHeight;
+        }
+
+        function endGame(winner) {
+            gameState.isGameOver = true;
+            DOM.turnAnnouncement.innerText = `🏆 ${winner.name} WINS!`;
+            logMessage(`👑 <strong>${winner.name}</strong> outbluffed everyone! Game over.`);
+        }
+    </script>
+</body>
+</html>
