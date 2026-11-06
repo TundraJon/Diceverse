@@ -17,27 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 8 — Menu order correction: Game, Mode, Players (Bot style stays under Mode)
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Why (user):** Queue 7 / Build Log 14 put Players above Mode. The user clarified they want the Players bar at the bottom, after Mode: **Game, Mode, Players**.
-
-**1. New order:** Game, then Mode, then Players. Bot style stays directly under the Mode buttons, inside the Mode panel, and only for vs Bots (that part of Queue 7 stays). *(My reading: the user's "Game, Mode, Players" did not mention Bot style, and their earlier goal was Bot style right under Mode. Change before authorizing if wanted.)*
-
-**2. Players in Solo** *(Added by Claude. Change before authorizing if wanted.)*: Queue 7 kept the Players row visible as a fixed "1" in Solo only because Players sat above Mode and hiding it would have moved the rows below it. With Players last, nothing sits below it that can jump, so I recommend going back to the original behavior: Players is hidden in Solo and shown (2-4 stepper, same saved setting) in vs Bots and Pass and Play. Alternative: keep the fixed "1" with disabled buttons.
-
-**3. Unchanged:** the Game choice, summary line, House rules, How to play, Start and Resume buttons; no rules, bot, save, or settings changes.
-
-**4. Files:** `src/shell/main.js` (`renderMenu` panel order and the Solo behavior of the Players panel); rebuilt `index.html`.
-
-**5. Verification plan (scratch script using `tests-helpers.cjs`, adapted from the Build Log 14 menu check; none committed; under 1 minute)**
-- `preflight` clean. For Pig, Farkle and Yacht: the panel order read from the DOM is Game, Mode, Players; Bot style exists only in vs Bots, inside the Mode panel directly under its buttons; Players is the last panel; in Solo the Players panel is absent (or shows 1, disabled, if the alternative is chosen); the stepper works in vs Bots and Pass and Play; the earlier count (for example 4) returns when leaving Solo; players, mode and bot style persist after a reload; a 3-player vs Bots game starts with 3 chips.
-- Re-run the existing Yacht browser suite at `?speed=0` (it drives the menu's mode and player-count steps) and confirm 43 of 43 still pass.
-- Screenshots at 390x844 and 320x640 of vs Bots and Solo, inspected; no horizontal overflow.
-
-**6. Deliverables and bookkeeping:** the files above and a new numbered Build Log entry (Build Log 14 stays as written), this Queue entry removed, all in one commit.
-
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -358,3 +338,13 @@ Menu reorder: Game, Players, Mode, Bot style (was Queue 7).
 - [x] `src/ui/theme.css`: `.row.sub` spacing for the Bot style sub-row. The Game choice, summary line, House rules, How to play, Start and Resume buttons are unchanged; no rules, bot, or save changes. Both of the "Added by Claude" choices in the spec (Players visible as 1 in Solo, Bot style inside the Mode panel) were built as written. `index.html` rebuilt (62.6 KB); cache-busting not applicable.
 
 Verification (scratch script using `tests-helpers.cjs`; none committed): `preflight` clean; 29 checks passed, 0 failed, 0 JS errors, 3 seconds. For each of Pig, Farkle and Yacht: the panel order read from the DOM is Game, Players, Mode; Bot style exists only in vs Bots, inside the Mode panel and within 40 px under its buttons; the Players and Mode tops are identical in vs Bots, Pass and Play, and Solo; in Solo, Players shows 1 with both buttons disabled. The stepper goes 3 to 4 and disables plus at 4; Solo shows 1 and returning to Pass and Play restores 4; the stepper works in Pass and Play; players, mode and bot style persist after a reload; a 3-player vs Bots game starts with 3 chips; no horizontal overflow at 390 or 320 px in vs Bots and Solo. Screenshots of 390 vs Bots and 320 Solo inspected. The existing Yacht browser suite (which drives Solo, Pass and Play, vs Bots and the player stepper) was re-run at `?speed=0`: 43 of 43 passed. Test-script mistakes fixed along the way: a wrong expected value in one composite check, and a second click on a "More players" button that is correctly disabled at 4. Not verified: real-device rendering; browsers other than Chromium.
+
+## Build Log 15 (completed)
+
+Menu order correction: Game, Mode, Players (was Queue 8; corrects Build Log 14, which stays as written).
+
+- [x] `src/shell/main.js` `renderMenu`: panels are now Game, Mode, Players. Bot style stays a sub-row inside the Mode panel, directly under the Mode buttons and only for vs Bots (from Build Log 14).
+- [x] Players is the last panel and is hidden in Solo again (the recommended choice in Queue 8, which you did not change): nothing sits below it, so no row jumps. It is shown with the same 2-4 stepper and the same saved setting in vs Bots and Pass and Play; the saved count returns when you leave Solo. The fixed "1" in Solo from Build Log 14 is gone.
+- [x] No other menu, rules, bot, save, or CSS changes (the `.row.sub` style from Build Log 14 is still used). `index.html` rebuilt (62.6 KB); cache-busting not applicable.
+
+Verification (scratch script using `tests-helpers.cjs`; none committed): `preflight` clean; 29 checks passed, 0 failed, 0 JS errors, 5 seconds. For each of Pig, Farkle and Yacht: the panel order from the DOM is Game, Mode, Players (vs Bots); Bot style exists only in vs Bots, inside the Mode panel and within 40 px under its buttons; the Mode row does not move between modes; Players is below Mode and is the last panel in vs Bots and Pass and Play, and absent in Solo. The stepper goes 3 to 4 and disables plus at 4; Solo hides the stepper and returning to Pass and Play restores 4; the stepper works in Pass and Play; players, mode and bot style persist after a reload; a 3-player vs Bots game starts with 3 chips; no horizontal overflow at 390 or 320 px in vs Bots and Solo. Screenshots of the 390 vs Bots menu and the 320 Solo menu inspected. The existing Yacht browser suite was re-run at `?speed=0`: 43 of 43 passed. Test-script note: my first attempt to adapt the menu script was garbled by shell quoting, so I rewrote it as a file; no app issue. Not verified: real-device rendering; browsers other than Chromium.
