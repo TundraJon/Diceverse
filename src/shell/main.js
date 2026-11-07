@@ -186,7 +186,8 @@ function openSheet(build) {
   back.addEventListener('click', (e) => { if (e.target === back) close(); });
   document.body.appendChild(back);
   const first = sheet.querySelector('button');
-  if (first) first.focus();
+  if (first) first.focus({ preventScroll: true }); // focusing a button at the bottom of a long sheet must not scroll it
+  sheet.scrollTop = 0;
 }
 
 function openRules(options) {

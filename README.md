@@ -17,24 +17,6 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 13 — Fix: the "How to play" sheet opens scrolled to the bottom
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Report (user):** "When opening the 'how to play' box, it always starts at the bottom, 99% of the time we want it to start at the top."
-
-**Reproduced (no code changed):** at 390x844 I opened How to play for each game and read the sheet's scroll position: Pig 0 (the text fits), Farkle 610 of 1,325 px, Yacht 407 of 1,122, Shut the Box 0 (fits), Cliffhanger 259 of 974. So every sheet long enough to scroll opens scrolled down to the end. The House rules sheet fits and shows at 0.
-
-**Cause:** `openSheet` in `src/shell/main.js` focuses the first button in the sheet. In the rules sheet the first button is "Got it", which sits at the very bottom, so the browser scrolls the sheet down to bring it into view.
-
-**1. Fix** *(approach is Added by Claude. Change before authorizing if wanted.)*: in `openSheet`, focus that button without scrolling (`focus({ preventScroll: true })`) and set the sheet's scroll position to 0. Keyboard focus still lands on the first button, and every sheet (rules, house rules, game over) opens at its top. No other behavior changes.
-
-**2. Files:** `src/shell/main.js` only; rebuilt `index.html`.
-
-**3. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 30 seconds):** `preflight` clean. The reproduction turned into the test: for all five games at 390x844 the How to play sheet opens with scroll position 0 (expected 0, was 610 / 407 / 259 for Farkle, Yacht, Cliffhanger), "Got it" still has keyboard focus, and it is still reachable by scrolling and closes the sheet. The House rules sheet and a game-over sheet also open at 0. Zero JS errors. Screenshot of the Farkle sheet at the top.
-
-**4. Deliverables and bookkeeping:** the file above, a Build Log entry, this Queue entry removed, one commit.
-
 ### Queue 14 — Cliffhanger: mountain slopes cut through the center of every column top
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
@@ -466,3 +448,13 @@ Verification (scratch scripts using `tests-helpers.cjs` and Node, none committed
 - Bugs found and fixed during verification: six choices were possible (one marker left makes each of the three splits offer two single columns), so the controls bar wraps to two rows instead of overflowing; the first version put the summit mark below the column label, now above the top space; the 🧗 overlapped column 2's dots and was moved up; the first saved-position fixture was generated with the dice generator also driving my policy (replay failed), so the fixture generator now uses a separate random stream (a test-script mistake, not an app bug).
 - Page height: fits at 390x844 and 360x740; at 768x1024 it overflows by 1 px; at 320x640 it scrolls about 48 px (the same kind of small-phone scroll Planner 11 describes for Shut the Box).
 - Not verified (needs a real-device check): touch feel of the pair buttons, readability of the 26 px dots on the user's phone, emoji look on each device, bot thinking time on a phone, a bot-versus-bot game at real speed in the browser, browsers other than Chromium.
+
+## Build Log 20 (completed)
+
+Fix: the How to play sheet opened scrolled to the bottom (was Queue 13).
+
+- [x] Reproduced first (no code changed): at 390x844 the sheet opened at scroll position 610 of 1,325 px for Farkle, 407 of 1,122 for Yacht and 259 of 974 for Cliffhanger; Pig and Shut the Box fit and were at 0.
+- [x] Cause: `openSheet` in `src/shell/main.js` focused the first button, which in a rules sheet is "Got it" at the very bottom, and the browser scrolled the sheet to it.
+- [x] `src/shell/main.js` `openSheet`: `first.focus({ preventScroll: true })` and `sheet.scrollTop = 0`. Applies to every sheet (rules, house rules, game over). `index.html` rebuilt (99.4 KB).
+
+Verification (scratch script using `tests-helpers.cjs`, none committed): `preflight` clean; 16 checks passed, 0 JS errors, 2 seconds. The reproduction is the test: for all five games at 390x844 the How to play sheet opens at scroll position 0 (before: 610, 407, 259) with "Got it" still focused; the long sheets (Farkle, Yacht, Cliffhanger) still scroll to the end; "Got it" closes the sheet; the House rules sheet and the in-game "?" rules sheet also open at 0. Screenshot of the Farkle sheet inspected (starts at "How to play Farkle"; my first screenshot was taken after the test had scrolled to the end, a test-script mistake fixed by moving the screenshot earlier). Not tested directly: the game-over sheet (it is short and fits without scrolling, so its position cannot differ) and a real phone's scrolling feel (needs a real-device check).
