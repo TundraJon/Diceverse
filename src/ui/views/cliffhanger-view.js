@@ -12,16 +12,61 @@ const COLS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 
 // Cosmetic background: sky, far hills, the main peak with a snow cap, and a tree line. Drawn inline (no image files).
-const PEAK_SVG = `<svg class="peakbg" viewBox="0 0 360 420" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+// The shapes are filled in by drawPeak() from the measured top dots, so the slopes pass through the center of every
+// column top at any screen width.
+const PEAK_SVG = `<svg class="peakbg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <defs><linearGradient id="chSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d9fca"/><stop offset="1" stop-color="#c7e3f0"/></linearGradient>
 <linearGradient id="chRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d8fa3"/><stop offset="1" stop-color="#3f566b"/></linearGradient></defs>
-<rect width="360" height="420" fill="url(#chSky)"/>
-<path d="M0 300 L60 220 L110 270 L150 200 L200 290 L360 290 L360 420 L0 420Z" fill="#8fb3cc" opacity="0.7"/>
-<path d="M-10 420 L180 14 L370 420Z" fill="url(#chRock)"/>
-<path d="M180 14 L146 92 L162 84 L172 106 L186 82 L200 100 L214 90Z" fill="#f4f8fb"/>
-<path d="M146 92 L120 150 L140 140 L150 160 L168 138 L180 156 L196 134 L212 152 L226 138 L240 150 L214 90 L200 100 L186 82 L172 106 L162 84Z" fill="#dce9f2" opacity="0.85"/>
-<path d="M0 392 L18 352 L36 392 L54 346 L72 392 L96 356 L118 392 L140 350 L160 392 L190 392 L212 354 L234 392 L258 348 L280 392 L304 356 L326 392 L344 350 L360 392 L360 420 L0 420Z" fill="#1f4a3a"/>
+<rect class="pk-sky" fill="url(#chSky)"/>
+<path class="pk-hills" fill="#8fb3cc" opacity="0.7"/>
+<path class="pk-peak" fill="url(#chRock)"/>
+<path class="pk-snow" fill="#f4f8fb"/>
+<path class="pk-shade" fill="#dce9f2" opacity="0.85"/>
+<path class="pk-trees" fill="#1f4a3a"/>
 </svg>`;
+
+// Top-down: the peak is the center of the 7's top dot; each slope runs from it through the center of the outermost
+// column's top dot (the eleven top dots lie on two straight lines) to the board edge; below that the mountain fills the width.
+function drawPeak(ui) {
+  const b = ui.board;
+  const W = b.clientWidth;
+  const H = b.clientHeight;
+  const cols = ui.cols.querySelectorAll('.ccol');
+  const svg = b.querySelector('.peakbg');
+  if (!W || !H || cols.length !== 11 || !svg) return;
+  const br = b.getBoundingClientRect();
+  const pt = (col) => {
+    const r = col.querySelector('.cd').getBoundingClientRect(); // the first dot in a column is its top space
+    return [r.left + r.width / 2 - br.left - b.clientLeft, r.top + r.height / 2 - br.top - b.clientTop];
+  };
+  const [x2, y2] = pt(cols[0]);
+  const [x7, y7] = pt(cols[5]);
+  const [x12, y12] = pt(cols[10]);
+  const slopeL = (y2 - y7) / (x2 - x7);
+  const slopeR = (y12 - y7) / (x12 - x7);
+  const yL = y7 + slopeL * (0 - x7);
+  const yR = y7 + slopeR * (W - x7);
+  const xOn = (slope, y) => x7 + (y - y7) / slope;
+  const snowY = y7 + 0.24 * (H - y7);
+  const xl = xOn(slopeL, snowY);
+  const xr = xOn(slopeR, snowY);
+  const zig = [];
+  for (let i = 1; i <= 6; i++) zig.push(`L${(xr + (xl - xr) * (i / 7)).toFixed(1)} ${(snowY + (i % 2 ? 9 : -4)).toFixed(1)}`);
+  const f = (n) => n.toFixed(1);
+  const set = (cls, d) => svg.querySelector(cls).setAttribute('d', d);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const sky = svg.querySelector('.pk-sky');
+  sky.setAttribute('width', W);
+  sky.setAttribute('height', H);
+  set('.pk-hills', `M0 ${f(0.71 * H)} L${f(0.17 * W)} ${f(0.52 * H)} L${f(0.31 * W)} ${f(0.64 * H)} L${f(0.42 * W)} ${f(0.48 * H)} L${f(0.56 * W)} ${f(0.69 * H)} L${W} ${f(0.69 * H)} L${W} ${H} L0 ${H}Z`);
+  set('.pk-peak', `M0 ${f(yL)} L${f(x7)} ${f(y7)} L${W} ${f(yR)} L${W} ${H} L0 ${H}Z`);
+  set('.pk-snow', `M${f(x7)} ${f(y7)} L${f(xr)} ${f(snowY)} ${zig.join(' ')} L${f(xl)} ${f(snowY)}Z`);
+  set('.pk-shade', `M${f(x7)} ${f(y7)} L${f(xr)} ${f(snowY)} L${f(x7 + (xr - x7) * 0.2)} ${f(snowY + 8)} L${f(x7)} ${f(y7 + (snowY - y7) * 0.6)}Z`);
+  let trees = `M0 ${f(0.93 * H)}`;
+  const n = 16;
+  for (let i = 0; i < n; i++) trees += ` L${f((i + 0.5) * (W / n))} ${f(0.83 * H)} L${f((i + 1) * (W / n))} ${f(0.93 * H)}`;
+  set('.pk-trees', `${trees} L${W} ${H} L0 ${H}Z`);
+}
 
 export const cliffhangerView = {
   title: 'CLIFFHANGER',
@@ -74,6 +119,7 @@ export const cliffhangerView = {
     ui.banner = el('div', 'banner');
     ui.banner.hidden = true;
     ui.board.append(ui.cols, ui.climber, ui.banner);
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => drawPeak(ui)).observe(ui.board); // rotate or resize: redraw
     ui.dice = el('div', 'dice climb');
     ui.hint = el('div', 'hint');
     ui.table.append(ui.chips, ui.board, ui.dice, ui.hint);
@@ -120,6 +166,7 @@ export const cliffhangerView = {
       col.appendChild(el('div', 'clabel', String(c)));
       ui.cols.appendChild(col);
     });
+    drawPeak(ui);
     ui.climber.className = 'climber' + (view.slip ? ' slip' : '');
     ui.banner.hidden = !view.banner;
     ui.banner.textContent = view.banner ? view.banner.text : '';

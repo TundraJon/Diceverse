@@ -17,21 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 14 — Cliffhanger: mountain slopes cut through the center of every column top
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Report (user, with a phone screenshot and a red outline):** the mountain background is liked, but it should cover the top of every column. The peak point above the 7 was "perfect"; the slopes reach the screen edge too far down and should be raised. The user suggested working from the top down, then suggested the mountain edge cut through the center of each column's top (so a figure can stand there later), and answered "all recommendations".
-
-**What the screenshot shows:** the drawn peak is narrower than the column pattern. The slopes cut through the middle of the outer columns, so the top dots of columns 2 to 5 and 9 to 12 float over the sky.
-
-**1. Fix** *(method is Added by Claude. Change before authorizing if wanted.)*: keep the look (sky, far hills, rock gradient, snow cap, tree line, colors) and change only the slopes. Work top down: from the peak, draw each slope straight down and outward through the **center** of the top dot of every column, and carry it on to the left or right edge of the board. The column heights step by two spaces from one column to the next, so the eleven top dots lie on two straight lines and a single straight slope per side passes through all their centers. The two lines meet at the center of the 7's top dot, so the peak point moves down by about a dot radius (roughly 15 px) from where it is now (user accepted this). The snow cap follows the new outline. Below the point where a slope meets the board edge the mountain fills the full width down to the tree line. The slope is calculated from the measured positions of the top dots after each render, so it stays right at every width (390, 360, 320, 768). The 🏔️ summit mark above a won column stays as it is for now (the mountaineer figures are Planner 14). No change to the dots, markers, banners, controls or rules.
-
-**2. Files:** `src/ui/views/cliffhanger-view.js` (the background drawing), `src/ui/theme.css` only if a rule needs adjusting; rebuilt `index.html`.
-
-**3. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 30 seconds):** `preflight` clean. At 390x844, 360x740, 320x640 and 768x1024, with a fresh game and with the saved mid-turn fixture: for each of the eleven columns, the distance from the top dot's center to the drawn slope is within 2 px (the outline's points are read from the page and the test checks each dot), the two slopes meet at the center of the 7's top dot, each slope meets the board edge at about the outermost column's top level and not near the bottom, and the area below is filled to the edges. Markers and rings on the top dots are still visible (screenshot). Zero JS errors. Screenshots at 390 and 320 inspected next to the user's outline.
-
-**4. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -458,3 +444,13 @@ Fix: the How to play sheet opened scrolled to the bottom (was Queue 13).
 - [x] `src/shell/main.js` `openSheet`: `first.focus({ preventScroll: true })` and `sheet.scrollTop = 0`. Applies to every sheet (rules, house rules, game over). `index.html` rebuilt (99.4 KB).
 
 Verification (scratch script using `tests-helpers.cjs`, none committed): `preflight` clean; 16 checks passed, 0 JS errors, 2 seconds. The reproduction is the test: for all five games at 390x844 the How to play sheet opens at scroll position 0 (before: 610, 407, 259) with "Got it" still focused; the long sheets (Farkle, Yacht, Cliffhanger) still scroll to the end; "Got it" closes the sheet; the House rules sheet and the in-game "?" rules sheet also open at 0. Screenshot of the Farkle sheet inspected (starts at "How to play Farkle"; my first screenshot was taken after the test had scrolled to the end, a test-script mistake fixed by moving the screenshot earlier). Not tested directly: the game-over sheet (it is short and fits without scrolling, so its position cannot differ) and a real phone's scrolling feel (needs a real-device check).
+
+## Build Log 21 (completed)
+
+Cliffhanger: the mountain slopes now run through the center of every column's top (was Queue 14).
+
+- [x] `src/ui/views/cliffhanger-view.js`: the static background is replaced by `PEAK_SVG` (same sky, far hills, rock gradient, snow cap, shade and tree line, same colors) whose shapes are filled in by the new `drawPeak(ui)` after every `render` and from a `ResizeObserver` on the board (rotate or resize redraws). Top down: the peak is the center of the 7's top dot; each slope is the straight line from it through the center of the outermost column's top dot (columns 2 and 12; the eleven top dots lie on two straight lines because heights step by two) extended to the left or right board edge; the mountain fills the full width below that, down to the tree line. The snow cap, its shade and the zigzag snow line follow the new outline. The viewBox is set to the board's pixel size so nothing is stretched.
+- [x] Effect: the peak moves down to the 7's top dot (about 15 px lower, as the user accepted) and the slopes meet the board edge about 35 px below the outer column's top center at 390 px wide (before: at the very bottom corner). The 🏔️ summit mark, dots, markers, banners, controls and rules are unchanged. `src/ui/theme.css` unchanged. `index.html` rebuilt (100.4 KB).
+
+Verification (scratch script using `tests-helpers.cjs`, none committed): `preflight` clean; 42 checks passed, 0 JS errors, 2 seconds. At 390x844, 360x740, 320x640 and 768x1024, each with a fresh game and the saved mid-turn fixture: the center of every one of the eleven top dots is within 2 px of its slope (read from the drawn path), the peak is the center of the 7's top dot (within 1 px), each slope meets the board edge between the outer column's top level and 60 px below it and at least 40 px above the bottom, the area below is filled to both edges, the viewBox equals the board size; after shrinking the window from 390 to 340 px wide the outline follows. The existing Cliffhanger browser suite was re-run because the board render changed: 33 of 33 passed in 67 s, 0 JS errors. Screenshots inspected at 390 (mid-turn position with a won column) and 320 (fresh): the slopes pass through the tops of the columns and the markers and rings on them are still readable. Test-script mistake: my first run of the slope check failed on an expectation that the edge be above 75% of the board height, which is wrong for this geometry (column 2 is only 3 dots tall, so the edge at its top level is about 86% down); the check now requires "between the outer column's top level and 60 px below it, and at least 40 px above the bottom". Not verified: how it looks on the user's phone and browser (needs a real-device check); browsers other than Chromium.
+- [x] Noticed and left alone (not part of this build): at 320 px wide with three players the bot chips show only an emoji and "…" instead of the bot's name (name column too narrow). Logged for the user to decide.
