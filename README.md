@@ -158,6 +158,22 @@ Update: the lid plaque (116 px) was removed (Build Log 17): the screen now fits 
 Ideas (not decided): (A) a compact layout for this screen: a one-line score strip (name, score, round, status), a shorter plaque (about 56 px), the turn text moved into the tray's own info line, a slimmer header, and a tray that fills whatever height is left (it needs room for the later bouncing dice, Planner 10), with a smaller minimum on short screens; this would remove roughly 150 px; (B) keep the layout and accept scrolling (current); (C) put ROLL/FLIP inside the tray instead of a separate pinned bar.
 Open questions for the user: which phone and browser (visible height) they use; whether the tray may shrink below the 200 px minimum from Queue 9 on short screens (at roughly 150 px) in exchange for no scrolling; whether the lid plaque and the score strip may be compacted; whether Yacht, which scrolls by design because of its long category list, is fine as it is.
 
+### Planner 12 — Build order and the column-climb game (Can't Stop-style) (discussion, not yet specced)
+**Build order (user accepted all recommendations):** column climb first, then Zombie-style, then Pickomino-style, then Deep Sea-style, then Liar's Dice, then roll-and-write. Planner 10 (bouncing dice) has no slot yet. *(Order is Added by Claude and accepted by the user.)*
+
+**Working title:** "Column Climb" (Can't Stop is a commercial title, so the shipped name must be original; user can rename).
+
+**Rules as understood (sources: Wikipedia and Board Game Arena help summaries; still [verify] against a full rulebook before queueing):**
+- 11 columns for sums 2-12, lengths 3, 5, 7, 9, 11, 13, 11, 9, 7, 5, 3 (confirmed by search).
+- Roll 4 dice, split into two pairs; each pair's sum may advance a neutral marker in that column. 3 neutral markers per turn.
+- After moving, roll again or stop. Stopping turns neutral markers into your own; if you roll again and cannot advance any neutral marker, you bust and lose this turn's progress (confirmed).
+- First to claim 3 columns wins.
+- Not yet confirmed: both pairs with the same sum (advance twice?); whether you must use a marker when only one pair of a split is playable and which split you may choose when several are legal; claimed columns become closed to everyone.
+
+**User answers so far:** "All recommendations": house rules about 3 to 5 (columns to win 3 or 2, markers per turn 3 or 4, same-sum rule, forced-pair rule), bot = shared simulation brain with risk dial, mock up two column-board layouts side by side before queueing (11 tall columns do not fit a portrait phone as-is; candidates: horizontal bars, or a scrolling board).
+
+**Next steps (no building):** find a full rules sheet or confirm the open rule points; make a throwaway side-by-side layout mockup; then write the Queue spec.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
