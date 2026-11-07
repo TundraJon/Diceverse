@@ -17,7 +17,34 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 10 — Shut the Box: remove the lid plaque above the box
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Why (user):** "Remove the lid, it's a waste of space." The lid plaque (the dark wooden panel with the "SHUT THE BOX" emblem standing above the box) takes 116 px of height on every screen, which is a big part of why the page scrolls and the pinned buttons cover the bottom of the dice tray (Planner 11).
+
+**My reading of "the lid" (please confirm):** the always-visible plaque above the box, not the cover that slides down over the box when someone shuts it, because the cover takes no space the rest of the time and carries the gold "CONGRATULATIONS!" message the user designed. *(Added by Claude. Change before authorizing if wanted.)*
+
+**1. Changes**
+- Remove the plaque element and its emblem from the Shut the Box screen. The game's name is still shown in the screen header ("SHUT THE BOX"). *(This also drops the "SHUT THE BOX" emblem on the open lid that the user asked for in Queue 9; the closed cover keeps its emblem and message.)*
+- The wooden box becomes the top of the play area with all four corners rounded, so it looks finished without the plaque above it.
+- The 116 px freed goes to the dice tray, which already grows into leftover height (minimum 200 px), so on a tall phone the tray is simply bigger, which also gives the later bouncing dice more room (Planner 10). *(Added by Claude.)*
+- The sliding cover, the 2-second hold, the reset, the tiles, the controls, the rules and everything else stay exactly as built. The cover still slides down from the top edge of the box (it is clipped to the box).
+
+**2. Expected effect (from the Build Log 16 measurements):** the page needs about 116 px less height: roughly 720 px of content instead of 836 px, so it should fit without scrolling on screens at least about 720-730 px tall (it fits at 390x780, 412x800 and 360x740 where it scrolled before). On shorter screens, such as 320x640, it still scrolls a little; the remaining ideas for those (a compact one-line score strip and so on) stay in Planner 11.
+
+**3. Files:** `src/ui/views/shutbox-view.js` (remove the plaque from `build`), `src/ui/theme.css` (remove the `.plaque` and its small-screen rule, round the box's top corners, keep the tray growing); rebuilt `index.html`.
+
+**4. Out of scope:** the score strip, the header, the tray's minimum height, other games, and any rules or bot change.
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 1 minute)**
+- `preflight` clean. At 390x844, 390x780, 412x800 and 360x740: there is no plaque element, the document height is no taller than the viewport (within 1 px), and the tray is at least 200 px tall (and bigger on taller screens); at 320x640 the tray is at least 160 px and nothing overflows horizontally.
+- The existing Shut the Box browser suite (62 checks, 50 seconds) re-run at `?speed=0` and at real speed for the cover sequence: all pass, with the cover still sliding down over the whole box, the single-line "CONGRATULATIONS!" still fitting at 390 and 320 px, and zero JS errors.
+- Screenshots at 390x844 (mid-turn, 9 tiles, and the cover down) inspected: the box looks finished at the top, the tray is bigger, nothing is clipped.
+- Real-device check listed as not verifiable here (whether it fits the user's actual phone and browser bars).
+
+**6. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry, this Queue entry removed, Planner 11 updated, all in one commit.
+
 
 ## Build Planner
 
@@ -154,6 +181,7 @@ Update from the user (when Shut the Box was authorized): the bouncing-dice anima
 ### Planner 11 — Shut the Box: the page scrolls, so the bottom of the dice tray is hidden (user-reported, not yet specced)
 User report: "I don't like that I have to scroll to see the bottom of the roll area." Measured in Build Log 16: the screen needs about 836 px of height (845 px at 390x844 after trimming), but real phones show less than that once the browser's own bars are counted, so the page scrolls, and the pinned ROLL/FLIP bar then covers the lower part of the tray (dice and the roll line) until you scroll.
 Where the height goes (about 635 px of fixed parts at 390x844 plus the tray): header about 56, score strip about 90 (one tall chip per player), turn line about 26, lid plaque 116, box padding and rails about 50, two rows of tiles about 134, pinned buttons about 82, spacing.
+Update: the user asked to remove the lid plaque (116 px), written up as Queue 10; the ideas below are what could still be done on shorter screens after that.
 Ideas (not decided): (A) a compact layout for this screen: a one-line score strip (name, score, round, status), a shorter plaque (about 56 px), the turn text moved into the tray's own info line, a slimmer header, and a tray that fills whatever height is left (it needs room for the later bouncing dice, Planner 10), with a smaller minimum on short screens; this would remove roughly 150 px; (B) keep the layout and accept scrolling (current); (C) put ROLL/FLIP inside the tray instead of a separate pinned bar.
 Open questions for the user: which phone and browser (visible height) they use; whether the tray may shrink below the 200 px minimum from Queue 9 on short screens (at roughly 150 px) in exchange for no scrolling; whether the lid plaque and the score strip may be compacted; whether Yacht, which scrolls by design because of its long category list, is fine as it is.
 
