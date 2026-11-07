@@ -17,7 +17,27 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 11 — Fix: the red NO MOVE notice is hidden behind the box (Shut the Box)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user):** "Red: No Moves notice is behind the box."
+
+**Reproduced (no code changed):** playing Shut the Box at real speed with a script that watches the banner, at 390x844 and 360x740, the banner "NO MOVE! Score 23" (and "NO MOVE! Score 7") appears at about y = 191 px, and the element actually on top at the banner's center is the wooden box (`.sbox`), not the banner. So the notice is painted underneath the box for its whole 1.2 seconds.
+
+**Cause:** the banner is positioned absolutely near the top of the play area, and it has no stacking order. Before Build Log 17 the lid plaque (not positioned) sat under it and the banner showed on top of the plaque; since the plaque was removed, the box (a positioned element that comes later in the page) now overlaps the banner's spot and paints over it. My Build Log 17 checks did not look at the banner, which is why I missed it. The "OUT" notice in out-at formats uses the same element and has the same problem.
+
+**1. Fix** *(placement is Added by Claude. Change before authorizing if wanted.)*: move the banner into the dice tray (the felt area) and show it centered near the top of the tray with a stacking order above the dice and below the sliding cover. It is the largest open area of the screen, it hides no tiles or buttons, and it is inside the box so nothing can paint over it. Its text, red style, timing (1.2 s, 0.6 s under reduced motion) and the "OUT" version stay the same.
+
+**2. Files:** `src/ui/views/shutbox-view.js` (where the banner element is created and rendered), `src/ui/theme.css` (its position inside the tray); rebuilt `index.html`. No rules, bot, or other game changes (Pig, Farkle and Yacht banners use their own screens and are not touched).
+
+**3. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 1 minute)**
+- `preflight` clean. Reproduction turned into the test: at 390x844 and 360x740 and at real speed, the NO MOVE banner and, in an out-at-45 game, the OUT banner each have themselves as the top element at their center point (nothing paints over them), sit fully inside the tray and inside the viewport, and are gone again after their delay.
+- The existing Shut the Box browser suite re-run (62 checks, about 50 seconds): all pass, including the cover sequence.
+- Screenshots of the NO MOVE banner and of the OUT banner inspected.
+
+**4. Deliverables and bookkeeping:** the files above, a new numbered Build Log entry that also records the missed check, this Queue entry removed, all in one commit.
+
 
 ## Build Planner
 
