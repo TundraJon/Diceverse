@@ -17,7 +17,24 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 13 — Fix: the "How to play" sheet opens scrolled to the bottom
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user):** "When opening the 'how to play' box, it always starts at the bottom, 99% of the time we want it to start at the top."
+
+**Reproduced (no code changed):** at 390x844 I opened How to play for each game and read the sheet's scroll position: Pig 0 (the text fits), Farkle 610 of 1,325 px, Yacht 407 of 1,122, Shut the Box 0 (fits), Cliffhanger 259 of 974. So every sheet long enough to scroll opens scrolled down to the end. The House rules sheet fits and shows at 0.
+
+**Cause:** `openSheet` in `src/shell/main.js` focuses the first button in the sheet. In the rules sheet the first button is "Got it", which sits at the very bottom, so the browser scrolls the sheet down to bring it into view.
+
+**1. Fix** *(approach is Added by Claude. Change before authorizing if wanted.)*: in `openSheet`, focus that button without scrolling (`focus({ preventScroll: true })`) and set the sheet's scroll position to 0. Keyboard focus still lands on the first button, and every sheet (rules, house rules, game over) opens at its top. No other behavior changes.
+
+**2. Files:** `src/shell/main.js` only; rebuilt `index.html`.
+
+**3. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 30 seconds):** `preflight` clean. The reproduction turned into the test: for all five games at 390x844 the How to play sheet opens with scroll position 0 (expected 0, was 610 / 407 / 259 for Farkle, Yacht, Cliffhanger), "Got it" still has keyboard focus, and it is still reachable by scrolling and closes the sheet. The House rules sheet and a game-over sheet also open at 0. Zero JS errors. Screenshot of the Farkle sheet at the top.
+
+**4. Deliverables and bookkeeping:** the file above, a Build Log entry, this Queue entry removed, one commit.
+
 
 ## Build Planner
 
