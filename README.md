@@ -35,6 +35,21 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 **4. Deliverables and bookkeeping:** the file above, a Build Log entry, this Queue entry removed, one commit.
 
+### Queue 14 — Cliffhanger: widen the mountain background so it covers the top of every column
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user, with a phone screenshot and a red outline):** the mountain background is liked, it just needs to be wider at the bottom so it covers all of the tops of each column. "It's just a little angle fix."
+
+**What the screenshot shows:** the drawn peak is narrower than the column pattern. The slopes cut through the middle of the outer columns, so the top dots of columns 2 to 5 and 9 to 12 float over the sky. The red outline the user drew starts at the bottom corners of the board, rises just outside the top of each column, and reaches the peak above column 7's top.
+
+**1. Fix** *(method is Added by Claude. Change before authorizing if wanted.)*: keep the look (sky, far hills, rock gradient, snow cap, tree line, colors) and change only the angle of the two slopes. The outline of the main peak is built from the real positions of the eleven top dots (measured after each render), starting at the bottom-left and bottom-right corners of the board, passing just outside each column's top dot, and meeting at the peak above column 7. That way it hugs the columns at every width (390, 360, 320, 768) instead of being tuned to one size. The snow cap follows the new peak. No change to the dots, markers, banners, controls or rules.
+
+**2. Files:** `src/ui/views/cliffhanger-view.js` (the background drawing), `src/ui/theme.css` only if a rule needs adjusting; rebuilt `index.html`.
+
+**3. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 30 seconds):** `preflight` clean. At 390x844, 360x740, 320x640 and 768x1024, with a fresh game and with the saved mid-turn fixture: every one of the eleven top dots has its center inside the drawn mountain outline (the outline's points are read from the page and the test checks each dot), the outline reaches both bottom corners, and the peak sits above column 7's top dot. Zero JS errors. Screenshots at 390 and 320 inspected next to the user's outline.
+
+**4. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
