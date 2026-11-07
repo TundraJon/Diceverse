@@ -163,16 +163,21 @@ Open questions for the user: which phone and browser (visible height) they use; 
 
 **Working title:** "Column Climb" (Can't Stop is a commercial title, so the shipped name must be original; user can rename).
 
-**Rules as understood (sources: Wikipedia and Board Game Arena help summaries; still [verify] against a full rulebook before queueing):**
-- 11 columns for sums 2-12, lengths 3, 5, 7, 9, 11, 13, 11, 9, 7, 5, 3 (confirmed by search).
-- Roll 4 dice, split into two pairs; each pair's sum may advance a neutral marker in that column. 3 neutral markers per turn.
-- After moving, roll again or stop. Stopping turns neutral markers into your own; if you roll again and cannot advance any neutral marker, you bust and lose this turn's progress (confirmed).
-- First to claim 3 columns wins.
-- Not yet confirmed: both pairs with the same sum (advance twice?); whether you must use a marker when only one pair of a split is playable and which split you may choose when several are legal; claimed columns become closed to everyone.
+**Rules (user supplied rules sheet #1; confirmed unless marked):**
+- Goal: first player to win any 3 columns. 11 columns for sums 2-12, lengths 3, 5, 7, 9, 11, 13, 11, 9, 7, 5, 3.
+- Turn: roll 4 dice, split them into two pairs in any way, add each pair. Each sum is a column to place or advance a marker in. 3 neutral markers (brown pickaxes on the user's photo of a mountain-shaped board) per turn.
+- A new marker starts on the bottom space, or on the space just above your own colored square already in that column. Spaces may hold opponents' squares too. Advancing a marker moves it up one space.
+- "If you can place a marker, you must." The sheet's example: with markers in 3 and 6 and one left, a roll of 2-4-5-5 allows 6 and 10 (advance 6, place 10) or 7 and 9 (only one of them can be placed, your choice). So a split is playable if at least one of its two numbers can be used; when only one can be used you use that one.
+- After a roll you may stop (each neutral marker becomes your colored square) or roll again. If a roll lets you neither place nor advance, you "blow it": all neutral markers are removed, your earlier colored squares stay. Once all 3 markers are down, every extra roll must advance at least one of them.
+- You win a column only when you STOP with a marker on its top space (colored square on the top number); a marker there mid-turn is not a win. Any opponent squares in that column are removed. A won column is closed to everyone, even you (a roll whose numbers are all in won columns is an automatic blow-it).
+- Sheet variants: columns to win 3 (standard), 4 or 5, capped by player count (2 players up to 5, 3 players up to 4, 4 players up to 3); "Jumping" (a marker that would land on an occupied space moves to the next open space); "Forced Move" (landing on an occupied space means you must keep rolling until you can stand on an open space, or blow it and lose the turn). Columns-to-win can be combined with either.
+- STILL OPEN: the sheet does not say what happens when both pairs have the same sum (for example 3-3-5-5 as 8 and 8): advance that column twice? And "occupied" in Jumping/Forced Move presumably means by an opponent's colored square (user to confirm). Recommendation *(Added by Claude)*: same sum advances twice, the second step only if the column allows it.
 
-**User answers so far:** "All recommendations": house rules about 3 to 5 (columns to win 3 or 2, markers per turn 3 or 4, same-sum rule, forced-pair rule), bot = shared simulation brain with risk dial, mock up two column-board layouts side by side before queueing (11 tall columns do not fit a portrait phone as-is; candidates: horizontal bars, or a scrolling board).
+**User answers so far:** "All recommendations": house rules about 3 to 5 (superseded by the sheet: columns to win 3/4/5 capped by players, and one option for occupied spaces: normal / jumping / forced move), bot = shared simulation brain with risk dial, mock up two column-board layouts side by side before queueing (11 tall columns do not fit a portrait phone as-is; candidates: horizontal bars, or a scrolling board).
 
-**Next steps (no building):** find a full rules sheet or confirm the open rule points; make a throwaway side-by-side layout mockup; then write the Queue spec.
+**Layout mockup shown (throwaway, not committed):** A mountain (bottom-aligned columns like the user's photo; board 411 px, with dice and buttons 568 px at 390 px wide) vs B sideways bars (283 px / 440 px). Recommendation: A. User's choice pending.
+
+**Next steps (no building):** user said more sheets may follow; confirm the same-sum rule; user picks the layout and whether a won column shows a peak cube; solo mode question; then write the Queue spec.
 
 ## Build Log 1 (completed)
 
