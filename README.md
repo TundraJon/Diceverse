@@ -17,7 +17,29 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 15 — Cliffhanger: player names are cut off in the header chips
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report:** found by Claude during Build Log 21 (user: "Yes, queue the name fix"): at 320 px wide with three players the bot chips show only the robot emoji and "…".
+
+**Reproduced (no code changed, 2 to 4 players, vs Bots and Pass & Play, measured name width and whether the text is cut):**
+- 390 px: 2 players fine (114 px for the name); 3 players fine (54 px, "🤖 Dottie" fits); **4 players cut** (23 px: "🤖 Pip" and "Player 1" are all cut).
+- 360 px: 2 players fine; **3 players cut** (44 px: "Dottie", "Player 1-3"); 4 players cut (16 px).
+- 320 px: 2 players fine (79 px); **3 players cut** (30 px); 4 players cut (6 px, nothing readable).
+So it is worse than the first report: four players are cut off at every width, and three players at 360 and 320.
+
+**Cause:** each chip is one line (swatch, name, "0/3" count) in a row shared equally by all players, so the name gets whatever is left after the swatch, the count and the padding; with three or four chips that is almost nothing. Cause is in `src/ui/theme.css` (`.climbchips`, `.cchip`) and the chip markup in `src/ui/views/cliffhanger-view.js` `render`.
+
+**1. Fix** *(layout is Added by Claude. Change before authorizing if wanted.)*: make each chip two lines: the swatch and the full name on the first line, the count ("0/3") on a second, smaller line, so the name can use the whole chip width. One row for 1 to 3 players; for 4 players the chips go in a 2 x 2 grid (four names cannot fit in one row, and this is the same arrangement the big score strip uses in the other games). Names stay as they are ("You", "Pip", "Dottie", "Rook", "Player 1 to 4"); the 🤖 prefix stays. If a name still does not fit at 320 px with three players, the font goes down to 0.72 rem there, and only if it still does not fit is the 🤖 prefix dropped at that width. The active-player highlight and the aria labels are unchanged.
+
+**2. Files:** `src/ui/theme.css`, `src/ui/views/cliffhanger-view.js`; rebuilt `index.html`. No rules, bot or other game changes.
+
+**3. Cost to know about:** the chip row grows from about 34 px to about 44 px (and a second row of 44 px for 4 players), so the page is 10 px taller with 1 to 3 players and about 60 px taller with 4. That still fits at 390x844; at 360x740 and 320x640 a 4-player game scrolls a little (measured in verification and written in the Log). If the user prefers no extra height, the alternative is to drop the count and show only the name with a colored underline (the count is also shown... only on the big board), which loses information; not recommended.
+
+**4. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 1 minute):** `preflight` clean. The measurement above turned into the test: for 1 to 4 players, vs Bots and Pass & Play, at 390x844, 360x740 and 320x640, every chip name is fully visible (not cut, the text's scroll width fits its box) and chips stay inside the screen with no horizontal scroll; the count is still shown; page height overflow recorded for each case; the existing Cliffhanger layout checks (controls on screen, board and mountain slopes) still pass at 390 and 360 with 2 players. Zero JS errors. Screenshots of 3 players at 320 and 4 players at 390 inspected.
+
+**5. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
