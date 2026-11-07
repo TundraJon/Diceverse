@@ -70,7 +70,7 @@ export const shutboxView = {
 
   build(ui) {
     ui.table.classList.add('boxwrap');
-    ui.banner = el('div', 'banner');
+    ui.banner = el('div', 'banner'); // lives inside the tray (attached in render), so the box can never paint over it
     ui.banner.hidden = true;
     ui.turnline = el('div', 'turnline');
     ui.box = el('div', 'sbox walnut');
@@ -78,7 +78,7 @@ export const shutboxView = {
     ui.tray = el('div', 'tray');
     ui.cover = el('div', 'cover walnut');
     ui.box.append(el('div', 'rail'), ui.tiles, el('div', 'rail'), ui.tray, ui.cover);
-    ui.table.append(ui.turnline, ui.banner, ui.box);
+    ui.table.append(ui.turnline, ui.box);
   },
 
   render(ui, view, session, ctx) {
@@ -130,6 +130,7 @@ export const shutboxView = {
     if (!n) info.textContent = session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…` : 'Roll the dice';
     else info.textContent = `Roll ${view.target}${flipping ? ` · selected ${sel.length ? `${sel.join(' + ')} = ${selSum}` : 'none'}` : ''}`;
     ui.tray.appendChild(info);
+    ui.tray.appendChild(ui.banner);
 
     // cover (slides down over the box when the box is shut)
     ui.cover.className = 'cover walnut' + (view.cover && view.cover.down ? ' down' : '');
@@ -198,7 +199,7 @@ export const shutboxView = {
         ctx.log(`${name(ev.seat)} could not move: score ${ev.score}`);
         ctx.announce(`No move. ${name(ev.seat)} scores ${ev.score}`);
         ctx.vibrate();
-        delay = ctx.reduced ? 600 : 1200;
+        delay = ctx.reduced ? 600 : 1500; // the NO MOVE notice stays up 1.5 s (user request)
         break;
       case 'BOX_SHUT': {
         const seat = view.seats[ev.seat];

@@ -197,3 +197,6 @@ body.fast *, body.fast *::before, body.fast *::after { animation: none !importan
 @media (max-width: 340px), (max-height: 700px) { .tray { min-height: 170px; } }
 @media (prefers-reduced-motion: reduce) { .tile.anim-down, .tile.anim-up { animation: none; } .cover { transition: none; } .tile { transition: none; } }
 body.fast .cover { transition: none; }
+
+/* Shut the Box: the NO MOVE / OUT notice sits inside the tray, above the dice and below the sliding cover */
+.tray .banner { top: 14px; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap; }
