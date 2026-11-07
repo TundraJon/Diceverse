@@ -151,6 +151,12 @@ Open questions: which games get it (Shut the Box first, then Pig, Farkle and Yac
 
 Update from the user (when Shut the Box was authorized): the bouncing-dice animation is for ALL games (Shut the Box, Pig, Farkle and Yacht), and it is a TWO-DIMENSIONAL canvas-drawn simulation, not three-dimensional (this matches the earlier decision to use lighter CSS-style dice instead of physics 3D). Still not specced; the Shut the Box tray was built with a self-contained placement function and room for it (Build Log 16).
 
+### Planner 11 — Shut the Box: the page scrolls, so the bottom of the dice tray is hidden (user-reported, not yet specced)
+User report: "I don't like that I have to scroll to see the bottom of the roll area." Measured in Build Log 16: the screen needs about 836 px of height (845 px at 390x844 after trimming), but real phones show less than that once the browser's own bars are counted, so the page scrolls, and the pinned ROLL/FLIP bar then covers the lower part of the tray (dice and the roll line) until you scroll.
+Where the height goes (about 635 px of fixed parts at 390x844 plus the tray): header about 56, score strip about 90 (one tall chip per player), turn line about 26, lid plaque 116, box padding and rails about 50, two rows of tiles about 134, pinned buttons about 82, spacing.
+Ideas (not decided): (A) a compact layout for this screen: a one-line score strip (name, score, round, status), a shorter plaque (about 56 px), the turn text moved into the tray's own info line, a slimmer header, and a tray that fills whatever height is left (it needs room for the later bouncing dice, Planner 10), with a smaller minimum on short screens; this would remove roughly 150 px; (B) keep the layout and accept scrolling (current); (C) put ROLL/FLIP inside the tray instead of a separate pinned bar.
+Open questions for the user: which phone and browser (visible height) they use; whether the tray may shrink below the 200 px minimum from Queue 9 on short screens (at roughly 150 px) in exchange for no scrolling; whether the lid plaque and the score strip may be compacted; whether Yacht, which scrolls by design because of its long category list, is fine as it is.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
