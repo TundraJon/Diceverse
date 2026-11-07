@@ -73,16 +73,12 @@ export const shutboxView = {
     ui.banner = el('div', 'banner');
     ui.banner.hidden = true;
     ui.turnline = el('div', 'turnline');
-    ui.plaque = el('div', 'plaque walnut');
-    const emblem = el('div', 'emblem');
-    emblem.append(el('div', 't', 'SHUT'), el('div', 't', 'THE BOX'), el('div', 's', '★ ★ ★'));
-    ui.plaque.appendChild(emblem);
     ui.box = el('div', 'sbox walnut');
     ui.tiles = el('div', 'tilegrid');
     ui.tray = el('div', 'tray');
     ui.cover = el('div', 'cover walnut');
     ui.box.append(el('div', 'rail'), ui.tiles, el('div', 'rail'), ui.tray, ui.cover);
-    ui.table.append(ui.turnline, ui.banner, ui.plaque, ui.box);
+    ui.table.append(ui.turnline, ui.banner, ui.box);
   },
 
   render(ui, view, session, ctx) {
