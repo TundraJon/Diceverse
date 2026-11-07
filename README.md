@@ -176,9 +176,11 @@ Open questions for the user: which phone and browser (visible height) they use; 
 
 **User answers so far:** "All recommendations": house rules about 3 to 5 (superseded by the sheet: columns to win 3/4/5 capped by players, and one option for occupied spaces: normal / jumping / forced move), bot = shared simulation brain with risk dial, mock up two column-board layouts side by side before queueing (11 tall columns do not fit a portrait phone as-is; candidates: horizontal bars, or a scrolling board).
 
-**Layout mockup shown (throwaway, not committed):** A mountain (bottom-aligned columns like the user's photo; board 411 px, with dice and buttons 568 px at 390 px wide) vs B sideways bars (283 px / 440 px). Recommendation: A. User's choice pending.
+**Answers recorded (user: "All recommendations"):** solo mode = win the columns in the fewest turns; the four edge-case choices above stand; a won column shows a cube at its peak. Layout: the user then showed a picture of a square board with diagonal ropes and asked about that orientation, so layout is open between A and C.
 
-**Next steps (no building):** user picks the layout and whether a won column shows a peak cube; solo mode question; then write the Queue spec.
+**Layout mockups shown (throwaway, not committed), same position, 390 px wide:** A mountain (bottom-aligned vertical columns like the user's first photo; 26 px dots; board 411 px, with dice and buttons 568 px); C diagonal ropes (the user's second picture; a 45-degree rotated grid in a square board, 28 px dots, sums at the top and right edges; board 366 px, with dice and buttons 523 px); B sideways bars (23 px cells; 283 px / 440 px). Recommendation: C if the user likes the look (biggest dots, shortest of the picture-style boards), otherwise A.
+
+**Next steps (no building):** user picks the layout; then write the Queue spec (rules above, 3 house rules: columns to win, occupied-space rule, and any the user adds; bot by simulation; save/solo/menu entries like the other games) and wait for "go".
 
 ## Build Log 1 (completed)
 
