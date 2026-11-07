@@ -1,0 +1,230 @@
+// Cliffhanger view: eleven columns shaped like a mountain (the 7 column is the peak) in front of a drawn snow-peak.
+import { renderDie } from '../dice.js';
+import { LEN, splits, chooseOptions, stuck } from '../../games/cliffhanger.js';
+
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+const COLS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
+
+// Cosmetic background: sky, far hills, the main peak with a snow cap, and a tree line. Drawn inline (no image files).
+const PEAK_SVG = `<svg class="peakbg" viewBox="0 0 360 420" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+<defs><linearGradient id="chSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d9fca"/><stop offset="1" stop-color="#c7e3f0"/></linearGradient>
+<linearGradient id="chRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d8fa3"/><stop offset="1" stop-color="#3f566b"/></linearGradient></defs>
+<rect width="360" height="420" fill="url(#chSky)"/>
+<path d="M0 300 L60 220 L110 270 L150 200 L200 290 L360 290 L360 420 L0 420Z" fill="#8fb3cc" opacity="0.7"/>
+<path d="M-10 420 L180 14 L370 420Z" fill="url(#chRock)"/>
+<path d="M180 14 L146 92 L162 84 L172 106 L186 82 L200 100 L214 90Z" fill="#f4f8fb"/>
+<path d="M146 92 L120 150 L140 140 L150 160 L168 138 L180 156 L196 134 L212 152 L226 138 L240 150 L214 90 L200 100 L186 82 L172 106 L162 84Z" fill="#dce9f2" opacity="0.85"/>
+<path d="M0 392 L18 352 L36 392 L54 346 L72 392 L96 356 L118 392 L140 350 L160 392 L190 392 L212 354 L234 392 L258 348 L280 392 L304 356 L326 392 L344 350 L360 392 L360 420 L0 420Z" fill="#1f4a3a"/>
+</svg>`;
+
+export const cliffhangerView = {
+  title: 'CLIFFHANGER',
+
+  rulesSheet(sheet, options) {
+    sheet.appendChild(el('h2', null, 'How to play Cliffhanger'));
+    [
+      `Be the first to win ${options.winCols} columns. There is one column for every dice total from 2 to 12: the rare totals have short columns, 7 has the longest.`,
+      'On your turn, roll four dice and split them into two pairs any way you like. The sum of each pair is a column to climb. You have only three brown markers per turn: a new column takes a marker, a column you already have a marker in moves up one space.',
+      'You must climb if you can. If only one of a pair’s columns can be used, you climb that one. A pair with the same total (7 and 7) climbs that column two spaces.',
+      'After climbing you may BANK (your markers become permanent progress) or ROLL AGAIN. If a roll lets you climb no column at all, you blow it: this turn’s climbing is lost (earlier progress stays) and your turn ends. Once all three markers are down, every roll must move one of them.',
+      'You win a column only when you BANK with a marker on its top space. A won column is closed to everyone and wipes out other players’ progress in it. A marker on top that you did not bank does not count.',
+      options.occupied === 'jump' ? 'Jumping: a marker skips any space where an opponent has progress.'
+        : options.occupied === 'forced' ? 'Forced move: while a marker stands on a space where an opponent has progress, you cannot bank. You must keep rolling until it is free, or you blow it.'
+          : 'Markers may share a space with an opponent.',
+      'Tip: 6, 7 and 8 come up most often, so the short columns are not the easy ones.',
+    ].forEach((t) => sheet.appendChild(el('p', null, t)));
+  },
+
+  summary(h) {
+    const occ = { normal: 'markers share spaces', jump: 'jumping', forced: 'forced move' }[h.occupied];
+    return `Win ${h.winCols} columns · ${occ}`;
+  },
+
+  init(session) { return this.sync(null, session); },
+
+  sync(_view, session) {
+    const st = session.state;
+    return {
+      seats: st.seats.map((s) => ({ name: s.name, isBot: s.isBot, won: s.won, turns: s.turns })),
+      prog: st.seats.map((s) => s.prog.slice()),
+      owner: st.owner.slice(),
+      markers: { ...st.turn.markers },
+      current: st.current,
+      dice: st.turn.dice.slice(),
+      rollId: session.log.length,
+      banner: null,
+      slip: false,
+    };
+  },
+
+  build(ui) {
+    ui.table.classList.add('climbwrap');
+    ui.chips = el('div', 'climbchips');
+    ui.board = el('div', 'climbboard');
+    ui.board.insertAdjacentHTML('afterbegin', PEAK_SVG);
+    ui.cols = el('div', 'climbcols');
+    ui.climber = el('div', 'climber', '\u{1F9D7}');
+    ui.climber.setAttribute('aria-hidden', 'true');
+    ui.banner = el('div', 'banner');
+    ui.banner.hidden = true;
+    ui.board.append(ui.cols, ui.climber, ui.banner);
+    ui.dice = el('div', 'dice climb');
+    ui.hint = el('div', 'hint');
+    ui.table.append(ui.chips, ui.board, ui.dice, ui.hint);
+  },
+
+  render(ui, view, session, ctx) {
+    const st = session.state;
+    const cur = view.seats[view.current];
+    const phase = st.turn.phase;
+    const human = !session.isOver() && !cur.isBot && !ctx.busy;
+    ui.controls.classList.add('sticky');
+    ui.log.hidden = true; // this screen is full: the board already shows everything the log would
+
+    // header chips: one compact row (colour, name, columns won)
+    ui.chips.innerHTML = '';
+    view.seats.forEach((s, i) => {
+      const chip = el('div', 'cchip' + (i === view.current && !session.isOver() ? ' active' : ''));
+      const sw = el('i');
+      sw.style.background = SEAT_COLORS[i];
+      chip.append(sw, el('span', 'cn', `${s.isBot ? '\u{1F916} ' : ''}${s.name}`), el('b', null, `${s.won}/${st.options.winCols}`));
+      chip.setAttribute('aria-label', `${s.name}: ${s.won} of ${st.options.winCols} columns won`);
+      ui.chips.appendChild(chip);
+    });
+
+    // board
+    ui.cols.innerHTML = '';
+    COLS.forEach((c) => {
+      const col = el('div', 'ccol' + (view.owner[c] !== null ? ' owned' : ''));
+      const mine = view.prog.map((p, i) => `${view.seats[i].name} ${p[c]}`).filter((_, i) => view.prog[i][c] > 0).join(', ');
+      col.setAttribute('role', 'img');
+      col.setAttribute('aria-label', `Column ${c}, ${LEN[c]} spaces${view.owner[c] !== null ? `, won by ${view.seats[view.owner[c]].name}` : ''}${mine ? `, progress: ${mine}` : ''}${view.markers[c] ? `, marker on space ${view.markers[c]}` : ''}`);
+      // the summit mark sits above the top space of a won column (its row is always reserved so nothing moves)
+      const flag = el('div', 'cflag', view.owner[c] !== null ? '\u{1F3D4}️' : '');
+      if (view.owner[c] !== null) flag.style.filter = `drop-shadow(0 0 3px ${SEAT_COLORS[view.owner[c]]})`;
+      col.appendChild(flag);
+      for (let step = LEN[c]; step >= 1; step--) {
+        const d = el('div', 'cd' + (step === LEN[c] ? ' top' : ''));
+        const who = view.prog.map((p, i) => (p[c] === step ? i : -1)).filter((i) => i >= 0);
+        who.forEach((i) => { const m = el('span', 'cm'); m.style.background = SEAT_COLORS[i]; d.appendChild(m); });
+        if (step === LEN[c] && view.owner[c] !== null) d.style.background = SEAT_COLORS[view.owner[c]];
+        if (view.markers[c] === step) d.appendChild(el('span', 'cring'));
+        col.appendChild(d);
+      }
+      col.appendChild(el('div', 'clabel', String(c)));
+      ui.cols.appendChild(col);
+    });
+    ui.climber.className = 'climber' + (view.slip ? ' slip' : '');
+    ui.banner.hidden = !view.banner;
+    ui.banner.textContent = view.banner ? view.banner.text : '';
+    ui.banner.className = 'banner' + (view.banner && view.banner.good ? ' hot' : '');
+
+    // dice and hint
+    ui.dice.innerHTML = '';
+    const n = view.dice.length || 4;
+    for (let i = 0; i < n; i++) ui.dice.appendChild(renderDie(view.dice[i] === undefined ? null : view.dice[i], { tumble: ctx.tumble && !ctx.reduced, danger: false, cls: 'cream' }));
+    const left = 3 - Object.keys(view.markers).length;
+    ui.hint.textContent = session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…`
+      : phase === 'choose' ? 'Choose a pair to climb'
+        : phase === 'decide' ? `${left} marker${left === 1 ? '' : 's'} left · bank to keep your climb`
+          : 'Roll the four dice';
+
+    // controls
+    ui.controls.innerHTML = '';
+    ui.controls.style.gridTemplateColumns = '';
+    const btn = (label, cls, disabled, onClick, sub) => {
+      const b = el('button', cls);
+      b.appendChild(document.createTextNode(label));
+      if (sub) b.appendChild(el('small', 'sub', sub));
+      b.disabled = !!disabled;
+      b.addEventListener('click', onClick);
+      ui.controls.appendChild(b);
+      return b;
+    };
+    if (phase === 'choose' && !session.isOver()) {
+      const options = chooseOptions(st);
+      ui.controls.style.gridTemplateColumns = `repeat(${Math.min(3, Math.max(1, options.length))}, 1fr)`; // up to six options wrap to a second row
+      const sp = splits(st.turn.dice);
+      options.forEach((cols) => {
+        const label = cols.length === 2 ? `${cols[0]} + ${cols[1]}` : `${cols[0]} only`;
+        // the dice split that makes this choice (a pair of sums, or the one sum for a single column)
+        const m = sp.find((x) => cols.every((c) => x.sums.includes(c)));
+        btn(label, 'btn-roll pair', !human, () => ctx.act([{ type: 'CHOOSE', cols }]), m ? m.text : '');
+      });
+    } else {
+      const canBank = phase === 'decide' && Object.keys(view.markers).length > 0 && !stuck(st);
+      btn(phase === 'decide' ? 'ROLL AGAIN' : 'ROLL', 'btn-roll', !human || session.isOver(), () => ctx.act([{ type: 'ROLL' }]));
+      if (phase === 'decide') btn('BANK', 'btn-bank', !human || !canBank, () => ctx.act([{ type: 'BANK' }]));
+      else ui.controls.firstChild.classList.add('span2');
+    }
+  },
+
+  reduce(view, ev, ctx) {
+    const name = (s) => view.seats[s].name;
+    let delay = 0;
+    let tumble = false;
+    switch (ev.type) {
+      case 'ROLLED':
+        view.dice = ev.dice.slice();
+        view.rollId += 1;
+        view.banner = null;
+        view.slip = false;
+        tumble = true;
+        delay = ctx.reduced ? 150 : 650;
+        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
+        break;
+      case 'MOVED':
+        view.markers[ev.col] = ev.to;
+        ctx.log(`${name(ev.seat)} ${ev.placed ? 'placed a marker in' : 'climbed'} column ${ev.col} (space ${ev.to} of ${LEN[ev.col]})`);
+        delay = ctx.reduced ? 100 : 380;
+        break;
+      case 'BLOWN':
+        view.banner = { text: 'BLOWN IT! Progress lost' };
+        view.slip = true;
+        ctx.log(`${name(ev.seat)} blew it`);
+        ctx.announce(`${name(ev.seat)} blew it and lost this turn's climb`);
+        ctx.vibrate();
+        delay = ctx.reduced ? 600 : 1500;
+        break;
+      case 'BANKED':
+        ev.cols.forEach((m) => { view.prog[ev.seat][m.col] = m.to; });
+        view.markers = {};
+        ctx.log(`${name(ev.seat)} banked ${ev.cols.map((m) => m.col).join(', ')}`);
+        delay = ctx.reduced ? 100 : 350;
+        break;
+      case 'COLUMN_WON':
+        view.owner[ev.col] = ev.seat;
+        view.seats[ev.seat].won += 1;
+        ev.removedFrom.forEach((i) => { view.prog[i][ev.col] = 0; });
+        view.banner = { text: `${name(ev.seat)} won column ${ev.col}!`, good: true };
+        ctx.log(`${name(ev.seat)} won column ${ev.col}`);
+        ctx.announce(`${name(ev.seat)} won column ${ev.col}`);
+        delay = ctx.reduced ? 400 : 1100;
+        break;
+      case 'TURN_ENDED':
+        view.markers = {};
+        view.banner = null;
+        view.slip = false;
+        view.seats[ev.seat].turns += 1;
+        break;
+      case 'TURN_STARTED':
+        view.current = ev.seat;
+        view.dice = [];
+        view.markers = {};
+        delay = 150;
+        break;
+      case 'GAME_OVER':
+        delay = ctx.reduced ? 200 : 500;
+        break;
+      default:
+        break;
+    }
+    return { delay, tumble };
+  },
+};

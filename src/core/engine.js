@@ -3,9 +3,10 @@ import { createRng } from './rng.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
-// Actions may carry payloads (`ids` for Farkle SET_ASIDE and Yacht ROLL, `category` for Yacht SCORE); compare them all.
+// Actions may carry payloads (`ids` for Farkle SET_ASIDE and Yacht ROLL, `category` for Yacht SCORE, `cols` for Cliffhanger CHOOSE); compare them all.
 const sortedIds = (a) => (a.ids ? a.ids.slice().sort((x, y) => x - y) : null);
-const sameAction = (a, b) => a.type === b.type && a.category === b.category && JSON.stringify(sortedIds(a)) === JSON.stringify(sortedIds(b));
+const sortedCols = (a) => (a.cols ? a.cols.slice().sort((x, y) => x - y) : null); // Cliffhanger CHOOSE {cols}
+const sameAction = (a, b) => a.type === b.type && a.category === b.category && JSON.stringify(sortedIds(a)) === JSON.stringify(sortedIds(b)) && JSON.stringify(sortedCols(a)) === JSON.stringify(sortedCols(b));
 
 export function createSession(game, options, seed) {
   const rng = createRng(seed);

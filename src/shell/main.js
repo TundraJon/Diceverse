@@ -99,7 +99,7 @@ function renderMenu() {
 
   const gamePanel = el('div', 'panel');
   gamePanel.appendChild(el('h2', null, 'Game'));
-  const gseg = el('div', 'seg');
+  const gseg = el('div', 'seg games'); // wraps onto a second row when there are many games
   GAME_ORDER.forEach((id) => {
     const b = el('button', null, GAMES[id].meta.name);
     b.setAttribute('aria-pressed', String(settings.game === id));

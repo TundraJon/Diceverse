@@ -200,3 +200,34 @@ body.fast .cover { transition: none; }
 
 /* Shut the Box: the NO MOVE / OUT notice sits inside the tray, above the dice and below the sliding cover */
 .tray .banner { top: 14px; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap; }
+
+/* Menu: the game picker wraps into rows of three (five games no longer fit on one row) */
+.seg.games { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); grid-auto-columns: auto; }
+
+/* Cliffhanger */
+.table.climbwrap { flex: none; justify-content: flex-start; align-items: stretch; gap: 8px; min-height: 0; padding: 0; }
+.climbchips { display: flex; gap: 6px; }
+.cchip { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; font-size: 0.8rem; }
+.cchip.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.25); }
+.cchip i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.cchip .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cchip b { color: var(--gold); font-variant-numeric: tabular-nums; }
+.climbboard { --d: min(26px, calc((100vw - 32px - 12px) / 11 - 4px)); position: relative; border-radius: 12px; overflow: hidden; padding: 6px 6px 8px; border: 1px solid var(--line); }
+.peakbg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.climbcols { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; }
+.ccol { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.cd { position: relative; width: var(--d); height: var(--d); border-radius: 50%; background: rgba(8, 28, 40, 0.62); display: grid; grid-template-columns: repeat(2, 1fr); align-content: center; justify-items: center; gap: 1px; padding: calc(var(--d) * 0.18); }
+.cd.top { outline: 1px dashed rgba(251,191,36,0.8); }
+.cm { width: 100%; aspect-ratio: 1; min-width: 6px; border-radius: 2px; }
+.cring { position: absolute; inset: -3px; border-radius: 50%; border: 3px solid #c58b4e; box-shadow: 0 0 6px rgba(197,139,78,0.9); }
+.ccol.owned .cd:not(.top) { opacity: 0.4; }
+.clabel { font-size: 0.72rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1; }
+.cflag { height: 18px; line-height: 18px; font-size: 14px; }
+.climber { position: absolute; left: 10px; bottom: 120px; z-index: 2; font-size: 22px; transition: transform 0.7s ease-in, opacity 0.7s; }
+.climber.slip { transform: translateY(46px) rotate(25deg); opacity: 0.2; }
+.climbboard .banner { z-index: 3; top: 44px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+.dice.climb { gap: 10px; }
+.dice.climb .die { --s: 46px; }
+.controls button.pair { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1.1; }
+.controls button .sub { font-size: 0.68rem; font-weight: 600; opacity: 0.75; }
+@media (prefers-reduced-motion: reduce) { .climber { transition: none; } }

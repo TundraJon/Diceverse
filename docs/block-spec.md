@@ -164,3 +164,4 @@ docs/          reference material
 - CategorySheet is implemented as `src/blocks/category-sheet.js` (Yacht, Build Log 13); the hold-and-reroll flow is part of `src/games/yacht.js` (ROLL carries the dice to re-roll).
 - Bot hooks added for many-plan games: `turnValue`, `isDeterministic`, `botHints.noiseScale`, `botHints.simsPerPlan`.
 - TileBoard is implemented as `src/blocks/tile-board.js` (Shut the Box, Build Log 16). House-rule options can be disabled by another choice (`disabled(options)`, `normalizeOptions`).
+- Cliffhanger (the Can't Stop-style climb, Build Log 19) is `src/games/cliffhanger.js`. It uses the dice-pool block but not the shared push-loop block: its turn is marker placement (ROLL, then CHOOSE {cols}, then BANK or ROLL), not a running points total. Bot hooks: `candidatePlans`, `rollout`, `shortcut`, `turnValue`, `isDeterministic`, `botHints`; a step in a column is valued by the exact expected number of rolls to get that sum.
