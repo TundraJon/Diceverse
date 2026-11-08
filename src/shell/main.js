@@ -67,8 +67,32 @@ function decorate() {
     s.me = isMe(opts[i]);
     s.face = moods.faceOf(i);
   });
-  view.talk = moods.getTalk();
   view.thinking = moods.getThinking();
+}
+
+// A bot's line shows in a speech bubble directly under that bot's own chip (it may cover what is below for a moment).
+function placeBubble() {
+  const screen = ui.table && ui.table.closest('.screen');
+  if (!screen) return;
+  if (!ui.bubble) {
+    ui.bubble = el('div', 'talkbubble');
+    ui.bubble.setAttribute('aria-hidden', 'true'); // the line is announced separately
+    ui.bubble.hidden = true;
+    screen.appendChild(ui.bubble);
+  }
+  const talk = moods.getTalk();
+  const chip = talk ? screen.querySelectorAll('.cchip, .scores .chip')[talk.seat] : null;
+  if (!chip) { ui.bubble.hidden = true; return; }
+  ui.bubble.hidden = false;
+  ui.bubble.textContent = `${moods.faceOf(talk.seat)} \u201c${talk.line}\u201d`;
+  const sr = screen.getBoundingClientRect();
+  const cr = chip.getBoundingClientRect();
+  ui.bubble.style.maxWidth = `${Math.min(300, sr.width - 8)}px`;
+  const bw = ui.bubble.offsetWidth;
+  const left = Math.min(Math.max(cr.left - sr.left, 4), sr.width - bw - 4);
+  ui.bubble.style.left = `${left}px`;
+  ui.bubble.style.top = `${cr.bottom - sr.top + 8}px`;
+  ui.bubble.style.setProperty('--ptr', `${Math.min(Math.max(cr.left + cr.width / 2 - sr.left - left, 14), bw - 14)}px`);
 }
 
 function announce(text) { live.textContent = ''; setTimeout(() => (live.textContent = text), 20); }
@@ -403,6 +427,7 @@ function render(tumble) {
   const c = ctx();
   c.tumble = tumble;
   G.view.render(ui, view, session, c);
+  placeBubble();
 }
 
 function addLog(text) {

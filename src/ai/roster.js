@@ -324,10 +324,26 @@ export function drawOpponents(count, words) {
   return ids.slice(0, count);
 }
 
-// One random line for a mood that is not the same as the last one this bot said (when it has more than one).
-export function pickLine(botId, mood, rand, last) {
+// A shuffled deck per bot and mood: every line is dealt once before any repeats, then the deck is reshuffled (never
+// starting with the line just dealt). `decks` is a plain object the caller keeps (not saved); `rand()` returns a random
+// uint32. A one-line list simply gives that line every time.
+export function dealLine(decks, botId, mood, rand) {
   const lines = (AI_ROSTER[botId] && AI_ROSTER[botId].moods[mood] && AI_ROSTER[botId].moods[mood].text) || [];
   if (!lines.length) return '';
-  const pool = lines.length > 1 ? lines.filter((l) => l !== last) : lines;
-  return pool[rand % pool.length];
+  const key = `${botId}:${mood}`;
+  const d = decks[key] || (decks[key] = { cards: [], last: null });
+  if (!d.cards.length) {
+    d.cards = lines.slice();
+    for (let i = d.cards.length - 1; i > 0; i--) {
+      const j = rand() % (i + 1);
+      [d.cards[i], d.cards[j]] = [d.cards[j], d.cards[i]];
+    }
+    // the card dealt next is the last one in the array: keep it different from the line dealt just before
+    if (d.cards.length > 1 && d.cards[d.cards.length - 1] === d.last) {
+      const k = rand() % (d.cards.length - 1);
+      [d.cards[k], d.cards[d.cards.length - 1]] = [d.cards[d.cards.length - 1], d.cards[k]];
+    }
+  }
+  d.last = d.cards.pop();
+  return d.last;
 }

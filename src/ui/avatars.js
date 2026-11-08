@@ -74,13 +74,12 @@ export function faceFor(seat, mood) {
   return (seat && seat.avatar) || personFace(DEFAULT_AVATAR);
 }
 
-// The status text that replaces a view's normal turn line while a bot talks or thinks.
+// The status text that replaces a view's normal turn line while a bot is thinking (talk now shows in a speech bubble).
 export function statusOverride(view, cur, over) {
-  if (view.talk) return `${view.talk.name}: “${view.talk.line}”`;
   if (!over && cur && cur.isBot) {
     const t = view.thinking;
     if (t) return t.startsWith(cur.name) ? t : `${cur.name}: ${t}`;
-    return `${cur.name} is thinking…`;
+    return `${cur.name} is thinking\u2026`;
   }
   return null;
 }

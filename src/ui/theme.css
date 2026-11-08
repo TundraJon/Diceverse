@@ -207,13 +207,12 @@ body.fast .cover { transition: none; }
 /* Cliffhanger */
 .table.climbwrap { flex: none; justify-content: flex-start; align-items: stretch; gap: 6px; min-height: 0; padding: 0; }
 .climbchips { display: grid; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); gap: 6px; }
-.cchip { min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 4px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; font-size: 0.8rem; }
+.cchip { min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; font-size: 0.8rem; }
 .cchip.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.25); }
-.cchip .cl { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .cchip i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
-.cchip .cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cchip b { color: var(--gold); font-variant-numeric: tabular-nums; font-size: 0.75rem; line-height: 1.1; }
-@media (max-width: 340px) { .cchip { font-size: 0.72rem; padding: 5px 6px; } }
+.cchip .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cchip b { color: var(--gold); font-variant-numeric: tabular-nums; font-size: 0.78rem; }
+@media (max-width: 340px) { .cchip { font-size: 0.72rem; padding: 4px 6px; } }
 .climbboard { --d: min(26px, calc((100vw - 32px - 12px) / 11 - 4px)); position: relative; border-radius: 12px; overflow: hidden; padding: 6px 6px 8px; border: 1px solid var(--line); }
 .peakbg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .climbcols { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; }
@@ -244,3 +243,9 @@ body.fast .cover { transition: none; }
 .avgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .avbtn { min-height: 44px; padding: 0; font-size: 1.6rem; line-height: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
 .avbtn[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
+
+/* Speech bubble under the talking bot's chip */
+.talkbubble { position: absolute; z-index: 8; background: #fff6df; color: #2a1d10; border-radius: 12px; padding: 6px 10px; font-size: 0.85rem; line-height: 1.3; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; animation: bubbleIn 0.15s ease; }
+.talkbubble::before { content: ""; position: absolute; top: -6px; left: calc(var(--ptr, 20px) - 6px); border: 6px solid transparent; border-top: 0; border-bottom-color: #fff6df; }
+@keyframes bubbleIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .talkbubble { animation: none; } }

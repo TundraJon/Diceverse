@@ -111,6 +111,7 @@ export const cliffhangerView = {
 
   build(ui) {
     ui.table.classList.add('climbwrap');
+    ui.scores.hidden = true; // Cliffhanger has its own chips; the empty strip doubled the gap under the title
     ui.chips = el('div', 'climbchips');
     ui.board = el('div', 'climbboard');
     ui.board.insertAdjacentHTML('afterbegin', PEAK_SVG);
@@ -134,16 +135,14 @@ export const cliffhangerView = {
     ui.controls.classList.add('sticky');
     ui.log.hidden = true; // this screen is full: the board already shows everything the log would
 
-    // header chips: two lines (colour + name, then columns won). One row for 1 to 3 players, a 2 x 2 grid for 4.
+    // header chips: one line each (colour, face and name, columns won), two per row; one row for 1 or 2 players
     ui.chips.innerHTML = '';
-    ui.chips.style.setProperty('--n', String(view.seats.length <= 3 ? view.seats.length : 2));
+    ui.chips.style.setProperty('--n', String(view.seats.length === 1 ? 1 : 2));
     view.seats.forEach((s, i) => {
       const chip = el('div', 'cchip' + (i === view.current && !session.isOver() ? ' active' : ''));
-      const line = el('div', 'cl');
       const sw = el('i');
       sw.style.background = SEAT_COLORS[i];
-      line.append(sw, el('span', 'cn', `${s.face || (s.isBot ? '\u{1F916}' : '\u{1F464}')} ${s.name}`));
-      chip.append(line, el('b', null, `${s.won}/${st.options.winCols}`));
+      chip.append(sw, el('span', 'cn', `${s.face || (s.isBot ? '\u{1F916}' : '\u{1F464}')} ${s.name}`), el('b', null, `${s.won}/${st.options.winCols}`));
       chip.setAttribute('aria-label', `${s.name}: ${s.won} of ${st.options.winCols} columns won`);
       ui.chips.appendChild(chip);
     });
