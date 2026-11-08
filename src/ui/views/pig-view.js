@@ -1,6 +1,7 @@
 // Pig view: rendering and event presentation for the Pig screen.
 import { renderDie } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
+import { isMe, statusOverride } from '../avatars.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -57,8 +58,10 @@ export const pigView = {
     }
     const cur = view.seats[view.current];
     ui.turnline.innerHTML = '';
-    if (!session.isOver()) {
-      if (cur.name === 'You') ui.turnline.append(document.createTextNode('Your turn'));
+    const said = statusOverride(view, cur, session.isOver());
+    if (said) ui.turnline.textContent = said;
+    else if (!session.isOver()) {
+      if (isMe(cur)) ui.turnline.append(document.createTextNode('Your turn'));
       else ui.turnline.append(el('strong', null, cur.name), document.createTextNode(cur.isBot ? ' is thinking…' : "'s turn"));
     }
     ui.banner.hidden = !view.banner;

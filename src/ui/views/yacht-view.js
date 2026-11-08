@@ -1,6 +1,7 @@
 // Yacht view: five tappable dice (tap = hold), a roll counter, and the category sheet.
 import { renderDie } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
+import { isMe, statusOverride } from '../avatars.js';
 import { RULESETS, RULESET_IDS, UPPER_KEYS, UPPER_TARGET, categoryList, potential, totals, comparisonRows } from '../../blocks/category-sheet.js';
 
 const el = (tag, cls, text) => {
@@ -107,12 +108,14 @@ export const yachtView = {
 
     // turn line
     ui.turnline.innerHTML = '';
-    if (!session.isOver()) {
+    const said = statusOverride(view, cur, session.isOver());
+    if (said) ui.turnline.textContent = said;
+    else if (!session.isOver()) {
       const round = Math.min(cur.turns + 1, set.rounds);
-      const who = cur.name === 'You' ? 'Your turn' : cur.name;
-      const tail = cur.isBot ? ' is thinking…' : cur.name === 'You' ? '' : "'s turn";
+      const who = isMe(cur) ? 'Your turn' : cur.name;
+      const tail = cur.isBot ? ' is thinking…' : isMe(cur) ? '' : "'s turn";
       const roll = phase === 'start' ? 'ready to roll' : rollsLeft > 0 ? `${rollsLeft} roll${rollsLeft === 1 ? '' : 's'} left` : 'pick a category';
-      if (cur.name === 'You') ui.turnline.append(document.createTextNode(`${who} · round ${round} of ${set.rounds} · ${roll}`));
+      if (isMe(cur)) ui.turnline.append(document.createTextNode(`${who} · round ${round} of ${set.rounds} · ${roll}`));
       else ui.turnline.append(el('strong', null, cur.name), document.createTextNode(`${tail} · round ${round} of ${set.rounds} · ${roll}`));
     }
     ui.banner.hidden = !view.banner;
@@ -126,7 +129,7 @@ export const yachtView = {
     const live = mine && phase === 'choose' ? st.turn.dice : null;
     ui.sheetBox.innerHTML = '';
     const head = el('div', 'cathead');
-    head.append(el('strong', null, seat.name === 'You' ? 'Your sheet' : `${seat.name}'s sheet`), el('span', null, mine ? '' : 'viewing (tap a name above)'));
+    head.append(el('strong', null, isMe(seat) ? 'Your sheet' : `${seat.name}'s sheet`), el('span', null, mine ? '' : 'viewing (tap a name above)'));
     ui.sheetBox.appendChild(head);
     const list = el('div', 'catlist');
     const tt = totals(setId, seat.card, seat.extra);

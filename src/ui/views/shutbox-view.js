@@ -1,6 +1,7 @@
 // Shut the Box view: a wooden box with 12 tiles (6 + 6), a tall felt dice tray, and a sliding cover for a shut box.
 import { renderDie } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
+import { isMe, statusOverride } from '../avatars.js';
 import { validSets, oneDieAllowed } from '../../blocks/tile-board.js';
 
 const el = (tag, cls, text) => {
@@ -127,7 +128,7 @@ export const shutboxView = {
     const sel = view.selected.slice().sort((a, b) => a - b);
     const selSum = sel.reduce((a, b) => a + b, 0);
     const info = el('div', 'trayinfo');
-    if (!n) info.textContent = session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…` : 'Roll the dice';
+    if (!n) info.textContent = session.isOver() ? '' : cur.isBot ? (statusOverride(view, cur, false) || `${cur.name} is thinking…`) : 'Roll the dice';
     else info.textContent = `Roll ${view.target}${flipping ? ` · selected ${sel.length ? `${sel.join(' + ')} = ${selSum}` : 'none'}` : ''}`;
     ui.tray.appendChild(info);
     ui.tray.appendChild(ui.banner);
@@ -148,9 +149,11 @@ export const shutboxView = {
     ui.banner.hidden = !view.banner;
     ui.banner.textContent = view.banner ? view.banner.text : '';
     ui.turnline.innerHTML = '';
-    if (!session.isOver()) {
+    const said = statusOverride(view, cur, session.isOver());
+    if (said) ui.turnline.textContent = said;
+    else if (!session.isOver()) {
       const round = o.format === 'single' ? '' : ` · round ${view.round}`;
-      if (cur.name === 'You') ui.turnline.append(document.createTextNode(`Your turn${round}`));
+      if (isMe(cur)) ui.turnline.append(document.createTextNode(`Your turn${round}`));
       else ui.turnline.append(el('strong', null, cur.name), document.createTextNode(`${cur.isBot ? ' is thinking…' : "'s turn"}${round}`));
     }
 
@@ -203,7 +206,7 @@ export const shutboxView = {
         break;
       case 'BOX_SHUT': {
         const seat = view.seats[ev.seat];
-        const who = seat.name === 'You' ? 'You' : seat.name;
+        const who = isMe(seat) ? 'You' : seat.name;
         view.cover = { down: true, congrats: !seat.isBot, sub: `${who} shut the box!` };
         ctx.log(`${name(ev.seat)} shut the box!`);
         ctx.announce(`${seat.isBot ? '' : 'Congratulations! '}${who} shut the box!`);

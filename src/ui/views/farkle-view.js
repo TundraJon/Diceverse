@@ -1,6 +1,7 @@
 // Farkle view: six tappable dice, a kept row, live selection score, and the turn bar.
 import { renderDie } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
+import { isMe, statusOverride } from '../avatars.js';
 import { scoreSelection, bestSelection, scoreTable } from '../../blocks/combo-table.js';
 import { canBank } from '../../games/farkle.js';
 
@@ -152,8 +153,10 @@ export const farkleView = {
 
     // turn line
     ui.turnline.innerHTML = '';
-    if (!session.isOver()) {
-      if (cur.name === 'You') ui.turnline.append(document.createTextNode('Your turn'));
+    const said = statusOverride(view, cur, session.isOver());
+    if (said) ui.turnline.textContent = said;
+    else if (!session.isOver()) {
+      if (isMe(cur)) ui.turnline.append(document.createTextNode('Your turn'));
       else ui.turnline.append(el('strong', null, cur.name), document.createTextNode(cur.isBot ? ' is thinking…' : "'s turn"));
     }
 

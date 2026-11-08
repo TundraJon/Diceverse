@@ -8,7 +8,7 @@ export function renderScoreStrip(container, seats, current, turnPoints, onSeatCl
     const name = document.createElement('div');
     name.className = 'name';
     const n = document.createElement('span');
-    n.textContent = (s.isBot ? '🤖 ' : '👤 ') + s.name;
+    n.textContent = (s.face || (s.isBot ? '🤖' : '👤')) + ' ' + s.name;
     const t = document.createElement('span');
     t.textContent = `${s.turns} turn${s.turns === 1 ? '' : 's'}`;
     name.append(n, t);

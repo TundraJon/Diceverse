@@ -1,5 +1,6 @@
 // Cliffhanger view: eleven columns shaped like a mountain (the 7 column is the peak) in front of a drawn snow-peak.
 import { renderDie } from '../dice.js';
+import { statusOverride } from '../avatars.js';
 import { LEN, splits, chooseOptions, stuck } from '../../games/cliffhanger.js';
 
 const el = (tag, cls, text) => {
@@ -141,7 +142,7 @@ export const cliffhangerView = {
       const line = el('div', 'cl');
       const sw = el('i');
       sw.style.background = SEAT_COLORS[i];
-      line.append(sw, el('span', 'cn', `${s.isBot ? '\u{1F916} ' : ''}${s.name}`));
+      line.append(sw, el('span', 'cn', `${s.face || (s.isBot ? '\u{1F916}' : '\u{1F464}')} ${s.name}`));
       chip.append(line, el('b', null, `${s.won}/${st.options.winCols}`));
       chip.setAttribute('aria-label', `${s.name}: ${s.won} of ${st.options.winCols} columns won`);
       ui.chips.appendChild(chip);
@@ -180,10 +181,10 @@ export const cliffhangerView = {
     const n = view.dice.length || 4;
     for (let i = 0; i < n; i++) ui.dice.appendChild(renderDie(view.dice[i] === undefined ? null : view.dice[i], { tumble: ctx.tumble && !ctx.reduced, danger: false, cls: 'cream' }));
     const left = 3 - Object.keys(view.markers).length;
-    ui.hint.textContent = session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…`
+    ui.hint.textContent = statusOverride(view, cur, session.isOver()) || (session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…`
       : phase === 'choose' ? 'Choose a pair to climb'
         : phase === 'decide' ? `${left} marker${left === 1 ? '' : 's'} left · bank to keep your climb`
-          : 'Roll the four dice';
+          : 'Roll the four dice');
 
     // controls
     ui.controls.innerHTML = '';

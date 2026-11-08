@@ -5,8 +5,10 @@ import { newSeed } from '../core/rng.js';
 import { createScheduler } from '../core/scheduler.js';
 import { decide, thinkMs, PRESETS } from '../ai/brain.js';
 import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, updateBest, storageAvailable } from './save.js';
+import { createMoods } from './moods.js';
+import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
+import { KINDS, TONES, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
-const BOT_NAMES = ['Pip', 'Dottie', 'Rook', 'Mabel', 'Juno', 'Fitch'];
 const app = document.getElementById('app');
 const live = document.getElementById('live');
 // Hidden test speed: ?speed=N (0 to 1, default 1) scales every presentation delay. Rules and bot decisions are unaffected.
@@ -25,7 +27,9 @@ const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-m
 
 /* ---------- settings (per-game house rules; migrates the old Pig-only layout) ---------- */
 function loadAllSettings() {
-  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {} }, loadSettings() || {});
+  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {}, name: 'You', avatar: DEFAULT_AVATAR }, loadSettings() || {});
+  s.name = cleanName(s.name); // empty means "You"
+  s.avatar = cleanAvatar(s.avatar);
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
   GAME_ORDER.forEach((id) => {
@@ -46,6 +50,27 @@ let storageWarned = false;
 
 const useGame = (id) => { G = { id, mod: GAMES[id], view: VIEWS[id] }; };
 
+// Bot moods and polite talk (cosmetic; see moods.js). Seats come from the options the game was started with, which
+// keep the avatar, the "me" flag and the roster id that the game rules do not need.
+const moods = createMoods({
+  sched,
+  rand: () => newSeed()[0],
+  redraw: () => { if (session && view && ui.table) render(false); },
+  announce: (t) => announce(t),
+  seatsOf: () => (session ? session.options.seats || [] : []),
+});
+// Put the shell-owned cosmetic data (face, "me", what a bot says or thinks) onto the view before it draws.
+function decorate() {
+  if (!session || !view || !view.seats) return;
+  const opts = session.options.seats || [];
+  view.seats.forEach((s, i) => {
+    s.me = isMe(opts[i]);
+    s.face = moods.faceOf(i);
+  });
+  view.talk = moods.getTalk();
+  view.thinking = moods.getThinking();
+}
+
 function announce(text) { live.textContent = ''; setTimeout(() => (live.textContent = text), 20); }
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -58,16 +83,18 @@ function el(tag, cls, text) {
 function buildOptions() {
   const mod = GAMES[settings.game];
   const house = { ...settings.house[settings.game] };
+  const you = { name: settings.name, isBot: false, avatar: personFace(settings.avatar) };
   let seats;
   if (settings.mode === 'solo') {
-    seats = [{ name: 'You', isBot: false }];
+    seats = [{ ...you, me: true }];
     (mod.meta.soloHide || []).forEach((k) => { house[k] = false; });
   } else if (settings.mode === 'pass') {
-    seats = Array.from({ length: settings.players }, (_, i) => ({ name: `Player ${i + 1}`, isBot: false }));
+    // player 1 is the profile; players 2 to 4 keep the plain face. "Your turn" is only for a single human.
+    seats = Array.from({ length: settings.players }, (_, i) => (i === 0 ? { ...you, me: false } : { name: `Player ${i + 1}`, isBot: false, avatar: PLAIN_FACE, me: false }));
   } else {
-    seats = [{ name: 'You', isBot: false }].concat(
-      Array.from({ length: settings.players - 1 }, (_, i) => ({ name: BOT_NAMES[i], isBot: true, preset: settings.preset }))
-    );
+    // vs Bots: opponents are drawn at random from the roster (cosmetic: names, faces and lines only)
+    const ids = drawOpponents(settings.players - 1, [...newSeed(), ...newSeed()]);
+    seats = [{ ...you, me: true }].concat(ids.map((id) => ({ name: AI_ROSTER[id].name, isBot: true, preset: settings.preset, botId: id, avatar: AI_ROSTER[id].defaultEmoji })));
   }
   return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats } : { ...house, seats };
 }
@@ -86,6 +113,10 @@ function renderMenu() {
   const mod = GAMES[gameId];
   const gview = VIEWS[gameId];
   const screen = el('section', 'screen');
+  const gear = el('button', 'gear', '\u2699\uFE0F');
+  gear.setAttribute('aria-label', 'Settings');
+  gear.addEventListener('click', openSettings);
+  screen.appendChild(gear);
   const hero = el('div', 'hero');
   hero.append(el('div', 'logo', '🎲'), el('h1', null, 'DICEVERSE'), el('p', null, 'dice companion'));
   screen.appendChild(hero);
@@ -199,6 +230,54 @@ function openRules(options) {
   });
 }
 
+// Settings: your name and your avatar (18 faces: man / person / woman by six skin tones, all visible at once).
+function openSettings() {
+  openSheet((sheet, close) => {
+    sheet.classList.add('tall'); // all 18 faces and the name fit without scrolling, even on a small phone
+    sheet.appendChild(el('h2', null, 'Settings'));
+    const namePanel = el('div', 'panel');
+    namePanel.appendChild(el('h2', null, 'Your name'));
+    const input = el('input', 'namefield');
+    input.type = 'text';
+    input.maxLength = 12;
+    input.value = settings.name === 'You' ? '' : settings.name;
+    input.placeholder = 'You (up to 12 letters)';
+    input.autocomplete = 'off';
+    input.setAttribute('autocapitalize', 'words');
+    input.setAttribute('aria-label', 'Your name');
+    namePanel.appendChild(input);
+    sheet.appendChild(namePanel);
+
+    const avPanel = el('div', 'panel');
+    const preview = el('div', 'avpreview');
+    avPanel.appendChild(preview);
+    const grid = el('div', 'avgrid');
+    const buttons = [];
+    TONES.forEach((tone, t) => {
+      KINDS.forEach((k) => {
+        const b = el('button', 'avbtn', personFace({ kind: k.key, tone: t }));
+        b.setAttribute('aria-label', `${k.label}, ${t === 0 ? 'default tone' : `skin tone ${t}`}`);
+        b.addEventListener('click', () => { settings.avatar = { kind: k.key, tone: t }; persistSettings(); refresh(); });
+        buttons.push([b, k.key, t]);
+        grid.appendChild(b);
+      });
+    });
+    avPanel.appendChild(grid);
+    sheet.appendChild(avPanel);
+    const refresh = () => {
+      buttons.forEach(([b, kind, t]) => b.setAttribute('aria-pressed', String(settings.avatar.kind === kind && settings.avatar.tone === t)));
+      preview.textContent = `${personFace(settings.avatar)}  ${cleanName(input.value)}`;
+    };
+    input.addEventListener('input', refresh);
+    const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); refresh(); };
+    input.addEventListener('change', save);
+    const ok = el('button', 'primary', 'Done');
+    ok.addEventListener('click', () => { save(); close(); });
+    sheet.appendChild(ok);
+    refresh();
+  });
+}
+
 function openHouseRules() {
   const gameId = settings.game;
   const mod = GAMES[gameId];
@@ -254,7 +333,8 @@ function startNew(options) {
   sched.cancelAll();
   busy = false;
   if (!options) useGame(settings.game);
-  session = createSession(G.mod, options || buildOptions(), newSeed());
+  const seed = newSeed(); // the game seed is drawn first, then the opponents (so a pinned test seed still works)
+  session = createSession(G.mod, options || buildOptions(), seed);
   persistSession();
   enterGame();
 }
@@ -276,7 +356,9 @@ function persistSession() {
 }
 
 function enterGame() {
+  moods.reset();
   view = G.view.init(session);
+  decorate();
   app.innerHTML = '';
   const screen = el('section', 'screen');
 
@@ -317,6 +399,7 @@ const ctx = () => ({
 });
 
 function render(tumble) {
+  decorate();
   const c = ctx();
   c.tumble = tumble;
   G.view.render(ui, view, session, c);
@@ -338,6 +421,7 @@ function humanAct(actions) {
 // Dispatch actions[i], show its events, then continue with the next action (e.g. SET_ASIDE then ROLL).
 function doActions(actions, i) {
   busy = true;
+  moods.stopThinking(session.state.current);
   const events = session.dispatch(actions[i]);
   persistSession();
   render(false);
@@ -346,6 +430,7 @@ function doActions(actions, i) {
       sched.after(reduced() ? 100 : 250, () => doActions(actions, i + 1));
     } else {
       view = G.view.sync(view, session);
+      decorate();
       busy = false;
       render(false);
       afterEvents();
@@ -358,6 +443,7 @@ function present(events, i, done) {
   if (i >= events.length) { done(); return; }
   const c = ctx();
   const { delay, tumble } = G.view.reduce(view, events[i], c);
+  moods.onEvent(events[i], G.id, view);
   render(tumble);
   sched.after(delay, () => present(events, i + 1, done));
 }
@@ -369,6 +455,7 @@ function afterEvents() {
   const cur = st.seats[st.current];
   if (!cur.isBot) { render(false); return; }
   busy = true;
+  moods.startThinking(st.current);
   render(false);
   const seat = st.current;
   const obs = session.observe(seat);
@@ -393,8 +480,9 @@ function showGameOver() {
   let newBest = false;
   if (solo) newBest = updateBest(G.id, soloKey, value, meta.soloBest || 'low');
   const winners = res.winners || (res.winner !== null && res.winner !== undefined ? [res.winner] : []);
+  const optSeats = session.options.seats || [];
   const names = winners.map((i) => st.seats[i].name);
-  const winText = winners.length > 1 ? `It's a tie: ${names.join(' and ')}` : `${names[0]} ${names[0] === 'You' ? 'win' : 'wins'}`;
+  const winText = winners.length > 1 ? `It's a tie: ${names.join(' and ')}` : `${names[0]} ${isMe(optSeats[winners[0]]) ? 'win' : 'wins'}`;
   announce(solo ? soloTitle : winText);
   openSheet((sheet, close) => {
     sheet.appendChild(el('h2', null, solo ? soloTitle : winners.length > 1 ? `\u{1F91D} ${winText}` : `\u{1F3C6} ${winText}!`));
@@ -405,7 +493,8 @@ function showGameOver() {
     const list = el('div', 'results');
     res.standings.forEach((r) => {
       const row = el('div', 'r');
-      row.append(el('span', null, r.name), el('span', null, `${r.total.toLocaleString('en-US')} · ${r.turns} turns`));
+      const at = r.seat !== undefined ? r.seat : st.seats.findIndex((x) => x.name === r.name);
+      row.append(el('span', null, `${faceFor(optSeats[at], 'DEFAULT')} ${r.name}`), el('span', null, `${r.total.toLocaleString('en-US')} · ${r.turns} turns`));
       list.appendChild(row);
     });
     sheet.appendChild(list);
