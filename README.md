@@ -43,6 +43,29 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 **4. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
+### Queue 18 — Bot talk in a speech bubble under the bot's chip, every 2nd or 3rd turn, and a shuffled line deck (all games)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Build Queue 17 (flicker) first: this item changes the same mood code.
+
+**Source (user):** "On Cliffhanger there is a LOT of space between the game title area and the player names. I suggest immediately below the name chip. As suggested. Talk every 2nd or 3rd turn sounds about right. What's the code to pick from the talk list? Will you store how many of each type of phrase there is and set a randomizer for 1 to that number?" Claude read this as: yes to the speech bubble under the talking bot's chip (Planner 15 recommendation b), yes to talking every second or third turn, and a question about how a line is picked (answered below and in the Log). Claude also measured the space the user mentioned: in Cliffhanger the gap between the title bar and the player chips is **24 px, twice the 12 px of the other games**, because the screen keeps an empty score-strip element that Cliffhanger does not use (it has its own chips) and the screen's row gap counts it. Reading the user's remark as a complaint about that gap, it is fixed here too *(interpretation is Added by Claude. Change before authorizing if wanted.)*.
+
+**1. Speech bubble** *(look is Added by Claude. Change before authorizing if wanted.)*
+- A bot's line shows in a speech bubble directly under that bot's chip (the chip row in Cliffhanger; the player's chip in the score strip of the other games), with the bot's face and the line in quotes: `🖐️ “All in!”`. Cream background, dark text, rounded, a small pointer up to the chip, left edge lined up with the chip's left edge and kept inside the screen, at most 300 px wide so a long line wraps onto up to three lines. It sits over whatever is under the chip (the sky at the top of the Cliffhanger board, the table in the other games) for 3.5 seconds, never moves the page, ignores taps (taps go through to the board), and fades in unless reduced motion or `?speed=0`.
+- The one-speaker rule stays: only one bubble at a time, with the existing waiting rule. The line is no longer also written on the status line under the board (that line goes back to the thinking text or the normal text), so a bot's talk never replaces "Your turn".
+- Needs a real-device check: the bubble covers the top of the Cliffhanger board (a column's top spaces) for 3.5 seconds.
+
+**2. How often a bot talks** *(rule is Added by Claude. Change before authorizing if wanted.)* Each bot talks on every second or third turn of its own (a random 2 or 3 turns between lines, counted per bot; its first line comes on its first or second turn). On a talk turn it speaks the first mood line the turn gives it (the rule from Build Log 23); if the turn gives none, it says a normal-mood (DEFAULT) line when the turn ends. The 1 in 3 greeting at the start of a turn is replaced by this. The game-over line is extra and always plays.
+
+**3. How a line is picked** *(Added by Claude: replaces random-with-no-immediate-repeat. Change before authorizing if wanted.)* Today `pickLine` in `src/ai/roster.js` takes the list for that bot and mood, removes the line it said last, and picks `pool[random number % pool.length]`; the count is simply the array's length, so nothing is stored and a line added to the roster is used at once. New: a shuffled deck per bot and mood. All of a list's lines are shuffled (Fisher-Yates with the same random source) and dealt one at a time; when the deck runs out it is reshuffled, never starting with the line just dealt. Every line is used once before any repeats. The deck is cosmetic and not saved.
+
+**4. Header gap in Cliffhanger:** the unused empty score-strip element is hidden in Cliffhanger's `build`, so the title-to-chips gap is 12 px like the other games and the page gets 12 px of room back (it was 1 px short of fitting at 360x740).
+
+**5. Files:** `src/shell/main.js` (the bubble element and its position under the speaking chip), `src/shell/moods.js` (talk schedule), `src/ai/roster.js` (the deck), `src/ui/avatars.js` (the status line no longer shows talk), `src/ui/views/cliffhanger-view.js` (hide the empty strip), `src/ui/theme.css`; rebuilt `index.html`.
+
+**6. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 3 minutes):** `preflight` clean. Node: over 200 simulated turns a bot speaks every 2 or 3 turns (never two turns in a row, never more than 3 apart); a talk turn with no mood line ends with a normal-mood line; a deck deals every line of a 10-line list once before any repeats, reshuffles without repeating across the boundary, and gives a one-line list its line every time; the one-speaker rule still holds. Browser at 390x844, 360x740 and 320x640 with 2, 3 and 4 players (a crafted save with Chance and Snake): the bubble is directly under the speaking bot's chip, inside the viewport, its text fully visible (wrapping to at most three lines), the page height does not change while it shows, a tap on the board under it still works, it disappears after 3.5 s, only one is visible at a time; in Pig, Farkle, Yacht and Shut the Box the bubble sits under the right score-strip chip; the status line never shows talk; Cliffhanger's title-to-chips gap is 12 px and it fits at 360x740; the Build Log 23 talk checks and the Queue 17 flicker checks still pass. Zero JS errors. Screenshots of a bubble in Cliffhanger (3 players) and in Pig.
+
+**7. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
+
 ## Build Planner
 
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
@@ -192,12 +215,6 @@ User wants a small mountaineer silhouette standing on the top of each won column
 - **Size and room:** about 30 px tall, standing on the top dot and leaning out over the sky, so the board grows about 12 px taller; 360x740 must still fit. Short pop-in when a column is won; none under reduced motion or `?speed=0`.
 - **Fallback:** if no suitable licensed art turns up, Claude draws original silhouettes with more natural proportions and the user approves them side by side before anything is built.
 - **Open:** the user's license check on the reference image; whether to include the climbing pose now or later.
-
-### Planner 15 — Bot talk: is it noticeable, and is it frequent enough? (user feedback, not yet specced)
-User, playing Cliffhanger with Chance: "There is no talk at all." Claude's measurement (Queue 17): lines do appear, but only about three in 50 seconds of Chance's turns, on the small grey status line under the dice, and covered by flickering thinking text. Open questions for the user, each with Claude's recommendation:
-1. **Where should a line show?** (a) as now, on the status line under the board; (b) a speech bubble beside or under the talking bot's chip at the top (the face and the words together); (c) both. Recommendation: (b), a bubble under the chip with the bot's face, so you see who is talking without hunting for a small line. On a 4-player screen the bubble overlaps the board's top, so it would be narrow and short.
-2. **How often?** Now at most one mood line per bot turn plus a 1 in 3 greeting at the start of its turn. Recommendation: keep that as the ceiling but add lines for more events (a bot starts a new column, a bank, a player's bust) so it talks about every second or third turn.
-3. **Should lines stay on screen longer?** Queue 17 raises 2.5 s to 3.5 s.
 
 ## Build Log 1 (completed)
 
