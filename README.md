@@ -59,12 +59,12 @@ So it is worse than the first report: four players are cut off at every width, a
 | Bot | Face | THINKING | DEFAULT | WINNING | NERVOUS | SHOCKED | RELIEVED |
 |---|---|---|---|---|---|---|---|
 | Pip | 🙂 | 🤔 "Pip is thinking..." | 🙂 "Let's roll!" / "Your turn!" | 😎 "Just as planned!" / "Boom!" | 😰 "Uh oh..." / "Sweating a little here!" | 😲 "No way!" / "Are you kidding me?!" | 😮‍💨 "Whew, close one!" / "Dodged a bullet." |
-| Dottie | 🤖 | ⚙️ "Dottie is computing..." | "Beep boop. Ready." / "Rolling protocol engaged." | "Optimal outcome." / "Processing victory." | "Error margin rising..." / "Recalculating odds." | "Does not compute!" / "System error!" | "Crisis averted." / "Thermocouple engaged." |
+| Dottie | 🤖 | "Dottie is computing..." | "Beep boop. Ready." / "Rolling protocol engaged." | "Optimal outcome." / "Processing victory." | "Error margin rising..." / "Recalculating odds." | "Does not compute!" / "System error!" | "Crisis averted." / "Thermocouple engaged." |
 | Chance | 🖐️ | ✊ "Chance is shaking the dice..." | 🖐️ "High five the dice!" / "Let 'em fly!" | 🙌 "Lady Luck smiles!" / "Pure magic!" | 🙏 "Time for a miracle roll..." / "All in!" | ✋ "Luck just ran out..." / "Cold dice!" | 👍 "Fate had my back!" / "Never doubted it." |
 | Nat | 👤 | (user's own lines and faces: see "Nat" below) | | | | | |
-| Alea | 👾 | 🕹️ "Alea is loading..." | "The die is cast." / "Insert coin." | "High score!" / "Level up!" | "Lag spike..." / "Low health..." | "Game over?!" / "Glitch!" | "Extra life!" / "One heart left." |
+| Alea | 👾 | "Alea is loading..." | "The die is cast." / "Insert coin." | "High score!" / "Level up!" | "Lag spike..." / "Low health..." | "Game over?!" / "Glitch!" | "Extra life!" / "One heart left." |
 | Snake | 👁️ | 🧠 "Snake is pondering..." | 👁️ "Your move." / "I see everything." | 👁️‍🗨️ "Calculated." / "Predictable outcome." | 👀 "Proceeding carefully..." / "Not over yet." | 👄 "A miscalculation..." / "Hmph." | 💓 "Within expected margins." |
-| Deuce | 👽 | 🛸 "Deuce is scanning..." | "Greetings, human." / "Take your turn, earthling." | "Out of this world!" / "Interstellar!" | "Turbulence ahead..." / "Gravity is pulling." | "Impossible!" / "Beam me up..." | "Escape velocity!" / "Home safe." |
+| Deuce | 👽 | "Deuce is scanning..." | "Greetings, human." / "Take your turn, earthling." | "Out of this world!" / "Interstellar!" | "Turbulence ahead..." / "Gravity is pulling." | "Impossible!" / "Beam me up..." | "Escape velocity!" / "Home safe." |
 
 
 **Which bots change face (user):** only the bots the user detailed have alternate emoji: **Pip, Chance and Snake** (and Nat, if confirmed, see below). **Dottie 🤖, Alea 👾 and Deuce 👽 keep one fixed face** and only their lines change with their mood (their table rows above show lines only). Dottie's relieved lines are now "Crisis averted." and "Thermocouple engaged." (user).
