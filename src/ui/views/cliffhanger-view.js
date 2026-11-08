@@ -133,13 +133,16 @@ export const cliffhangerView = {
     ui.controls.classList.add('sticky');
     ui.log.hidden = true; // this screen is full: the board already shows everything the log would
 
-    // header chips: one compact row (colour, name, columns won)
+    // header chips: two lines (colour + name, then columns won). One row for 1 to 3 players, a 2 x 2 grid for 4.
     ui.chips.innerHTML = '';
+    ui.chips.style.setProperty('--n', String(view.seats.length <= 3 ? view.seats.length : 2));
     view.seats.forEach((s, i) => {
       const chip = el('div', 'cchip' + (i === view.current && !session.isOver() ? ' active' : ''));
+      const line = el('div', 'cl');
       const sw = el('i');
       sw.style.background = SEAT_COLORS[i];
-      chip.append(sw, el('span', 'cn', `${s.isBot ? '\u{1F916} ' : ''}${s.name}`), el('b', null, `${s.won}/${st.options.winCols}`));
+      line.append(sw, el('span', 'cn', `${s.isBot ? '\u{1F916} ' : ''}${s.name}`));
+      chip.append(line, el('b', null, `${s.won}/${st.options.winCols}`));
       chip.setAttribute('aria-label', `${s.name}: ${s.won} of ${st.options.winCols} columns won`);
       ui.chips.appendChild(chip);
     });

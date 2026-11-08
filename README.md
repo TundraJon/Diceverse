@@ -17,30 +17,6 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 15 — Cliffhanger: player names are cut off in the header chips
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Report:** found by Claude during Build Log 21 (user: "Yes, queue the name fix"): at 320 px wide with three players the bot chips show only the robot emoji and "…".
-
-**Reproduced (no code changed, 2 to 4 players, vs Bots and Pass & Play, measured name width and whether the text is cut):**
-- 390 px: 2 players fine (114 px for the name); 3 players fine (54 px, "🤖 Dottie" fits); **4 players cut** (23 px: "🤖 Pip" and "Player 1" are all cut).
-- 360 px: 2 players fine; **3 players cut** (44 px: "Dottie", "Player 1-3"); 4 players cut (16 px).
-- 320 px: 2 players fine (79 px); **3 players cut** (30 px); 4 players cut (6 px, nothing readable).
-So it is worse than the first report: four players are cut off at every width, and three players at 360 and 320.
-
-**Cause:** each chip is one line (swatch, name, "0/3" count) in a row shared equally by all players, so the name gets whatever is left after the swatch, the count and the padding; with three or four chips that is almost nothing. Cause is in `src/ui/theme.css` (`.climbchips`, `.cchip`) and the chip markup in `src/ui/views/cliffhanger-view.js` `render`.
-
-**1. Fix** *(layout is Added by Claude. Change before authorizing if wanted.)*: make each chip two lines: the swatch and the full name on the first line, the count ("0/3") on a second, smaller line, so the name can use the whole chip width. One row for 1 to 3 players; for 4 players the chips go in a 2 x 2 grid (four names cannot fit in one row, and this is the same arrangement the big score strip uses in the other games). Names stay as they are ("You", "Pip", "Dottie", "Rook", "Player 1 to 4"); the 🤖 prefix stays. If a name still does not fit at 320 px with three players, the font goes down to 0.72 rem there, and only if it still does not fit is the 🤖 prefix dropped at that width. The active-player highlight and the aria labels are unchanged.
-
-**2. Files:** `src/ui/theme.css`, `src/ui/views/cliffhanger-view.js`; rebuilt `index.html`. No rules, bot or other game changes.
-
-**3. Cost to know about:** the chip row grows from about 34 px to about 44 px (and a second row of 44 px for 4 players), so the page is 10 px taller with 1 to 3 players and about 60 px taller with 4. That still fits at 390x844; at 360x740 and 320x640 a 4-player game scrolls a little (measured in verification and written in the Log). If the user prefers no extra height, the alternative is to drop the count and show only the name with a colored underline (the count is also shown... only on the big board), which loses information; not recommended.
-
-**4. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 1 minute):** `preflight` clean. The measurement above turned into the test: for 1 to 4 players, vs Bots and Pass & Play, at 390x844, 360x740 and 320x640, every chip name is fully visible (not cut, the text's scroll width fits its box) and chips stay inside the screen with no horizontal scroll; the count is still shown; page height overflow recorded for each case; the existing Cliffhanger layout checks (controls on screen, board and mountain slopes) still pass at 390 and 360 with 2 players. Zero JS errors. Screenshots of 3 players at 320 and 4 players at 390 inspected.
-
-**5. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
-
 ### Queue 16 — Player name and avatar (Settings), and the AI roster: faces, moods and a little talk
 
 **Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Build Queue 15 (header chips) first: this item changes the same chips.
@@ -541,3 +517,14 @@ Cliffhanger: the mountain slopes now run through the center of every column's to
 
 Verification (scratch script using `tests-helpers.cjs`, none committed): `preflight` clean; 42 checks passed, 0 JS errors, 2 seconds. At 390x844, 360x740, 320x640 and 768x1024, each with a fresh game and the saved mid-turn fixture: the center of every one of the eleven top dots is within 2 px of its slope (read from the drawn path), the peak is the center of the 7's top dot (within 1 px), each slope meets the board edge between the outer column's top level and 60 px below it and at least 40 px above the bottom, the area below is filled to both edges, the viewBox equals the board size; after shrinking the window from 390 to 340 px wide the outline follows. The existing Cliffhanger browser suite was re-run because the board render changed: 33 of 33 passed in 67 s, 0 JS errors. Screenshots inspected at 390 (mid-turn position with a won column) and 320 (fresh): the slopes pass through the tops of the columns and the markers and rings on them are still readable. Test-script mistake: my first run of the slope check failed on an expectation that the edge be above 75% of the board height, which is wrong for this geometry (column 2 is only 3 dots tall, so the edge at its top level is about 86% down); the check now requires "between the outer column's top level and 60 px below it, and at least 40 px above the bottom". Not verified: how it looks on the user's phone and browser (needs a real-device check); browsers other than Chromium.
 - [x] Noticed and left alone (not part of this build): at 320 px wide with three players the bot chips show only an emoji and "…" instead of the bot's name (name column too narrow). Logged for the user to decide.
+
+## Build Log 22 (completed)
+
+Cliffhanger: player names in the header chips are no longer cut off (was Queue 15).
+
+- [x] Reproduced first (no code changed; measured name width and whether the text was cut, 2 to 4 players, vs Bots and Pass & Play, at 390, 360 and 320 px): 4 players cut at every width, 3 players cut at 360 and 320, 2 players fine.
+- [x] `src/ui/views/cliffhanger-view.js` `render`: each chip is now two lines, the colored swatch and the full name (🤖 kept for bots) on the first and the columns-won count ("0/3") on the second; the chip container gets `--n` = the number of players for 1 to 3 players and 2 for 4 players.
+- [x] `src/ui/theme.css`: `.climbchips` is a grid (`repeat(var(--n), 1fr)`: one row for 1 to 3 players, a 2 x 2 grid for 4); `.cchip` is a column with a `.cl` first line; at 340 px wide and narrower the chip font is 0.72 rem. To keep the page fitting I also took 2 px out of the chip padding and 2 px out of the gaps in the Cliffhanger table (`.table.climbwrap` gap 8 to 6 px, chip padding 5 to 4 px, line gap 2 to 1 px): the chip row first made a 360x740 game scroll 8 px (a regression against Build Log 19, found by the existing suite), and these changes bring it back to 1 px. `index.html` rebuilt (100.7 KB).
+- [x] The 🤖 prefix did not have to be dropped anywhere, and the font shrink was only needed at 320 px.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean; the reproduction as a test, 64 checks passed, 0 JS errors, 8 seconds: for 1 to 4 players, vs Bots, Pass & Play and Solo, at 390x844, 360x740 and 320x640, every chip name is fully visible (not cut), the count is shown, chips are inside the screen with no horizontal scroll, and there is one row of chips (two rows for 4 players). The slope check from Build Log 21 (42 checks) and the Cliffhanger suite from Build Log 19 (33 checks) were re-run because the chip height moved the board: all pass, 0 JS errors. Page height now: 390x844 fits (1 px) for every player count; 360x740 fits for 1 to 3 players (1 px) and scrolls 45 px with 4 players; 320x640 scrolls 53 px with 1 to 3 players and 99 px with 4 (it already scrolled 48 px before). Screenshots inspected: 3 players at 320 and 4 players at 390 (2 x 2 grid), names fully readable. Not verified: a real phone (needs a real-device check); browsers other than Chromium.
