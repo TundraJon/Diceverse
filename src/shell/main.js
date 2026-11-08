@@ -7,7 +7,7 @@ import { decide, thinkMs, PRESETS } from '../ai/brain.js';
 import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, updateBest, storageAvailable } from './save.js';
 import { createMoods } from './moods.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
-import { KINDS, TONES, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanName, isMe, faceFor } from '../ui/avatars.js';
+import { KINDS, TONES, COLORS, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
 const app = document.getElementById('app');
 const live = document.getElementById('live');
@@ -27,9 +27,10 @@ const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-m
 
 /* ---------- settings (per-game house rules; migrates the old Pig-only layout) ---------- */
 function loadAllSettings() {
-  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {}, name: 'You', avatar: DEFAULT_AVATAR }, loadSettings() || {});
+  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {}, name: 'You', avatar: DEFAULT_AVATAR, color: 'blue' }, loadSettings() || {});
   s.name = cleanName(s.name); // empty means "You"
   s.avatar = cleanAvatar(s.avatar);
+  s.color = cleanColor(s.color);
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
   GAME_ORDER.forEach((id) => {
@@ -66,6 +67,7 @@ function decorate() {
   view.seats.forEach((s, i) => {
     s.me = isMe(opts[i]);
     s.face = moods.faceOf(i);
+    s.color = opts[i] && opts[i].color; // older saves have none: the view falls back to its fixed colors
   });
   view.thinking = moods.getThinking();
 }
@@ -120,6 +122,7 @@ function buildOptions() {
     const ids = drawOpponents(settings.players - 1, [...newSeed(), ...newSeed()]);
     seats = [{ ...you, me: true }].concat(ids.map((id) => ({ name: AI_ROSTER[id].name, isBot: true, preset: settings.preset, botId: id, avatar: AI_ROSTER[id].defaultEmoji })));
   }
+  seatColors(seats.length, settings.color).forEach((hex, i) => { seats[i].color = hex; }); // yours first, the rest in palette order
   return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats } : { ...house, seats };
 }
 
@@ -254,50 +257,95 @@ function openRules(options) {
   });
 }
 
-// Settings: your name and your avatar (18 faces: man / person / woman by six skin tones, all visible at once).
+// Settings: your name, your avatar and your color. The avatar and the color are two small dropdown buttons; each opens a
+// panel under the row with every choice visible at once.
 function openSettings() {
   openSheet((sheet, close) => {
-    sheet.classList.add('tall'); // all 18 faces and the name fit without scrolling, even on a small phone
+    sheet.classList.add('settings'); // lets a dropdown panel float over the lower part of the sheet
     sheet.appendChild(el('h2', null, 'Settings'));
-    const namePanel = el('div', 'panel');
-    namePanel.appendChild(el('h2', null, 'Your name'));
+
+    const nameRow = el('div', 'setrow');
+    const label = el('label', null, 'Name:');
+    label.htmlFor = 'setname';
     const input = el('input', 'namefield');
+    input.id = 'setname';
     input.type = 'text';
     input.maxLength = 12;
     input.value = settings.name === 'You' ? '' : settings.name;
-    input.placeholder = 'You (up to 12 letters)';
+    input.placeholder = 'You'; // the faded suggestion: gone as soon as a letter is typed
     input.autocomplete = 'off';
     input.setAttribute('autocapitalize', 'words');
-    input.setAttribute('aria-label', 'Your name');
-    namePanel.appendChild(input);
-    sheet.appendChild(namePanel);
+    nameRow.append(label, input);
+    sheet.appendChild(nameRow);
 
-    const avPanel = el('div', 'panel');
-    const preview = el('div', 'avpreview');
-    avPanel.appendChild(preview);
-    const grid = el('div', 'avgrid');
-    const buttons = [];
-    TONES.forEach((tone, t) => {
-      KINDS.forEach((k) => {
-        const b = el('button', 'avbtn', personFace({ kind: k.key, tone: t }));
-        b.setAttribute('aria-label', `${k.label}, ${t === 0 ? 'default tone' : `skin tone ${t}`}`);
-        b.addEventListener('click', () => { settings.avatar = { kind: k.key, tone: t }; persistSettings(); refresh(); });
-        buttons.push([b, k.key, t]);
-        grid.appendChild(b);
-      });
+    const row = el('div', 'ddrow');
+    const avBtn = el('button', 'ddbtn');
+    const colBtn = el('button', 'ddbtn');
+    avBtn.setAttribute('aria-label', 'Avatar');
+    colBtn.setAttribute('aria-label', 'Color');
+    const avVal = el('span', 'ddv');
+    const swVal = el('i', 'sw');
+    avBtn.append(avVal, el('span', 'ddc', '\u25BE'));
+    colBtn.append(swVal, el('span', 'ddc', '\u25BE'));
+    const avPanel = el('div', 'ddpanel avgrid');
+    const colPanel = el('div', 'ddpanel clgrid');
+    avPanel.hidden = true;
+    colPanel.hidden = true;
+    const avButtons = [];
+    KINDS.forEach((k) => TONES.forEach((tone, t) => {
+      const b = el('button', 'avbtn', personFace({ kind: k.key, tone: t }));
+      b.setAttribute('aria-label', `${k.label}, ${t === 0 ? 'default tone' : `skin tone ${t}`}`);
+      b.addEventListener('click', () => { settings.avatar = { kind: k.key, tone: t }; persistSettings(); refresh(); closePanels(); });
+      avButtons.push([b, k.key, t]);
+      avPanel.appendChild(b);
+    }));
+    const colButtons = [];
+    COLORS.forEach((c) => {
+      const b = el('button', 'swbtn');
+      const dot = el('i');
+      dot.style.background = c.hex;
+      b.appendChild(dot);
+      b.setAttribute('aria-label', c.label);
+      b.addEventListener('click', () => { settings.color = c.key; persistSettings(); refresh(); closePanels(); });
+      colButtons.push([b, c.key]);
+      colPanel.appendChild(b);
     });
-    avPanel.appendChild(grid);
-    sheet.appendChild(avPanel);
-    const refresh = () => {
-      buttons.forEach(([b, kind, t]) => b.setAttribute('aria-pressed', String(settings.avatar.kind === kind && settings.avatar.tone === t)));
-      preview.textContent = `${personFace(settings.avatar)}  ${cleanName(input.value)}`;
+    row.append(avBtn, colBtn, avPanel, colPanel);
+    sheet.appendChild(row);
+
+    const closePanels = () => {
+      avPanel.hidden = true; colPanel.hidden = true;
+      avBtn.setAttribute('aria-expanded', 'false'); colBtn.setAttribute('aria-expanded', 'false');
     };
-    input.addEventListener('input', refresh);
-    const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); refresh(); };
+    const toggle = (panel, btn, other) => {
+      const willOpen = panel.hidden;
+      closePanels();
+      if (willOpen) { panel.hidden = false; btn.setAttribute('aria-expanded', 'true'); }
+      void other;
+    };
+    avBtn.addEventListener('click', () => toggle(avPanel, avBtn, colPanel));
+    colBtn.addEventListener('click', () => toggle(colPanel, colBtn, avPanel));
+    // a tap outside the open panel (or its button) and Escape close it
+    sheet.addEventListener('click', (e) => {
+      if ([avBtn, colBtn, avPanel, colPanel].some((n) => n.contains(e.target))) return;
+      closePanels();
+    });
+    sheet.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && (!avPanel.hidden || !colPanel.hidden)) { e.stopPropagation(); closePanels(); }
+    });
+
+    const refresh = () => {
+      avVal.textContent = personFace(settings.avatar);
+      swVal.style.background = COLORS.find((c) => c.key === settings.color).hex;
+      avButtons.forEach(([b, kind, t]) => b.setAttribute('aria-pressed', String(settings.avatar.kind === kind && settings.avatar.tone === t)));
+      colButtons.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.color === key)));
+    };
+    const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); };
     input.addEventListener('change', save);
     const ok = el('button', 'primary', 'Done');
     ok.addEventListener('click', () => { save(); close(); });
     sheet.appendChild(ok);
+    closePanels();
     refresh();
   });
 }

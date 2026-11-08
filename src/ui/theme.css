@@ -236,12 +236,22 @@ body.fast .cover { transition: none; }
 /* Settings (name and avatar), the menu's gear button, and the one-line talk/thinking text */
 .screen { position: relative; }
 .gear { position: absolute; top: 12px; right: 16px; z-index: 2; width: 44px; height: 44px; padding: 0; border-radius: 22px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); font-size: 1.3rem; }
-.sheet.tall { max-height: 96dvh; }
-.sheet.tall .panel { padding: 10px 12px; }
-.namefield { width: 100%; min-height: 48px; background: #0b2b21; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; font: inherit; font-size: 16px; }
-.avpreview { font-size: 1.3rem; text-align: center; margin-bottom: 6px; min-height: 1.5em; white-space: pre; }
-.avgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.avbtn { min-height: 44px; padding: 0; font-size: 1.6rem; line-height: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
+.sheet.settings { overflow: visible; }
+.setrow { display: flex; align-items: center; gap: 10px; }
+.setrow label { font-weight: 700; color: var(--muted); }
+.namefield { flex: 1; min-width: 0; min-height: 48px; background: #0b2b21; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; font: inherit; font-size: 16px; }
+.namefield::placeholder { color: var(--muted); opacity: 0.7; }
+.ddrow { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ddbtn { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 12px; font-size: 1.5rem; line-height: 1; }
+.ddbtn .ddc { font-size: 0.9rem; color: var(--muted); }
+.ddbtn .sw { display: block; width: 24px; height: 24px; border-radius: 6px; }
+.ddpanel { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 6; background: #0b2b21; border: 1px solid var(--line); border-radius: 12px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
+.avgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.clgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.avbtn { min-height: 44px; padding: 0; font-size: 1.5rem; line-height: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
+.swbtn { min-height: 44px; padding: 0; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; display: grid; place-items: center; }
+.swbtn i { display: block; width: 26px; height: 26px; border-radius: 6px; }
+.swbtn[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.4); }
 .avbtn[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
 
 /* Speech bubble under the talking bot's chip */

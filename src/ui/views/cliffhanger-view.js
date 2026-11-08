@@ -10,7 +10,9 @@ const el = (tag, cls, text) => {
   return e;
 };
 const COLS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+// Older saves have no seat colors: these fixed ones (by seat) are the fallback. New games store each seat's color.
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
+const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
 
 // Cosmetic background: sky, far hills, the main peak with a snow cap, and a tree line. Drawn inline (no image files).
 // The shapes are filled in by drawPeak() from the measured top dots, so the slopes pass through the center of every
@@ -141,7 +143,7 @@ export const cliffhangerView = {
     view.seats.forEach((s, i) => {
       const chip = el('div', 'cchip' + (i === view.current && !session.isOver() ? ' active' : ''));
       const sw = el('i');
-      sw.style.background = SEAT_COLORS[i];
+      sw.style.background = colorOf(view, i);
       chip.append(sw, el('span', 'cn', `${s.face || (s.isBot ? '\u{1F916}' : '\u{1F464}')} ${s.name}`), el('b', null, `${s.won}/${st.options.winCols}`));
       chip.setAttribute('aria-label', `${s.name}: ${s.won} of ${st.options.winCols} columns won`);
       ui.chips.appendChild(chip);
@@ -156,13 +158,13 @@ export const cliffhangerView = {
       col.setAttribute('aria-label', `Column ${c}, ${LEN[c]} spaces${view.owner[c] !== null ? `, won by ${view.seats[view.owner[c]].name}` : ''}${mine ? `, progress: ${mine}` : ''}${view.markers[c] ? `, marker on space ${view.markers[c]}` : ''}`);
       // the summit mark sits above the top space of a won column (its row is always reserved so nothing moves)
       const flag = el('div', 'cflag', view.owner[c] !== null ? '\u{1F3D4}️' : '');
-      if (view.owner[c] !== null) flag.style.filter = `drop-shadow(0 0 3px ${SEAT_COLORS[view.owner[c]]})`;
+      if (view.owner[c] !== null) flag.style.filter = `drop-shadow(0 0 3px ${colorOf(view, view.owner[c])})`;
       col.appendChild(flag);
       for (let step = LEN[c]; step >= 1; step--) {
         const d = el('div', 'cd' + (step === LEN[c] ? ' top' : ''));
         const who = view.prog.map((p, i) => (p[c] === step ? i : -1)).filter((i) => i >= 0);
-        who.forEach((i) => { const m = el('span', 'cm'); m.style.background = SEAT_COLORS[i]; d.appendChild(m); });
-        if (step === LEN[c] && view.owner[c] !== null) d.style.background = SEAT_COLORS[view.owner[c]];
+        who.forEach((i) => { const m = el('span', 'cm'); m.style.background = colorOf(view, i); d.appendChild(m); });
+        if (step === LEN[c] && view.owner[c] !== null) d.style.background = colorOf(view, view.owner[c]);
         if (view.markers[c] === step) d.appendChild(el('span', 'cring'));
         col.appendChild(d);
       }
