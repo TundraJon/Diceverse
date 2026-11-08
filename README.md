@@ -17,7 +17,31 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 17 — Bot faces and thinking text flicker constantly (Cliffhanger with Chance, and every game with multi-step bot turns)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user):** "Playing cliffhanger with Chance. There is no talk at all, and his emotions change very quickly."
+
+**Reproduced (no code changed):** a saved Cliffhanger game against Chance, real speed, 390x844, my script played the human turns and sampled the screen every 60 ms during Chance's turns. In 50 seconds of Chance's turns: **60 face changes (about 72 a minute, more than one a second)**, **52 changes of the status text, 25 of them the fallback "Chance is thinking…" flipping with his own "Chance is shaking the dice..." line**, and **3 spoken lines** in total (I saw "High five the dice!", "All in!", "Time for a miracle roll..."). So lines do exist but are rare and appear on the small grey line under the dice, while the face and text flicker around them; the question of whether they are noticeable enough is Planner 15.
+
+**Causes (all in the Build Log 23 code):**
+1. A Cliffhanger bot turn is many separate actions (ROLL, CHOOSE, ROLL, CHOOSE, ..., BANK). `afterEvents` in `src/shell/main.js` starts "thinking" before each action and `doActions` stops it at the start of the next one, so between actions the face drops to the normal 🖐️ and the text to "Chance is thinking…", then jumps back to ✊ and "shaking the dice..." a moment later. The same happens in every game where a bot takes several actions in a turn (Farkle, Yacht, Shut the Box, Pig with several rolls).
+2. In `src/shell/moods.js` the NERVOUS / RELIEVED faces alternate on every roll while the stake stays high (`hits` odd and even), so with three markers down in Cliffhanger the face flips 🙏, 👍, 🙏, 👍 on every roll.
+3. A mood face lasts only 2.5 seconds before returning to the normal face, which makes outcome moods (and the lines) short.
+
+**1. Fix** *(values are Added by Claude. Change before authorizing if wanted.)*
+- **Thinking lasts for the whole bot turn:** thinking starts on a bot's first action of a turn and ends when that bot's turn ends (its `TURN_ENDED`) or the game ends, not between actions; the thinking line is chosen once per bot turn (Nat and Alea have several, so a different one each turn), and the fallback "X is thinking…" is only used for a bot that is not in the roster.
+- **Mood faces return to THINKING while the bot's turn goes on** (not to the normal face), and to the normal face when its turn ends.
+- **NERVOUS once per turn:** it is set at the first high-stake roll of the turn and stays until an outcome (SHOCKED, WINNING) or the end of the turn; RELIEVED only when the bot banks after having been nervous. The alternating rule is removed.
+- **Longer holds:** a mood face stays 4 seconds (was 2.5) and a spoken line stays 3.5 seconds (was 2.5), so they can be read. The one-speaker rule, one mood line per turn, the 1 in 3 greeting, the stale-line limit and the game-over line are unchanged.
+- No change to the rules, the bot decisions, the roster or the lines.
+
+**2. Files:** `src/shell/moods.js`, `src/shell/main.js` (where thinking starts and stops); rebuilt `index.html`.
+
+**3. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Node first on the mood engine with a fake clock: thinking persists across several actions of one bot turn and ends at its `TURN_ENDED`; NERVOUS appears once per turn and never alternates with RELIEVED while rolling; RELIEVED only after a bank following NERVOUS; outcome moods still apply at once; faces return to THINKING during the turn and to normal after it; the new hold times. Then the reproduction as a test (the same saved game against Chance at real speed, 60 seconds): fewer than 15 face changes a minute (it was 72), no fallback "Chance is thinking…" text while his turn goes on, his thinking line stays the same for the whole turn; the same sampling for a Pig, a Farkle and a Shut the Box bot turn (faces and text steady during a turn); the existing browser checks for talk (one speaker at a time, a line from the bot's own roster) still pass. Zero JS errors. Needs a real-device check: how it feels to watch on the user's phone.
+
+**4. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
@@ -168,6 +192,12 @@ User wants a small mountaineer silhouette standing on the top of each won column
 - **Size and room:** about 30 px tall, standing on the top dot and leaning out over the sky, so the board grows about 12 px taller; 360x740 must still fit. Short pop-in when a column is won; none under reduced motion or `?speed=0`.
 - **Fallback:** if no suitable licensed art turns up, Claude draws original silhouettes with more natural proportions and the user approves them side by side before anything is built.
 - **Open:** the user's license check on the reference image; whether to include the climbing pose now or later.
+
+### Planner 15 — Bot talk: is it noticeable, and is it frequent enough? (user feedback, not yet specced)
+User, playing Cliffhanger with Chance: "There is no talk at all." Claude's measurement (Queue 17): lines do appear, but only about three in 50 seconds of Chance's turns, on the small grey status line under the dice, and covered by flickering thinking text. Open questions for the user, each with Claude's recommendation:
+1. **Where should a line show?** (a) as now, on the status line under the board; (b) a speech bubble beside or under the talking bot's chip at the top (the face and the words together); (c) both. Recommendation: (b), a bubble under the chip with the bot's face, so you see who is talking without hunting for a small line. On a 4-player screen the bubble overlaps the board's top, so it would be narrow and short.
+2. **How often?** Now at most one mood line per bot turn plus a 1 in 3 greeting at the start of its turn. Recommendation: keep that as the ceiling but add lines for more events (a bot starts a new column, a bank, a player's bust) so it talks about every second or third turn.
+3. **Should lines stay on screen longer?** Queue 17 raises 2.5 s to 3.5 s.
 
 ## Build Log 1 (completed)
 
