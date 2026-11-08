@@ -41,6 +41,41 @@ So it is worse than the first report: four players are cut off at every width, a
 
 **5. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
+### Queue 16 — Player name and avatar, and a face for every bot (with moods for three of them)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Build Queue 15 (header chips) first: this item changes the same chips.
+
+**Source (user):** pick a man or woman face and a skin tone with emoji for the player; add a name so it does not say "You"; bots get fixed faces: AI #1 🙂, #2 🤖, #3 🖐️, #4 👤, #5 👁️, #6 👾, #7 👽, and the starred ones (🙂, 🖐️, 👁️) can show emotions. User answered "all recommendations" to Claude's proposal below.
+
+**1. Player profile (menu)** *(placement and limits are Added by Claude. Change before authorizing if wanted.)*
+- A slim profile row directly under the DICEVERSE title and above the Game panel (so the Game / Mode / Players order the user set is not disturbed and nothing jumps between modes): the chosen avatar on a button and a name field. Both are saved on the device in the existing settings (`diceverse:settings`, guarded like the rest) and apply to every game.
+- **Name:** text field, up to 12 characters, trimmed, repeated spaces collapsed; empty means "You" (the current wording). Text size at least 16 px so phones do not zoom in.
+- **Avatar picker:** tapping the avatar opens a sheet with all 18 faces visible at once as a grid: three columns (man 👨, person 🧑, woman 👩) by six rows (default yellow plus the five skin tones), each button at least 44 px tall, the chosen one highlighted, a Done button. Default for a new device: 🧑 (neutral yellow). Faces are the standard emoji with tone modifiers (no hair or age variants), so each phone draws its own style.
+- **Where they show:** the avatar and name replace "👤 You" in every game's score strip (`src/ui/panels.js` `renderScoreStrip`), in Cliffhanger's header chips (after Queue 15), and in the game-over results list. Bots keep their own faces. The turn lines and the winner text use the name: "Jon's turn" when there are several humans, but "Your turn" and "You win" are kept when exactly one human plays (Solo and vs Bots), as today.
+- **Pass & Play:** player 1 uses the profile name and avatar; players 2 to 4 stay "Player 2 to 4" with the plain 👤.
+
+**2. Bot faces** *(the order and the seventh name are Added by Claude: Claude understood "AI #n" as the nth opponent in a game. Change before authorizing if wanted.)*
+
+| Opponent | Name | Face | Moods |
+|---|---|---|---|
+| 1 | Pip | 🙂 | 😄 happy, 😟 worried |
+| 2 | Dottie | 🤖 | none |
+| 3 | Rook | 🖐️ | 👍 happy, 👎 worried |
+| 4 | Mabel | 👤 | none |
+| 5 | Juno | 👁️ | 👀 happy, 🙈 worried |
+| 6 | Fitch | 👾 | none |
+| 7 | Zed (new name) | 👽 | none |
+
+Games currently allow at most 4 players, so only opponents 1 to 3 (🙂 🤖 🖐️) can appear until a game allows more. The mood faces are Claude's picks from long-supported emoji (nothing newer than 2016), listed so the user can change any of them.
+
+**3. Moods** *(rules are Added by Claude. Change before authorizing if wanted.)* Only the three starred faces change. A bot's face goes to its happy face for about 2.5 seconds when it wins a column, shuts the box, wins the game, or when another player busts or blows it; it goes to its worried face when it busts / farkles / blows it / has no move, or loses the game; then back to the normal face (also at its next turn). Events used: Pig `BUSTED`, Farkle `FARKLED`, Cliffhanger `BLOWN` and `COLUMN_WON`, Shut the Box `NO_MOVE` and `BOX_SHUT`, and `GAME_OVER` in all games. Mood is cosmetic: it lives in the shell, is never saved, never touches the rules, the RNG or the bot's decisions, and under reduced motion it still changes (only the 2.5 s timing, no animation).
+
+**4. Files and the "You" audit:** new `src/ui/avatars.js` (the 18 faces, the seven bot faces with moods, `faceFor(seat, mood)`, `isMe(seat)`); `src/shell/main.js` (profile row, picker sheet, settings load/save, seats built with `name`, `avatar`, `me`, bot names and faces from the table, mood timer, winner text and results rows); `src/ui/panels.js`; the five views `pig`, `farkle`, `yacht`, `shutbox`, `cliffhanger` (their seat data carries `avatar`/`me`, and every `name === 'You'` check, nine places today, becomes `isMe(seat)`); `src/ui/theme.css`; rebuilt `index.html`. Saved games keep the avatar and name inside the saved options, so a resumed game looks the same; saves made before this build (no avatar, name "You") show 🧑 and "You" and bots get their face from their name. No rule, bot-decision or engine changes; `docs/block-spec.md` and `CLAUDE.md` map updated.
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Node first: `faceFor` returns the right face and mood for each of the seven bots and all 18 people; `isMe` handles old saves. Browser at 390x844, 360x740, 320x640: the picker shows all 18 faces at once with 44 px buttons and no scrolling inside the sheet; choosing 👩🏽 and the name "Jon" updates the profile row, survives a reload, and shows in the score strip of Pig, Farkle, Yacht, Shut the Box and the chips of Cliffhanger; the turn line says "Your turn" in Solo and vs Bots and "Jon's turn" in Pass & Play; the win text says "You win" / "Jon wins" correctly; the name field limits to 12 characters and an empty name returns "You"; bot chips show 🙂 🤖 🖐️ for opponents 1 to 3; at real speed a Pig bust changes Pip's face to 😟 and then back (and Rook's and Juno's too, checked with crafted events); the old saved-game fixtures (Pig, Farkle, Yacht, Shut the Box, Cliffhanger) still resume; storage blocked still plays; no horizontal scroll; zero JS errors. Screenshots of the profile row, the picker, a bot with a worried face, and a score strip inspected. Needs a real-device check: how the emoji faces and tones look on the user's phone.
+
+**6. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, all in one commit.
+
 ## Build Planner
 
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
