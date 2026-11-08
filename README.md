@@ -54,7 +54,7 @@ So it is worse than the first report: four players are cut off at every width, a
 - **Where they show:** the avatar and name replace "👤 You" in every game's score strip (`src/ui/panels.js` `renderScoreStrip`), in Cliffhanger's header chips (after Queue 15), and in the game-over results list. Bots keep their own faces. The turn lines and the winner text use the name: "Jon's turn" when there are several humans, but "Your turn" and "You win" are kept when exactly one human plays (Solo and vs Bots), as today.
 - **Pass & Play:** player 1 uses the profile name and avatar; players 2 to 4 stay "Player 2 to 4" with the plain 👤.
 
-**2. Bot opponents: names, faces, random pick** *(pairing is Added by Claude: the seven names and the seven faces in the order the user listed them. Change before authorizing if wanted.)*
+**2. Bot opponents: names, faces, random pick** *(pairing is Added by Claude: the seven names and the seven faces in the order the user listed them, except that Alea and Snake swapped faces at the user's request (Snake gets the eye: snake eyes). Change before authorizing if wanted.)*
 
 | Name | Face | Moods |
 |---|---|---|
@@ -62,8 +62,8 @@ So it is worse than the first report: four players are cut off at every width, a
 | Dottie | 🤖 | none |
 | Chance | 🖐️ | 👍 happy, 👎 worried |
 | Nat | 👤 | none |
-| Alea | 👁️ | 👀 happy, 🙈 worried |
-| Snake | 👾 | none |
+| Alea | 👾 | none |
+| Snake | 👁️ | 👀 happy, 🙈 worried |
 | Deuce | 👽 | none |
 
 - **Random per game:** when a game is started from the menu (Start) the opponents are drawn at random from these seven, no repeats within a game, using the browser's secure random generator like the game seed. The seed is drawn first and the opponents after it, so a pinned test seed still works. The draw is cosmetic (names and faces only) and never touches the rules or the bot's decisions.
