@@ -421,7 +421,6 @@ function humanAct(actions) {
 // Dispatch actions[i], show its events, then continue with the next action (e.g. SET_ASIDE then ROLL).
 function doActions(actions, i) {
   busy = true;
-  moods.stopThinking(session.state.current);
   const events = session.dispatch(actions[i]);
   persistSession();
   render(false);

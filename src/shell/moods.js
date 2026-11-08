@@ -3,7 +3,8 @@
 import { AI_ROSTER, pickLine } from '../ai/roster.js';
 import { botIdOf, faceFor } from '../ui/avatars.js';
 
-const MOOD_MS = 2500; // a mood face or a spoken line stays about this long
+const MOOD_MS = 4000; // an outcome mood face (shocked, winning, relieved) stays this long
+const TALK_MS = 3500; // a spoken line stays this long
 const STALE_MS = 4000; // a line that waited longer than this for its turn to talk is dropped
 
 // A "big" bank or score, per game (a bot's face goes to WINNING).
@@ -18,15 +19,16 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
   let talk = null;
   let waiting = null;
   let thinking = null;
+  let thinkingSeat = null; // the bot whose turn is being played (thinking lasts for the whole turn, not per action)
   let last = {};
   let spoke = {};
-  let hits = {};
+  let nervous = {};
   let slot = 0;
 
   const botSeat = (i) => { const s = seatsOf()[i]; return s && s.isBot && botIdOf(s) ? s : null; };
 
   function reset() {
-    mood = []; token = []; talk = null; waiting = null; thinking = null; last = {}; spoke = {}; hits = {}; slot++;
+    mood = []; token = []; talk = null; waiting = null; thinking = null; thinkingSeat = null; last = {}; spoke = {}; nervous = {}; slot++;
   }
 
   function setMood(i, m) {
@@ -34,16 +36,18 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
     mood[i] = m;
     token[i] = (token[i] || 0) + 1;
     const t = token[i];
-    if (m !== 'DEFAULT' && m !== 'THINKING') sched.after(MOOD_MS, () => { if (token[i] === t) { mood[i] = 'DEFAULT'; redraw(); } });
+    // an outcome face fades back to what the bot is doing (thinking while its turn goes on, otherwise normal); nervous holds
+    if (m !== 'DEFAULT' && m !== 'THINKING' && m !== 'NERVOUS') sched.after(MOOD_MS, () => { if (token[i] === t) { mood[i] = rest(i); redraw(); } });
     redraw();
   }
+  const rest = (i) => (thinkingSeat === i ? 'THINKING' : 'DEFAULT');
 
   function startTalk(entry) {
     talk = entry;
     const mine = ++slot;
     announce(`${entry.name}: ${entry.line}`);
     redraw();
-    sched.after(MOOD_MS, () => {
+    sched.after(TALK_MS, () => {
       if (slot !== mine) return;
       talk = null;
       const w = waiting;
@@ -73,15 +77,28 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
     if (!spoke[i]) { spoke[i] = true; say(i, m); }
   }
 
+  // NERVOUS once per turn: the first roll with a lot at stake; it holds until an outcome or the end of the turn.
+  function tense(i) {
+    if (nervous[i]) return;
+    nervous[i] = true;
+    feel(i, 'NERVOUS');
+  }
+
   const steps = (cols) => cols.reduce((a, c) => a + (c.to - c.from), 0);
 
   function onEvent(ev, gameId, view) {
     const i = ev.seat;
     switch (ev.type) {
       case 'TURN_STARTED':
-        spoke[i] = false; hits[i] = 0;
+        if (thinkingSeat !== null && thinkingSeat !== i) { thinking = null; thinkingSeat = null; }
+        spoke[i] = false; nervous[i] = false;
         setMood(i, 'DEFAULT');
+        startThinking(i); // a bot is thinking from the moment its turn starts (no "is thinking…" flash before its first action)
         if (botSeat(i) && rand() % 3 === 0) say(i, 'DEFAULT'); // now and then a bot greets the table
+        break;
+      case 'TURN_ENDED':
+        // the thinking line stays through the short gap until the next turn starts (no "is thinking…" flash between turns)
+        if (mood[i] === 'THINKING' || mood[i] === 'NERVOUS') setMood(i, 'DEFAULT');
         break;
       case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE':
         feel(i, 'SHOCKED');
@@ -92,27 +109,28 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
       case 'BANKED': {
         const big = gameId === 'cliffhanger' ? steps(ev.cols) >= BIG_BANK.cliffhanger : (ev.amount || 0) >= (BIG_BANK[gameId] || Infinity);
         if (big) feel(i, 'WINNING');
-        else if (hits[i]) feel(i, 'RELIEVED');
-        else setMood(i, 'DEFAULT');
+        else if (nervous[i]) feel(i, 'RELIEVED'); // a bank after being nervous is a relief
+        else setMood(i, rest(i));
         break;
       }
       case 'SCORED': {
         if (gameId === 'shutbox') { if (!ev.shut && ev.score <= 5) feel(i, 'WINNING'); break; }
         if (gameId === 'yacht') { if ((ev.points || 0) >= 25) feel(i, 'WINNING'); break; }
         const stake = STAKES[gameId];
-        if (stake && (ev.turnPoints || 0) >= stake) { hits[i] = (hits[i] || 0) + 1; feel(i, hits[i] % 2 ? 'NERVOUS' : 'RELIEVED'); }
+        if (stake && (ev.turnPoints || 0) >= stake) tense(i);
         break;
       }
       case 'MOVED':
-        if (gameId === 'cliffhanger' && Object.keys(view.markers).length === 3) { hits[i] = (hits[i] || 0) + 1; feel(i, hits[i] % 2 ? 'NERVOUS' : 'RELIEVED'); }
+        if (gameId === 'cliffhanger' && Object.keys(view.markers).length === 3) tense(i);
         break;
       case 'FLIPPED': {
         if (gameId !== 'shutbox') break;
         const open = view.tiles.reduce((a, t, k) => a + (t === 'open' ? k + 1 : 0), 0);
-        if (open > 0 && open <= 6) { hits[i] = (hits[i] || 0) + 1; feel(i, hits[i] % 2 ? 'NERVOUS' : 'RELIEVED'); }
+        if (open > 0 && open <= 6) tense(i);
         break;
       }
       case 'GAME_OVER': {
+        thinking = null; thinkingSeat = null;
         const winners = ev.winners || (ev.winner !== null && ev.winner !== undefined ? [ev.winner] : []);
         const seats = seatsOf();
         seats.forEach((s, k) => { if (botSeat(k)) setMood(k, winners.includes(k) ? 'WINNING' : 'SHOCKED'); });
@@ -126,22 +144,21 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
     }
   }
 
+  // Thinking starts on a bot's first action of its turn and lasts until its turn ends (TURN_ENDED) or the game does:
+  // the same line and the thinking face for the whole turn, not restarted for every roll and choice.
   function startThinking(i) {
     const s = botSeat(i);
-    if (!s) { thinking = null; return; }
+    if (!s) { thinking = null; thinkingSeat = null; return; }
+    if (thinkingSeat === i && thinking) return;
     const id = botIdOf(s);
     thinking = pickLine(id, 'THINKING', rand(), last[`${id}:t`]) || AI_ROSTER[id].thinkingText;
+    thinkingSeat = i;
     last[`${id}:t`] = thinking;
-    setMood(i, 'THINKING');
-  }
-
-  function stopThinking(i) {
-    thinking = null;
-    if (mood[i] === 'THINKING') setMood(i, 'DEFAULT');
+    if (mood[i] !== 'NERVOUS') setMood(i, 'THINKING');
   }
 
   return {
-    reset, onEvent, startThinking, stopThinking, say,
+    reset, onEvent, startThinking, say,
     faceOf: (i) => faceFor(seatsOf()[i], mood[i] || 'DEFAULT'),
     getTalk: () => (talk ? { name: talk.name, line: talk.line } : null),
     getThinking: () => thinking,
