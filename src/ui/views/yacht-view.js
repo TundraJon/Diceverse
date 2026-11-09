@@ -1,6 +1,6 @@
 // Yacht view: five tappable dice (tap = hold), a roll counter, and the category sheet.
 import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
-import { renderScoreStrip, renderTurnBar } from '../panels.js';
+import { renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { RULESETS, RULESET_IDS, UPPER_KEYS, UPPER_TARGET, categoryList, potential, totals, comparisonRows } from '../../blocks/category-sheet.js';
 
@@ -88,8 +88,23 @@ export const yachtView = {
     const choosing = human && phase === 'choose';
     const rollsLeft = st.turn.rollsLeft;
     if (ui.controls) ui.controls.classList.add('sticky');
+    if (ui.table.parentElement) ui.table.parentElement.classList.add('tight'); // a little less space between the blocks so the whole card fits on a small phone
 
-    renderScoreStrip(ui.scores, view.seats, view.current, 0, (i) => { view.viewSeat = i; this.render(ui, view, session, ctx); });
+    // score chips: one line each (face, name, turns, total), two per row; tap one to see that player's card
+    ui.scores.className = 'climbchips';
+    ui.scores.style.setProperty('--n', String(view.seats.length === 1 ? 1 : 2));
+    ui.scores.innerHTML = '';
+    view.seats.forEach((sd, i) => {
+      const chip = el('div', 'cchip' + (i === view.current && !session.isOver() ? ' active' : '') + (i === view.viewSeat ? ' viewed' : ''));
+      chip.append(el('span', 'cn', `${sd.face || (sd.isBot ? '\u{1F916}' : '\u{1F464}')} ${sd.name} \u00b7 ${sd.turns} turn${sd.turns === 1 ? '' : 's'}`), el('b', null, String(sd.total)));
+      chip.tabIndex = 0;
+      chip.setAttribute('role', 'button');
+      chip.setAttribute('aria-label', `Show ${sd.name}'s card, total ${sd.total}`);
+      const show = () => { view.viewSeat = i; this.render(ui, view, session, ctx); };
+      chip.addEventListener('click', show);
+      chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
+      ui.scores.appendChild(chip);
+    });
 
     // dice
     ui.dice.innerHTML = '';
@@ -131,29 +146,54 @@ export const yachtView = {
     const head = el('div', 'cathead');
     head.append(el('strong', null, isMe(seat) ? 'Your sheet' : `${seat.name}'s sheet`), el('span', null, mine ? '' : 'viewing (tap a name above)'));
     ui.sheetBox.appendChild(head);
-    const list = el('div', 'catlist');
     const tt = totals(setId, seat.card, seat.extra);
-    const addRow = (c) => {
+    const card = el('div', 'ycard');
+    // one cell: the name, a short description for a first-time player, and the score (or what it would score now)
+    const makeCell = (c, label) => {
       const scored = seat.card[c.key] !== null;
       const selectable = choosing && mine && !scored;
-      const row = el('button', 'catRow' + (scored ? ' scored' : '') + (view.selected === c.key ? ' sel' : ''));
-      row.disabled = !selectable;
-      row.setAttribute('aria-pressed', String(view.selected === c.key));
+      const cell = el('button', 'ycell' + (scored ? ' scored' : ' open') + (view.selected === c.key ? ' sel' : ''));
+      cell.disabled = !selectable;
+      cell.setAttribute('aria-pressed', String(view.selected === c.key));
       const pv = live && !scored ? potential(setId, c.key, live, st.seats[seatIdx].card) : null;
-      row.append(el('span', null, c.label), el('span', 'val' + (pv !== null ? (pv === 0 ? ' zero' : ' prev') : ''), scored ? String(seat.card[c.key]) : pv !== null ? String(pv) : DASH));
-      row.addEventListener('click', () => { view.selected = view.selected === c.key ? null : c.key; this.render(ui, view, session, ctx); });
-      list.appendChild(row);
+      const shown = scored ? String(seat.card[c.key]) : pv !== null ? String(pv) : DASH;
+      const zero = (scored && seat.card[c.key] === 0) || (pv === 0);
+      cell.append(el('span', 'yl', label || c.label), el('span', 'yd', c.desc), el('span', 'yv' + (pv !== null && pv !== 0 ? ' prev' : '') + (zero ? ' zero' : ''), shown));
+      cell.setAttribute('aria-label', `${c.label}: ${c.desc}. ${scored ? `scored ${shown}` : pv !== null ? `would score ${shown}` : 'open'}`);
+      cell.addEventListener('click', () => { view.selected = view.selected === c.key ? null : c.key; this.render(ui, view, session, ctx); });
+      return cell;
     };
-    categoryList(setId).forEach((c) => {
-      addRow(c);
-      if (c.key === 'sixes' && set.upperBonus) {
-        const prog = el('div', 'catNote', `Upper ${tt.upper} / ${UPPER_TARGET}${tt.bonus ? ` · bonus +${tt.bonus}` : ` · bonus ${set.upperBonus} at ${UPPER_TARGET}`}`);
-        list.appendChild(prog);
-      }
+    const cats = categoryList(setId);
+    card.appendChild(el('div', 'ylbl', 'Upper'));
+    const upperRow = el('div', 'yupper');
+    cats.filter((c) => UPPER_KEYS.includes(c.key)).forEach((c, i) => upperRow.appendChild(makeCell(c, `${i + 1}s`)));
+    card.appendChild(upperRow);
+    const sub = el('div', 'ysub');
+    sub.appendChild(el('span', null, `UPPER ${tt.upper}${set.upperBonus ? ` / ${UPPER_TARGET}` : ''}`));
+    if (set.upperBonus) {
+      // the bonus box: a tick once earned, a cross once it can no longer be reached
+      const remaining = UPPER_KEYS.reduce((a, k, i) => a + (seat.card[k] === null ? 5 * (i + 1) : 0), 0);
+      const mark = tt.bonus ? '\u2713' : tt.upper + remaining < UPPER_TARGET ? '\u2717' : '';
+      sub.appendChild(el('span', null, `Bonus ${set.upperBonus} [ ${mark || '\u00a0'} ]`));
+    }
+    card.appendChild(sub);
+    card.appendChild(el('div', 'ylbl', 'Lower'));
+    const lowerGrid = el('div', 'ylower');
+    cats.filter((c) => !UPPER_KEYS.includes(c.key)).forEach((c) => lowerGrid.appendChild(makeCell(c)));
+    if (set.extra) {
+      const ex = el('div', 'ycell extra');
+      ex.append(el('span', 'yl', 'Extra Yachts'), el('span', 'yd', 'each extra five of a kind, +100'), el('span', 'yv', `+${seat.extra}`));
+      lowerGrid.appendChild(ex);
+    }
+    card.appendChild(lowerGrid);
+    const tot = el('div', 'ytot');
+    [['UPPER', tt.upper + tt.bonus, ''], ['LOWER', tt.lower + tt.extra, ''], ['TOTAL', tt.total, 't']].forEach(([l, v, k]) => {
+      const box = el('div', k);
+      box.append(el('span', null, l), el('b', null, String(v)));
+      tot.appendChild(box);
     });
-    if (set.extra && seat.extra) list.appendChild(el('div', 'catNote', `Extra five of a kind bonus: +${seat.extra}`));
-    list.appendChild(el('div', 'catNote total', `Total ${tt.total}`));
-    ui.sheetBox.appendChild(list);
+    card.appendChild(tot);
+    ui.sheetBox.appendChild(card);
 
     // buttons
     const unheld = [0, 1, 2, 3, 4].filter((i) => !view.held[i]);
