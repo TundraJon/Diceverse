@@ -53,13 +53,15 @@ export const yachtView = {
 
   init(session) { return this.sync(null, session); },
 
-  sync(_view, session) {
+  sync(prev, session) {
     const st = session.state;
+    // holds stay while the turn goes on (rolls used, still choosing) and clear when a new turn starts
+    const keep = prev && prev.held && st.turn.phase === 'choose' && !session.isOver();
     return {
       seats: st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns, card: { ...s.card }, extra: s.extra })),
       current: st.current,
       dice: st.turn.dice.slice(),
-      held: [false, false, false, false, false],
+      held: keep ? prev.held.slice() : [false, false, false, false, false],
       rolled: [],
       selected: null,
       banner: null,
