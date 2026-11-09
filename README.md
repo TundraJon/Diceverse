@@ -17,7 +17,27 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 21 — The choices appear before the dice stop tumbling (Cliffhanger, and the same in Yacht)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user):** "Playing cliffhanger ... the options for where to place the scores appears before the dice stop moving. It makes it look as though it already knew the outcome before the dice were rolled."
+
+**Reproduced (no code changed):** Solo Cliffhanger at real speed, 390x844, sampled every 60 ms after pressing ROLL. For the first 0.7 s the four dice are tumbling (`.die.tumble`), and during all of it the three pair buttons are already on screen with their labels (for example "6 + 7" and the dice split under it, disabled) and the hint already says "Choose a pair to climb". They only become enabled when the tumbling stops (at about 0.7 s). The same check in Yacht: the category rows already show their score previews (2, 4, 10...) while the dice tumble. Pig, Farkle and Shut the Box show nothing that depends on the new roll during the tumble. Also measured for the user's remark about the numbers: the first rolls of five new Cliffhanger games were 4316, 2223, 3541, 2663 and 4146: each new game gets a fresh seed from the browser's secure random generator, so games do not repeat each other (only a *resumed* saved game replays its own dice, because the save keeps its seed).
+
+**Cause:** the game computes the roll the instant ROLL is pressed (the animation is only a presentation delay), and `render` in the Cliffhanger and Yacht views draws the controls and previews from the already-updated game state, not from what has been shown so far. Nothing was known "early" in the random sense; the screen just got ahead of the animation.
+
+**1. Cliffhanger fix** *(wording is Added by Claude. Change before authorizing if wanted.)* While the roll is being shown (the shell's busy flag, from pressing ROLL until the dice have stopped and the events are presented), the controls bar shows one full-width disabled button "ROLLING…" in place of the pair buttons, and the hint says "Rolling…". When the dice stop, the pair buttons and "Choose a pair to climb" appear at once. During a bot's turn the same applies: no choice buttons are drawn while it is busy; a single disabled button shows "<name>'s turn". The bar keeps its height, so nothing jumps.
+
+**2. Yacht (same bug, found while checking; included unless the user strikes it)** *(Added by Claude.)* While busy, the category sheet shows no score previews and "PICK A CATEGORY" stays disabled, as it already is; the previews appear when the dice have stopped.
+
+**3. Not changed:** the roll itself, the seed and the order of the numbers, the tumble animation (the die faces are visible while a die spins, as in any dice animation), Pig, Farkle and Shut the Box.
+
+**4. Files:** `src/ui/views/cliffhanger-view.js`, `src/ui/views/yacht-view.js`; rebuilt `index.html`.
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 1 minute):** `preflight` clean. The reproduction as the test, at real speed, sampling every 60 ms for several rolls: while any die is tumbling there are zero pair buttons and the hint is "Rolling…" in Cliffhanger, and no preview numbers in Yacht; within about 150 ms after the tumbling stops the pair buttons (or previews) are there and enabled; the controls bar height does not change between the two states; a bot's whole turn shows no choice buttons; `?speed=0` still ends in the normal playable state; the existing Cliffhanger browser suite (33 checks), the Cliffhanger and Yacht game suites that play whole games, and the bubble and chips checks still pass. Zero JS errors. Screenshots of the "ROLLING…" state and the revealed choices.
+
+**6. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
