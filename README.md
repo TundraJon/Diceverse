@@ -19,7 +19,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ### Queue 22 — Real 3D dice: a cube that is thrown, bounces and lands with the result on top (all games)
 
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Replaces Planner 10 (bouncing 2D canvas dice) once built.
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user. Supersedes the old Planner 10 idea of 2D canvas bouncing dice (the user now wants 3D; the idea of dice roaming around the tray is kept as Planner 10, a later extra).
 
 **Source (user):** "The current tumble is just a two-dimensional die spinning. It doesn't look like a real die being cast and determining a number. The result of the thrown die is always on top, except for a d4 where it is on the side." Also: the canvas die in another app "looked okay" but was "merely spinning in different directions"; the user does not want the game "a lot bigger simply because I want the dice to look pretty", and asked which option is easier, faster and less code (answer: CSS 3D). The user asked for this to be written up after seeing the frame-by-frame demo (throwaway, not in the repo).
 
@@ -42,7 +42,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 **6. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Browser at 390x844 and 320x640 in Pig, Farkle (6 dice), Yacht (5 dice), Shut the Box (the tray) and Cliffhanger: for every value 1 to 6 the face seen at the center of the resting die (`elementFromPoint`) is the value face with the right number of pips, in each game; during a real-speed roll at three moments (early, middle, late) the die is a cube in motion (screenshots inspected) and it ends exactly on the rolled value; the throw lasts 1.0 s (measured with the animation API) and the Queue 21 reveal appears 0.25 s after it ends (existing timing checks re-run); held dice in Yacht and Farkle have no running animation during a re-roll; reduced motion and `?speed=0` show dice at rest with no animation; the dice fit as before (Farkle's 6 dice at 320 px, Yacht's 5, no horizontal scroll, controls on screen); Pig's red 1, Farkle's held / selected / hot-dice looks and Yacht's held look are unchanged; no external requests; zero JS errors; the built file size change is reported. Screenshots at rest and mid-throw for each game. Needs a real-device check: how smooth the throw is on the user's phone, and how the cubes look to the eye.
 
-**7. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry and Planner 10 removed, one commit.
+**7. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
@@ -168,6 +168,9 @@ BGG voters-sorted page 2 received (rank/avg/voters, about 2,600-5,300 voters eac
 - Low-rated pure-luck classics (Yahtzee 5.57, Farkle 5.69, LCR 3.74): keep the good ones as gateway games but do not make them the headline; LCR-style is filler at most.
 BGG data gathering is now sufficient; next step is the mechanic-block spec and v1 game recipes.
 Waiting on: user decision on what to design next; nothing is queued or authorized to build.
+
+### Planner 10 — Dice that roam around the tray (a later extra to Queue 22, idea)
+From the Shut the Box design: dice that bounce around inside the felt tray (not just in their own slot), for the games that have a tray (Shut the Box, Cliffhanger). Queue 22 builds the 3D throw in place (Tier 1) and leaves roaming out to keep the code small; add it only if wanted: more code per game (paths that stay inside the tray and never overlap), cosmetic only.
 
 ### Planner 11 — Shut the Box: the page scrolls, so the bottom of the dice tray is hidden (user-reported, not yet specced)
 User report: "I don't like that I have to scroll to see the bottom of the roll area." Measured in Build Log 16: the screen needs about 836 px of height (845 px at 390x844 after trimming), but real phones show less than that once the browser's own bars are counted, so the page scrolls, and the pinned ROLL/FLIP bar then covers the lower part of the tray (dice and the roll line) until you scroll.
