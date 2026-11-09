@@ -17,7 +17,25 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 24 — Yacht: held dice stay held until you toggle them off
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Report (user):** "For Yacht, once dice are held, keep hold unless toggle off. It's annoying to have to reselect the dice over again, especially if I don't see that I have to do it again and accidentally reroll all and lose my held dice!"
+
+**Reproduced (no code changed):** Solo Yacht at 390x844: after roll 1 nothing is held; I held dice 1 and 3 (`aria-pressed` true on both); I pressed ROLL: the held dice kept their values (rolled again were dice 2, 4 and 5) but after the roll **all five dice show as not held** (`held: [false, false, false, false, false]`) and the button says "ROLL (1 left)". Pressing ROLL again would reroll all five, which is the accident the user describes.
+
+**Cause:** `sync` in `src/ui/views/yacht-view.js` builds a fresh `held: [false, false, false, false, false]` every time the shell redraws the screen after an action (after every roll), so the holds are thrown away. (The reset in the `TURN_STARTED` case is correct and stays.)
+
+**1. Fix:** `sync(prev, session)` carries the previous view's `held` over while the turn is still going (the game is in the choosing phase with rolls used), and starts empty at the start of a turn (phase `start`, after a score, or when the game is first opened or resumed). Holds are still toggled by tapping a die, only the player's own taps change them, and they clear when a turn ends and a new one starts (also in Pass & Play, so the next player never inherits them). Bots do not use the screen's holds. No change to the rules, the roll, the bot or the saves (holds are view-only and are not saved, so a resumed game starts with none).
+
+**2. Optional addition** *(Added by Claude. Change before authorizing if wanted.)* The roll button says how many dice it will roll, so a roll of everything is never a surprise: "ROLL 3 (2 left)" instead of "ROLL (2 left)"; with nothing held it reads "ROLL 5 (2 left)". The user can strike this.
+
+**3. Files:** `src/ui/views/yacht-view.js` only; rebuilt `index.html`.
+
+**4. Verification plan (scratch script using `tests-helpers.cjs`; none committed; about 40 seconds):** `preflight` clean. The reproduction as the test: hold dice 1 and 3, roll, and they are still held (`[true, false, true, false, false]`, "HELD" tags still on them) with their values unchanged; toggling a held die off and rolling rerolls it; holding all five still disables the roll ("HOLD FEWER"); after the third roll and a SCORE the next turn starts with nothing held; in a 2-player Pass & Play the second player starts with nothing held; tapping another player's chip does not change the holds; a resumed game starts with none. The existing Yacht suite (43 checks) and the dice checks still pass. Zero JS errors. Screenshot of a re-rolled turn with two dice still held.
+
+**5. Deliverables and bookkeeping:** the file above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
