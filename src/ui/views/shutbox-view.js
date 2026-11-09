@@ -1,5 +1,5 @@
 // Shut the Box view: a wooden box with 12 tiles (6 + 6), a tall felt dice tray, and a sliding cover for a shut box.
-import { renderDie } from '../dice.js';
+import { renderDie, ROLL_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { validSets, oneDieAllowed } from '../../blocks/tile-board.js';
@@ -187,7 +187,7 @@ export const shutboxView = {
         view.selected = [];
         view.banner = null;
         tumble = true;
-        delay = ctx.reduced ? 150 : 650;
+        delay = ctx.reduced ? 150 : ROLL_MS; // the result shows when the dice land
         ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(' and ')}, total ${ev.target}`);
         break;
       case 'FLIPPED':

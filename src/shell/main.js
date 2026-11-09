@@ -6,6 +6,7 @@ import { createScheduler } from '../core/scheduler.js';
 import { decide, thinkMs, PRESETS } from '../ai/brain.js';
 import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, updateBest, storageAvailable } from './save.js';
 import { createMoods } from './moods.js';
+import { ROLL_MS, startThrow, beginDice } from '../ui/dice.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
 import { KINDS, TONES, COLORS, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
@@ -511,10 +512,14 @@ const ctx = () => ({
   vibrate: () => { if (navigator.vibrate) { try { navigator.vibrate(150); } catch { /* ignore */ } } },
 });
 
+let throwFrom = -1e9; // when the current dice throw began
 function render(tumble) {
   decorate();
   const c = ctx();
-  c.tumble = tumble;
+  const now = performance.now();
+  if (tumble) { throwFrom = now; startThrow(now); }
+  c.tumble = tumble || now - throwFrom < ROLL_MS; // a re-render in the middle of a throw carries the throw on
+  beginDice();
   G.view.render(ui, view, session, c);
   placeBubble();
 }

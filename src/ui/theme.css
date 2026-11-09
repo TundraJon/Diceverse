@@ -72,22 +72,29 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .dice { display: flex; gap: 18px; justify-content: center; }
 .die {
   --s: 96px;
-  width: var(--s); height: var(--s); padding: calc(var(--s) * 0.1);
-  background: linear-gradient(145deg, #ffffff, #e3e3e3);
-  border-radius: calc(var(--s) * 0.2);
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.45), inset -2px -2px 4px rgba(0,0,0,0.12), inset 2px 2px 4px rgba(255,255,255,0.9);
-  display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  position: relative; width: var(--s); height: var(--s); font-size: var(--s); /* em = the die's size, used by the throw */
+  perspective: calc(var(--s) * 5);
 }
+.die.throwing { z-index: 3; }
+.die .tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(-14deg) rotateY(-16deg); }
+.die .cube { position: absolute; inset: 0; transform-style: preserve-3d; }
+.die .face {
+  position: absolute; inset: 0; padding: calc(var(--s) * 0.1); border-radius: calc(var(--s) * 0.18);
+  background: linear-gradient(145deg, #ffffff, #e3e3e3);
+  box-shadow: inset -2px -2px 5px rgba(0,0,0,0.16), inset 2px 2px 4px rgba(255,255,255,0.9);
+  backface-visibility: hidden; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+.die .f1 { transform: translateZ(calc(var(--s) / 2)); }
+.die .f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.die .f3 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.die .f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.die .f2 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.die .f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.die .shadow { position: absolute; left: 8%; right: 8%; bottom: -8%; height: 16%; border-radius: 50%; background: rgba(0,0,0,0.4); filter: blur(4px); }
 .dice.two .die { --s: 80px; }
 .die.blank { opacity: 0.25; }
 .pip { align-self: center; justify-self: center; width: 60%; height: 60%; border-radius: 50%; background: var(--ink); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6); }
 .pip.danger { background: var(--danger); }
-.die.tumble { animation: tumble 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
-@keyframes tumble {
-  0% { transform: translateY(-30px) rotate(0deg) scale(0.8); opacity: 0.4; }
-  55% { transform: translateY(8px) rotate(200deg) scale(1.08); opacity: 1; }
-  100% { transform: translateY(0) rotate(360deg) scale(1); }
-}
 .banner { position: absolute; top: 6px; padding: 8px 18px; border-radius: 999px; background: var(--danger); color: #fff; font-weight: 800; letter-spacing: 0.08em; }
 .turnline { color: var(--muted); text-align: center; min-height: 1.4em; }
 .turnline strong { color: var(--gold); }
@@ -101,9 +108,6 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .results { display: flex; flex-direction: column; gap: 6px; }
 .results .r { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); }
 
-@media (prefers-reduced-motion: reduce) {
-  .die.tumble { animation: none; }
-}
 
 /* Farkle */
 .controls .span2 { grid-column: 1 / -1; }
@@ -186,7 +190,7 @@ body.fast *, body.fast *::before, body.fast *::after { animation: none !importan
 .tray { position: relative; flex: 1; min-height: 200px; margin-top: 8px; border-radius: 4px; overflow: hidden; background: radial-gradient(circle at 50% 30%, #1f6a3f, #0f4a2a); box-shadow: inset 0 0 20px rgba(0,0,0,0.55); }
 .tdie { position: absolute; }
 .tdie .die { --s: clamp(52px, 15vw, 60px); }
-.die.cream { background: linear-gradient(145deg, #fff6df, #ecd9aa); }
+.die.cream .face { background: linear-gradient(145deg, #fff6df, #ecd9aa); }
 .die.cream .pip { background: #2a1d10; box-shadow: none; }
 .trayinfo { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #e5e7eb; font-size: 0.9rem; padding: 0 8px; }
 .cover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; border-radius: 4px; transform: translateY(-110%); transition: transform 0.6s ease; pointer-events: none; box-shadow: inset 0 0 22px rgba(0,0,0,0.5); }
