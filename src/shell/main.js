@@ -150,9 +150,14 @@ function renderMenu() {
 
   GAME_ORDER.forEach((id) => {
     if (!loadSave(id)) return;
+    const resumeRow = el('div', 'resumerow');
     const resume = el('button', 'primary', `Resume ${GAMES[id].meta.name}`);
     resume.addEventListener('click', () => resumeGame(id));
-    screen.appendChild(resume);
+    const trash = el('button', 'trash', '\u{1F5D1}\uFE0F');
+    trash.setAttribute('aria-label', `Delete saved ${GAMES[id].meta.name} game`);
+    trash.addEventListener('click', () => confirmDelete([id], renderMenu));
+    resumeRow.append(resume, trash);
+    screen.appendChild(resumeRow);
   });
 
   const gamePanel = el('div', 'panel');
@@ -257,6 +262,33 @@ function openRules(options) {
   });
 }
 
+// Ask before deleting saved games (one game, or all of them). "Keep it" comes first so it has the focus.
+function confirmDelete(ids, after) {
+  const found = ids.map((id) => ({ id, save: loadSave(id) })).filter((x) => x.save);
+  if (!found.length) return;
+  const one = found.length === 1;
+  openSheet((sheet, close) => {
+    sheet.appendChild(el('h2', null, one ? 'Delete saved game?' : 'Delete all saved games?'));
+    if (one) {
+      const { id, save } = found[0];
+      const seats = (save.options && save.options.seats) || [];
+      const who = seats.length <= 1 ? 'Solo' : `${seats.length} players`;
+      const moves = save.log.length;
+      sheet.appendChild(el('p', null, `Your unfinished ${GAMES[id].meta.name} game (${who}, ${moves} move${moves === 1 ? '' : 's'} played) will be deleted. This can't be undone.`));
+    } else {
+      sheet.appendChild(el('p', null, `All ${found.length} unfinished games will be deleted. This can't be undone.`));
+    }
+    const row = el('div', 'confirmrow');
+    const keep = el('button', 'secondary', one ? 'Keep it' : 'Keep them');
+    const del = el('button', 'danger', one ? 'Delete' : 'Delete all');
+    keep.addEventListener('click', close);
+    del.addEventListener('click', () => { found.forEach((x) => clearSave(x.id)); close(); if (after) after(); });
+    row.append(keep, del);
+    sheet.appendChild(row);
+    sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  });
+}
+
 // Settings: your name, your avatar and your color. The avatar and the color are two small dropdown buttons; each opens a
 // panel under the row with every choice visible at once.
 function openSettings() {
@@ -342,6 +374,15 @@ function openSettings() {
     };
     const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); };
     input.addEventListener('change', save);
+    const clearAll = el('button', 'secondary clearall');
+    const refreshClear = () => {
+      const n = GAME_ORDER.filter((id) => loadSave(id)).length;
+      clearAll.disabled = n === 0;
+      clearAll.textContent = n ? `Clear all saved games (${n})` : 'No saved games';
+    };
+    clearAll.addEventListener('click', () => confirmDelete(GAME_ORDER, () => { refreshClear(); renderMenu(); }));
+    sheet.appendChild(clearAll);
+    refreshClear();
     const ok = el('button', 'primary', 'Done');
     ok.addEventListener('click', () => { save(); close(); });
     sheet.appendChild(ok);

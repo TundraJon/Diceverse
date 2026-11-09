@@ -259,3 +259,10 @@ body.fast .cover { transition: none; }
 .talkbubble::before { content: ""; position: absolute; top: -6px; left: calc(var(--ptr, 20px) - 6px); border: 6px solid transparent; border-top: 0; border-bottom-color: #fff6df; }
 @keyframes bubbleIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .talkbubble { animation: none; } }
+
+/* Clear saved games: a 🗑 beside each Resume button, the confirm sheet, and the Settings button */
+.resumerow { display: grid; grid-template-columns: minmax(0, 1fr) 52px; gap: 8px; }
+.trash { min-height: 56px; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,0.08); font-size: 1.25rem; }
+.confirmrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.danger { min-height: 48px; border: 0; border-radius: 14px; background: #dc2626; color: #fff; font-weight: 800; }
+.clearall { color: #fca5a5; }
