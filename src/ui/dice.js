@@ -1,3 +1,8 @@
+// How long a roll is shown: the dice tumble for ROLL_MS (keep it equal to the CSS `tumble` animation), and the choices a roll
+// leads to (where to place a marker, which category to score) appear REVEAL_MS after the dice have stopped.
+export const ROLL_MS = 600;
+export const REVEAL_MS = 250;
+
 // Renders a CSS-pip die. A rolled 1 gets a red pip (the Pig danger face).
 const PIPS = {
   1: [5],

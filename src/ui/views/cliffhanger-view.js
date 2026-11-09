@@ -1,5 +1,5 @@
 // Cliffhanger view: eleven columns shaped like a mountain (the 7 column is the peak) in front of a drawn snow-peak.
-import { renderDie } from '../dice.js';
+import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
 import { statusOverride } from '../avatars.js';
 import { LEN, splits, chooseOptions, stuck } from '../../games/cliffhanger.js';
 
@@ -182,7 +182,10 @@ export const cliffhangerView = {
     const n = view.dice.length || 4;
     for (let i = 0; i < n; i++) ui.dice.appendChild(renderDie(view.dice[i] === undefined ? null : view.dice[i], { tumble: ctx.tumble && !ctx.reduced, danger: false, cls: 'cream' }));
     const left = 3 - Object.keys(view.markers).length;
+    // while a roll is being shown (or a bot plays) the choices are not drawn yet: they would give the roll away before the dice stop
+    const rollingNow = phase === 'choose' && !session.isOver() && (ctx.busy || cur.isBot);
     ui.hint.textContent = statusOverride(view, cur, session.isOver()) || (session.isOver() ? '' : cur.isBot ? `${cur.name} is thinking…`
+      : rollingNow ? 'Rolling\u2026'
       : phase === 'choose' ? 'Choose a pair to climb'
         : phase === 'decide' ? `${left} marker${left === 1 ? '' : 's'} left · bank to keep your climb`
           : 'Roll the four dice');
@@ -199,7 +202,10 @@ export const cliffhangerView = {
       ui.controls.appendChild(b);
       return b;
     };
-    if (phase === 'choose' && !session.isOver()) {
+    if (rollingNow) {
+      const wait = btn(cur.isBot ? `${cur.name}'s turn` : 'ROLLING\u2026', 'btn-roll', true, () => {});
+      wait.classList.add('span2');
+    } else if (phase === 'choose' && !session.isOver()) {
       const options = chooseOptions(st);
       ui.controls.style.gridTemplateColumns = `repeat(${Math.min(3, Math.max(1, options.length))}, 1fr)`; // up to six options wrap to a second row
       const sp = splits(st.turn.dice);
@@ -228,7 +234,7 @@ export const cliffhangerView = {
         view.banner = null;
         view.slip = false;
         tumble = true;
-        delay = ctx.reduced ? 150 : 650;
+        delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the choices appear 0.25 s after the dice stop
         ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
         break;
       case 'MOVED':

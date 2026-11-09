@@ -1,5 +1,5 @@
 // Yacht view: five tappable dice (tap = hold), a roll counter, and the category sheet.
-import { renderDie } from '../dice.js';
+import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { RULESETS, RULESET_IDS, UPPER_KEYS, UPPER_TARGET, categoryList, potential, totals, comparisonRows } from '../../blocks/category-sheet.js';
@@ -126,7 +126,7 @@ export const yachtView = {
     const seatIdx = view.viewSeat;
     const seat = view.seats[seatIdx];
     const mine = seatIdx === view.current;
-    const live = mine && phase === 'choose' ? st.turn.dice : null;
+    const live = mine && phase === 'choose' && !ctx.busy ? st.turn.dice : null; // no previews while the dice are still rolling
     ui.sheetBox.innerHTML = '';
     const head = el('div', 'cathead');
     head.append(el('strong', null, isMe(seat) ? 'Your sheet' : `${seat.name}'s sheet`), el('span', null, mine ? '' : 'viewing (tap a name above)'));
@@ -184,7 +184,7 @@ export const yachtView = {
         view.banner = null;
         view.viewSeat = ev.seat;
         tumble = true;
-        delay = ctx.reduced ? 150 : 650;
+        delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the score previews appear 0.25 s after the dice stop
         ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
         break;
       case 'SCORED': {
