@@ -17,7 +17,30 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 23 — Yacht screen: a compact grouped scorecard and a half-size score chip
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** "There is a LOT of wasted space on the Yacht screen... The scores could be about 1/2 sized, the scoring area could look more like: 1's [4] 2's [6] 3's [9] 4's [16] 5's [25] 6's [30] / UPPER [70]/63 Bonus 35 [ X ] TOTAL [105] / (3 of a kind [ ]) (4 of a kind [ ]) (Full house [ ]) / (Small straight [ ]) (Large straight [ ]) / (Chance [ ]) (Yacht [ ]) (Bonus [ ] [ ] [ ]) / TOTAL BOTTOM [999]. Not exactly this, but just showing that we can group numbers going across instead of only down."
+
+**Measured today (no code changed):** at 390x844 mid-game the Yacht page is 1,223 px tall in an 844 px screen. The score strip is 85 px, the sheet is 691 px (13 full-width rows of 44 px each, plus notes), so the page scrolls and the controls hide rows behind them. A mockup of the grouped layout (shown to the user, throwaway, not in the repo) puts the same position at about 547 px for Classic and 597 px for Nordic: no scrolling, with roughly 250 to 300 px to spare.
+
+**1. Half-size score chip** *(Added by Claude. Change before authorizing if wanted.)* The big score strip (85 px) becomes one-line chips like Cliffhanger's: face and name, turns played, total at the right (about 28 px each, two per row, so one row for 1 and 2 players and two rows for 3 and 4). It reuses the existing `.cchip` styling from Cliffhanger rather than adding a new look. Tapping a chip still shows that player's card, as today.
+
+**2. The scorecard, grouped across** *(layout is Added by Claude, following the user's sketch. Change before authorizing if wanted.)* A grid of cells replaces the 13 full-width rows; each cell is a button with its name in small type above the value (cells at least 44 px tall).
+- **Upper:** the six number categories in one row of six ("1s" to "6s"), then a line "UPPER 5 / 63" with the bonus box at the right ("Bonus 35" for Popular, "Bonus 50" for Nordic) showing ✓ once earned and ✗ when it can no longer be reached (the upper total plus 5 of every face not yet scored is below 63); Classic has no upper bonus, so it shows just "UPPER 5".
+- **Lower:** the rule set's other categories in its usual order, three across, wrapping to more rows: Classic has 6 (two rows), Popular has 7 plus the extra-five-of-a-kind bonus cell "Extra Yachts +N" (three rows), Nordic has 9 (three rows).
+- **Totals row:** UPPER, LOWER and TOTAL in three boxes (the bonus counts toward its section).
+- **States:** an open category has a gold border and, while the player is choosing and the dice have stopped (the Build Log 28 rule), shows what it would score in gold (red 0 when it would score nothing); otherwise "–". A scored one shows its points (red 0 for a scratch) and is not tappable. Tapping an open cell selects it (highlight, as the row does now) and the second button reads "SCORE n"; tapping it again unselects. The roll, hold, Joker and "PICK A CATEGORY" behavior and every rule are unchanged; the small notes (Joker, extra bonus) stay as one line under the card.
+- Phone width: six cells across are about 55 px wide at 390 px and 44 px at 320 px, still fine for a tap; long names ("Three of a Kind", "Little Straight") use the 3-across cells at 9.5 to 10 px type and may wrap to two lines.
+
+**3. Space that is left over:** about 250 px at 390x844. Nothing is added there by this item *(Added by Claude: bigger dice or the other players' totals would be possible later; ask first)*.
+
+**4. Files:** `src/ui/views/yacht-view.js` (the card and the chips in `render`; the viewed-seat logic stays), `src/ui/theme.css` (a `.ycard` grid and `.ycell` rules replace the `.catsheet`, `.catRow` and `.catNote` rules); rebuilt `index.html`. No rule, bot or save change.
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Browser at 390x844, 360x740 and 320x640, each rule set (Classic, Nordic, Popular) in Solo and in a 2-player Pass & Play: all categories present once as cells in the right groups (6 upper across, the lower ones 3 across), cells at least 44 px tall and inside the screen, no horizontal scroll, the page does not scroll at 390x844 and 360x740 (it did by 380 px before); the score chip is one line (under 34 px); after scoring, the cell shows its points and the UPPER, LOWER and TOTAL boxes equal the totals the old sheet showed (checked against the rules module's totals for crafted saves, including the upper bonus reached, not reachable and a Popular extra-Yacht bonus); open cells show previews only after the dice stop (the Build Log 28 timing check re-run) and "–" while rolling; selecting a cell and pressing SCORE scores that category; tapping the other player's chip shows their card; the existing Yacht suite (43 checks) and a full game of each rule set still pass. Zero JS errors. Screenshots of each rule set mid-game. Needs a real-device check: touch accuracy on the 55 px upper cells.
+
+**6. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
