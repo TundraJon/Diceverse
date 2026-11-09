@@ -17,7 +17,26 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 20 — Clear saved games (a 🗑 beside each Resume button, and "Clear all" in Settings)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** "Need a way to clear 'saved' games." Today a saved game only goes away when it is finished or when a new game of the same type is started (Start overwrites it). The user answered "all recommendations" to Claude's proposal (mockup A2 plus B's "Clear all").
+
+**1. Delete one saved game** *(details are Added by Claude. Change before authorizing if wanted.)*
+- On the menu each "Resume <game>" button gets a 🗑 button beside it: the row is the Resume button plus a 52 px square button (at least 44 px, labelled "Delete saved <game> game" for screen readers). The primary button keeps its look and the row does not change height.
+- Tapping 🗑 opens a small confirm sheet: title "Delete saved game?", text "Your unfinished <game> game (<N players, or Solo>, <M> moves played) will be deleted. This can't be undone." (the numbers come from the save: seats in its options and the length of its action log), two buttons, **Keep it** (focused by default, a normal secondary button) and **Delete** (red). Delete removes that game's save (`clearSave`), closes the sheet and redraws the menu, so the Resume row disappears. Keep it, a tap outside the sheet or Escape change nothing.
+
+**2. Clear all saved games (Settings)**
+- The Settings sheet gets one more button under the name and the two dropdowns: "Clear all saved games (N)", red text, disabled and showing "No saved games" when there are none. Tapping it opens the same kind of confirm sheet: "Delete all N saved games? This can't be undone.", Keep them (focused) and Delete all. Delete all clears every game's save, closes the confirm, redraws the menu behind the Settings sheet and turns the button into the disabled "No saved games". The sheet grows by about 55 px (about 270 px in all) and must still fit without scrolling at 320x640.
+
+**3. Not changed:** Start on a game that has a save still replaces it silently (user chose to leave it alone); solo personal bests, house rules, name, avatar and color are never touched by either clear (a reset for bests is Planner 15).
+
+**4. Files:** `src/shell/main.js` (the Resume rows in `renderMenu`, a `confirmDelete` sheet, the Settings button), `src/ui/theme.css` (the Resume row, the 🗑 button, the red Delete button); rebuilt `index.html`. `src/shell/save.js` already has `clearSave` and `loadSave`; no new storage code (every access stays guarded).
+
+**5. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 1 minute):** `preflight` clean. Crafted saves for Pig, Farkle and Cliffhanger (the existing fixtures). Browser at 390x844, 360x740 and 320x640: each Resume row shows a 🗑 button of at least 44 px and the Resume buttons are the same height as before; tapping 🗑 shows the confirm with the right game name, player count and move count and "Keep it" focused; Keep it, tapping outside and Escape leave the save (Resume still there and still resumes); Delete removes that game's Resume row only, the save key is gone from storage and the other games' saves stay; Settings shows "Clear all saved games (3)", the confirm says 3, Delete all removes every save and every Resume row and leaves the button disabled "No saved games"; with no saves the Settings button is disabled; solo bests, name, avatar, color and house rules are unchanged after both clears (checked by reading them back from the UI); the Settings sheet is at most 280 px tall and does not scroll at 320x640; storage blocked shows no Resume rows and nothing throws; zero JS errors. Screenshots of the menu with two 🗑 rows, the confirm sheet, and the Settings sheet with the button.
+
+**6. Deliverables and bookkeeping:** the files above, a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
@@ -168,6 +187,9 @@ User wants a small mountaineer silhouette standing on the top of each won column
 - **Size and room:** about 30 px tall, standing on the top dot and leaning out over the sky, so the board grows about 12 px taller; 360x740 must still fit. Short pop-in when a column is won; none under reduced motion or `?speed=0`.
 - **Fallback:** if no suitable licensed art turns up, Claude draws original silhouettes with more natural proportions and the user approves them side by side before anything is built.
 - **Open:** the user's license check on the reference image; whether to include the climbing pose now or later.
+
+### Planner 15 — Reset personal bests (idea, not yet specced)
+User asked how to clear saved games (Queue 20); Claude suggested a separate way to reset the solo personal bests ("your best: 7 turns" and the like) that are stored per game and rule set. Not asked for yet. Open: one "Reset personal bests" button in Settings with a confirm, or a per-game reset.
 
 ## Build Log 1 (completed)
 
