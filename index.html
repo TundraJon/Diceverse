@@ -250,11 +250,10 @@ body.fast .cover { transition: none; }
 .cm { width: 100%; aspect-ratio: 1; min-width: 6px; border-radius: 2px; }
 /* Cliffhanger figures: one height for all three (--fig), a seat-colored silhouette via a mask, centered on its circle */
 .climbboard { --fig: calc(var(--d) * 1.4); }
-/* the outer .figw carries the position, the animation and the glow; the inner .fig is the masked silhouette (a filter on the masked span itself would be cut off by the mask) */
-.figw { position: absolute; left: 50%; top: 50%; z-index: 3; height: var(--fig); transform: translate(-50%, -50%); filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9)); pointer-events: none; visibility: visible; }
+/* the outer .figw carries the position, the animation and (summit only) the glow; the inner .fig is the masked silhouette (a filter on the masked span itself would be cut off by the mask) */
+.figw { position: absolute; left: 50%; top: 50%; z-index: 3; height: var(--fig); transform: translate(-50%, -50%); pointer-events: none; visibility: visible; }
 .fig { display: block; width: 100%; height: 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
-.figw.live { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff); }
-.figw.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; }
+.figw.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9)); } /* only the figure that has reached the summit gets the white glow */
 .figw.summit.pop { animation: figpop 0.35s ease-out; }
 .figw.fall { opacity: 0; animation: figfall 1.4s ease-in both; }
 @keyframes figpop { from { transform: translate(-50%, -100%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }

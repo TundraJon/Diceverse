@@ -627,3 +627,12 @@ Cliffhanger: the falling climbers fall at half the speed (the user: "they go too
 
 Verification (scratch scripts, none committed): `preflight` clean. The figure script, 81 checks, 0 failures, 0 JS errors, 6 s: each of the three falls lasts 1400 ms and starts 120 ms apart; about 1.45 s in, all three figures are still on screen and the last is still falling; after the event they are gone; the other figure checks pass. The Cliffhanger suite `ui.cjs` 32 of 33 (the same expected "mountain flag" failure; its banner-time limit updated to 1.8 s). Needs a real-device check: whether the new speed feels right on the user's phone.
 
+## Build Log 37 (completed)
+
+Cliffhanger figures: the white glow only on the figure that has reached the summit (the user: in the game the halo looked thick all the way around; "remove the white glow around the figures until they reach the summit").
+
+- [x] Cause of the thick halo: my Queue 27 spec gave the active player's climber a stronger glow (`.figw.live`: `drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff)`), which my mockups never showed.
+- [x] `src/ui/theme.css`: the `.figw.live` rule is removed and the glow moved from every `.figw` to `.figw.summit` only (`drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9))`, the soft glow from Build Log 35). Climbers and falling figures now have no glow. The `live` class is still set in the view (harmless).
+
+Verification (scratch scripts, none committed): `preflight` clean. The figure script, 81 checks, 0 failures, 0 JS errors, 7 s: the glow is on the summit figure's outer span only, no climber has one, no masked span has one; the screenshot with and without the glow differs for the summit figure; the earlier size, position, rope and fall checks pass. Screenshot of the board looked at: blue climbers plain, green summit figure with the soft glow. Needs a real-device check: whether the blue climbers still read on the dark rock without a glow; the next step would be a thin outline, as in the mockups.
+
