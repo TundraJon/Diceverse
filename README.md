@@ -17,7 +17,18 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 26 — Space Salvage: a light halo around every symbol so ⚙️ and 🛰️ are easy to see (user's pick: option B, all dice)
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** the ⚙️ on the green Scout Probe die is hard to see (gray gear on mid-green). The user chose option B (a light halo or outline around the symbol, no disc, no body color change) on all dice, not only the green ones.
+
+**Change (CSS only, `src/ui/theme.css`):** `.die.sym .symface` gets a thin white halo made with `filter: drop-shadow(...)`, so it follows the symbol's shape on every body color (green, yellow, red, crew purple) and on all six faces. *(Added by Claude. Change before authorizing if wanted.)* Starting values: two stacked drop-shadows, `0 0 1px #fff` and `0 0 3px rgba(255,255,255,0.85)`; I will adjust them after looking at screenshots so the gear reads clearly without a smeared look on 💥 and 🔋. No rules, view or bot changes; the double symbols (⚙️⚙️, 💥💥) get the same halo.
+
+**Verification plan:** `npm run build`, `preflight` clean; one screenshot at 390x844 (2x scale) of a roll with a green, a yellow, a red and a crew die before and after, looked at by eye; the Space Salvage browser check for symbols and layout re-run (about 80 s); the dice suite re-run (the shared `.die` rules are untouched, so a quick check only). Needs a real-device check: how the halo looks on the user's phone.
+
+**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
+
 
 ## Build Planner
 
