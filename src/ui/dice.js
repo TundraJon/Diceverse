@@ -41,14 +41,14 @@ export function beginDice() { seq = 0; }
 
 const num = (v) => Math.round(v * 10) / 10;
 
-// `symbols` (six emoji, one per face number) draws symbol dice instead of pips; `kind` is the body colour (green, yellow, red, crew).
+// `symbols` (six emoji, one per face number) draws symbol dice instead of pips; an empty entry (null) keeps the pips on that face; `kind` is the body colour (green, yellow, red, crew).
 export function renderDie(value, { tumble = false, danger = true, cls = '', sides = 6, symbols = null, kind = '' } = {}) {
   if (sides !== 6) throw new Error('Only six-sided dice are built so far');
   const k = seq++;
   const el = document.createElement('div');
-  el.className = 'die' + (value == null ? ' blank' : '') + (symbols ? ' sym' : '') + (kind ? ' k-' + kind : '') + (cls ? ' ' + cls : '');
+  el.className = 'die' + (value == null ? ' blank' : '') + (symbols && symbols.every(Boolean) ? ' sym' : '') + (kind ? ' k-' + kind : '') + (cls ? ' ' + cls : '');
   el.setAttribute('role', 'img');
-  el.setAttribute('aria-label', value == null ? 'Die, not rolled' : (symbols ? `Die showing ${symbols[value - 1]}` : `Die showing ${value}`));
+  el.setAttribute('aria-label', value == null ? 'Die, not rolled' : (symbols && symbols[value - 1] ? `Die showing ${symbols[value - 1]}` : `Die showing ${value}`));
 
   const tilt = document.createElement('div');
   tilt.className = 'tilt';
@@ -58,7 +58,8 @@ export function renderDie(value, { tumble = false, danger = true, cls = '', side
     const face = document.createElement('div');
     face.className = `face f${f}`;
     face.setAttribute('aria-hidden', 'true');
-    if (symbols) {
+    if (symbols && symbols[f - 1]) {
+      face.classList.add('symf');
       const sy = document.createElement('div');
       sy.className = 'symface' + (symbols[f - 1] && symbols[f - 1].length > 3 ? ' two' : '');
       if (value != null) sy.textContent = symbols[f - 1];
