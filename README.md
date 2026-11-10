@@ -17,31 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 32 — Dice throws come from the thrower's side of the screen, in every game
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Source (user):** "All games, when the dice are thrown from the bottom, they should tumble bottom to top. From the left, left to right. From the right, right to left. From the top, top to bottom. Right now they behave bizarrely and look odd." Then: bots throw from **where their chip sits on the screen**: the 2-player bot sits at the top right, so its dice come from there; the 2nd bot sits to the user's left, so from the left; the 3rd sits to the user's right, so from the right. The user agreed with the rest of Claude's recommendations (the human always from the bottom; Solo and Pass & Play from the bottom; held or kept dice do not move).
-
-**Today:** every throw is the same animation in `renderDie` (`src/ui/dice.js`): the die drops from 2.8 die sizes above, with a small sideways offset that alternates by die, and bounces upward on the screen (heights of -0.9 and -0.32), as if seen from the side. The direction never depends on who rolls.
-
-**1. Who throws from where** *(the table is the user's; the vectors are Added by Claude. Change before authorizing if wanted.)*:
-
-| Roller | Dice come from | Travel direction on the screen (x right, y down) |
-|---|---|---|
-| A human seat (You, Solo, every Pass & Play player) | the bottom | up (0, -1) |
-| Bot seat 1 | the top right corner | down and left (-0.7, 0.7) |
-| Bot seat 2 | the left | right (1, 0) |
-| Bot seat 3 | the right | left (-1, 0) |
-
-**2. How** *(Added by Claude. Change before authorizing if wanted.)*:
-- `src/ui/dice.js`: `startThrow(at, dir)` also takes the travel direction and stores it; `renderDie` reads it, so **no game view changes**. `src/shell/main.js` (`render`, where `startThrow` is called) works the direction out from the current seat: not a bot gives up; a bot gives its seat's vector from the table.
-- The throw animation (the Web Animations API, still 1.0 s, still two animations per die: the cube and its shadow, the shadow keeps its timing) becomes: each die starts about 3.2 die sizes behind the middle on the thrower's side, with a small sideways offset that varies by die (the existing `START` table), and travels along the travel direction with ease-out to the spot where it rests. It spins as a **rolling die**: `rotate3d` about the in-screen axis perpendicular to the travel, 540 to 720 degrees decaying to 0, composed with the existing resting rotation so the cube still lands exactly on its value. The "bounces" are three short pulses toward the camera (scale 1.0 to about 1.25, 1.12 and 1.04 and back) with the shadow shrinking while the die is high.
-- Unchanged: `ROLL_MS` 1.0 s and the 0.25 s settle pause (`SETTLE_MS`), `?speed=0` and reduced motion (no throw), held or kept dice (no animation), each die's resting face, the "no tell" rule.
-
-**3. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 3 minutes):** `preflight` clean. Playwright at real speed: for a human throw (Solo and Pass & Play) and for each bot seat (vs Bots with 4 players, watching each bot's first throw), read the cube's animation keyframes and positions: at about 50 ms every die is displaced from its resting spot **toward the thrower's side** (up-screen offset for the bottom throw: below its rest; left for seat 2, and so on), the displacement shrinks to 0 by the end, the rolling axis is perpendicular to the travel, and the die ends on its rest transform; the dice suite (the face at the centre of every resting die equals the rolled value, 20 checks) re-run for all seven games; the animation counts (two per thrown die, none for held dice) still hold in Yacht and Farkle; the "no tell" check (54 checks) still passes; `?speed=0` and reduced motion show no throw. Needs a real-device check: how the throws look and feel on the user's phone, and whether the sideways throws read well at the narrowest width.
-
-**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -716,4 +692,15 @@ Menu screen: fits without scrolling (the user's option C of the layout mockup; t
 - [x] Measured first: the menu was 883 px tall at 390x844 (39 px over), 885 px at 360x740 and 320x640, and 1,087 px with three saved games.
 
 Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Playwright, 209 checks, 0 failures, 0 JS errors, 19 s (with the chip checks of Build Log 41): for every one of the seven games, in vs Bots and in Solo, at 390x844, 360x740 and 320x640, the menu does not scroll (scrolling to the bottom moves 0 px); at 390x844 and 320x640 the logo and title share a line, the settings button does not cover the title, House rules and How to play are equal width on one row, games are 4 per row in 2 rows, the Mode panel holds the Players row, Start is visible; the Players stepper, Solo hiding it, House rules, How to play and picking a game still work. Screenshots at 390 and 320 looked at. With three saved games the menu still scrolls on small phones (1 px at 390x844, 72 px at 360x740, 179 px at 320x640; each saved game adds a 56 px row), logged for the user to decide. Neighbors: the Cliffhanger suite 31 of 33 (two expected failures: "menu: six games" now lists seven, and the removed mountain flag), Shut the Box suite 61 of 62 (known), Pig suite the known race, Farkle suite all pass. Needs a real-device check: the smaller game buttons' tap size and how the menu looks on the user's phone.
+
+## Build Log 43 (completed)
+
+Dice throws come from the thrower's side of the screen, in every game (was Queue 32).
+
+- [x] `src/ui/dice.js`: the throw is rebuilt. `startThrow(at, dir)` also stores the travel direction; `renderDie` reads it, so no game view changed. Each die starts 3.4 die sizes behind the middle on the thrower's side and travels along `dir` to its resting spot (ease-out), rolling about the in-screen axis perpendicular to the travel, turned a little per die (`WOB` -22 to +28 degrees, so it tumbles a little off the straight line), with a roll angle that starts at -720 degrees (scaled per die by `SPIN`) and **rises** to 0, so it rolls forward; a sideways start offset (`LAT`) fades out as it settles. The three bounces are short moves toward the camera (scale 1.3, 1.2, 1.1 with a matching z move) instead of hops up the screen, and the shadow follows the die and shrinks while it is high. Still 1.0 s (`ROLL_MS`), still two animations per thrown die (the cube and its shadow), the cube still lands on its resting orientation; `?speed=0`, reduced motion, held or kept dice and the 0.25 s settle pause are unchanged. The old `START` table (the drop-from-above bounces) is gone.
+- [x] `src/shell/main.js`: `throwDirection()` (called where `startThrow` is) gives a human `[0, -1]` (up, from the bottom) and a bot its seat's direction: seat 1 `[-0.7, 0.7]` (from the top right, down and to the left), seat 2 `[1, 0]` (from the left), seat 3 `[-1, 0]` (from the right); Solo and every Pass & Play player are humans. It uses `view.current`, the seat whose roll is being presented.
+- [x] `CLAUDE.md` project map: `startThrow(at, dir)` noted.
+- [x] Mistake caught before building (in the scratch sample, not in the app): the sample's first version counted the roll angle down from +720 to 0, so the dice rolled backwards; the user noticed and the sign was corrected before the build.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. New Playwright check, 52 checks, 0 failures, 0 JS errors, 25 s, at real speed with a hook recording every cube animation: Solo Yacht at 90 ms, all five dice are more than a die below their resting spot (thrown from the bottom) and are back on it, within 0.5 px, after the throw; for a human throw (Solo and both Pass & Play players), and for each seat in a 4-player game against bots (You from the bottom, bot 1 from the top right, bot 2 from the left, bot 3 from the right), each die starts on the thrower's side (dot product with the opposite of the travel at least 0.85), rolls forward along the travel (face drift dot product at least 0.8, roll angle between -250 and -900 degrees, rising), with its rolling axis within 30 degrees of straight across the travel, lasts 1.0 s and ends on its resting orientation; `?speed=0` and reduced motion record no throw. Neighbors: the dice suite 20 of 20 (the face at the centre of each resting die equals the value, real-speed timing, held dice), the held-dice suite 13 of 13, the "no tell" check 54 of 54. A frame of a real Farkle throw at 260 ms looked at. Needs a real-device check: how the throws look and feel on the user's phone, especially the diagonal throw from the top right and the sideways throws at the narrowest width.
 

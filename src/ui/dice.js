@@ -23,25 +23,23 @@ const PIPS = {
 // bottom of the un-rotated cube).
 const REST = { 1: [0, 0], 2: [-90, 0], 3: [0, -90], 4: [0, 90], 5: [90, 0], 6: [0, 180] };
 
-// How each die of a throw starts (sideways offset in die sizes, spin per bounce in degrees about each axis), picked by the die's
-// position in the throw and the throw's number, so the dice never move in lockstep. No randomness.
-const START = [
-  { dx: -1.4, sx: 160, sy: 220, sz: 70 },
-  { dx: 1.5, sx: -200, sy: 150, sz: -90 },
-  { dx: -0.8, sx: 130, sy: -240, sz: 110 },
-  { dx: 1.1, sx: -170, sy: -180, sz: -60 },
-  { dx: -1.8, sx: 210, sy: 120, sz: 90 },
-  { dx: 0.6, sx: -140, sy: 250, sz: -120 },
-];
+// How each die of a throw varies, picked by the die's position in the throw and the throw's number, so the dice never move in
+// lockstep. No randomness. lat: the sideways start offset in die sizes; spin: how much it rolls (1 = the base 720 degrees);
+// wob: degrees the rolling axis is turned from straight across the travel, so a die tumbles a little off the straight line.
+const LAT = [-1.0, 0.0, 1.0, -0.6, 0.8, 0.3];
+const SPIN = [1, 1.15, 0.9, 1.05, 0.95, 1.1];
+const WOB = [-22, 12, 28, -15, 20, -28];
 
 let throwAt = 0; // when the current throw started (set by the shell; a re-render during a throw continues it)
 let throwNo = 0;
+let throwDir = [0, -1]; // which way the dice travel on the screen (x right, y down); up = thrown from the bottom
 let seq = 0; // the position of the next die in this render pass
 
-export function startThrow(at) { throwAt = at; throwNo += 1; }
+// `dir` is the travel direction: [0, -1] from the bottom (up), [-0.7, 0.7] from the top right, [1, 0] from the left, [-1, 0] from the right.
+export function startThrow(at, dir) { throwAt = at; throwNo += 1; if (dir) throwDir = dir; }
 export function beginDice() { seq = 0; }
 
-const num = (v) => Math.round(v * 10) / 10;
+const num = (v, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 
 // `symbols` (six emoji, one per face number) draws symbol dice instead of pips; an empty entry (null) keeps the pips on that face; `kind` is the body colour (green, yellow, red, crew).
 export function renderDie(value, { tumble = false, danger = true, cls = '', sides = 6, symbols = null, kind = '' } = {}) {
@@ -88,27 +86,47 @@ export function renderDie(value, { tumble = false, danger = true, cls = '', side
   const age = typeof performance !== 'undefined' ? performance.now() - throwAt : ROLL_MS;
   const fast = typeof document !== 'undefined' && document.body && document.body.classList.contains('fast');
   if (tumble && value != null && !fast && age < ROLL_MS && cube.animate) {
-    const v = START[(k + throwNo) % START.length];
-    // heights in die sizes (negative is up): drop, land, bounce, land, bounce, land, rest. Spin decays to the resting face.
+    const n = (k + throwNo) % LAT.length;
+    const [tx, ty] = throwDir;
+    const w = (WOB[n] * Math.PI) / 180;
+    const bx = -ty; // the rolling axis starts perpendicular to the travel and is turned by the wobble
+    const by = tx;
+    const ax = num(bx * Math.cos(w) - by * Math.sin(w), 3);
+    const ay = num(bx * Math.sin(w) + by * Math.cos(w), 3);
+    // along: where the die is on its path (die sizes, negative = behind the middle, on the thrower's side); s: how close it is to the
+    // camera (the bounces); k: how much of the roll is left. The die lands, bounces toward the camera three times, and settles.
     const steps = [
-      { o: 0, y: -2.8, x: v.dx, z: 1.2, s: 3.0, e: 'ease-in' },
-      { o: 0.24, y: 0, x: v.dx * 0.5, z: 0.5, s: 2.0, e: 'ease-out' },
-      { o: 0.44, y: -0.9, x: v.dx * 0.25, z: 0.3, s: 1.3, e: 'ease-in' },
-      { o: 0.62, y: 0, x: v.dx * 0.1, z: 0.1, s: 0.8, e: 'ease-out' },
-      { o: 0.78, y: -0.32, x: 0, z: 0, s: 0.4, e: 'ease-in' },
-      { o: 0.9, y: 0, x: 0, z: 0, s: 0.12, e: 'ease-out' },
-      { o: 1, y: 0, x: 0, z: 0, s: 0, e: 'linear' },
+      { o: 0, a: -3.4, s: 1.0, k: 1.0, e: 'ease-out' },
+      { o: 0.18, a: -2.0, s: 1.3, k: 0.85, e: 'ease-in' },
+      { o: 0.32, a: -0.95, s: 1.0, k: 0.6, e: 'ease-out' },
+      { o: 0.46, a: -0.45, s: 1.2, k: 0.4, e: 'ease-in' },
+      { o: 0.6, a: -0.15, s: 1.0, k: 0.22, e: 'ease-out' },
+      { o: 0.72, a: -0.05, s: 1.1, k: 0.1, e: 'ease-in' },
+      { o: 0.84, a: 0, s: 1.0, k: 0.03, e: 'ease-out' },
+      { o: 1, a: 0, s: 1.0, k: 0, e: 'linear' },
     ];
-    const frames = steps.map((p) => ({
-      offset: p.o,
-      easing: p.e,
-      transform: p.o === 1 ? rest : `translate3d(${num(p.x)}em, ${num(p.y)}em, ${num(p.z)}em) rotateX(${num(fx + v.sx * p.s)}deg) rotateY(${num(fy + v.sy * p.s)}deg) rotateZ(${num(v.sz * p.s)}deg)`,
-    }));
+    const at = (p) => {
+      const lat = LAT[n] * (p.o >= 0.84 ? 0 : 1 - p.o / 0.84) * 1.2; // the sideways offset fades out as the die settles
+      return [tx * p.a - ty * lat, ty * p.a + tx * lat];
+    };
+    // The roll angle rises toward 0 (it starts negative), so the die rolls forward along its travel and lands on its resting face.
+    const frames = steps.map((p) => {
+      const [x, y] = at(p);
+      return {
+        offset: p.o,
+        easing: p.e,
+        transform: p.o === 1 ? rest : `translate3d(${num(x)}em, ${num(y)}em, ${num((p.s - 1) * 1.2)}em) scale(${p.s}) rotate3d(${ax}, ${ay}, 0, ${num(-720 * SPIN[n] * p.k, 0)}deg) rotateX(${fx}deg) rotateY(${fy}deg)`,
+      };
+    });
     el.classList.add('throwing');
     const a = cube.animate(frames, { duration: ROLL_MS, fill: 'both' });
     a.currentTime = Math.max(0, age); // a re-render in the middle of a throw carries on from where it was
-    shadow.animate(steps.map((p) => ({ offset: p.o, transform: `scale(${num(0.45 + 0.55 * (1 - Math.min(1, -p.y / 2.8)))})`, opacity: num(0.18 + 0.45 * (1 - Math.min(1, -p.y / 2.8))) })),
-      { duration: ROLL_MS, fill: 'both' }).currentTime = Math.max(0, age);
+    // the shadow follows the die along the table and shrinks while the die is close to the camera
+    shadow.animate(steps.map((p) => {
+      const [x, y] = at(p);
+      const up = (p.s - 1) / 0.3;
+      return { offset: p.o, transform: `translate(${num(x)}em, ${num(y)}em) scale(${num(1.15 - 0.27 * up)})`, opacity: num(0.45 - 0.3 * up) };
+    }), { duration: ROLL_MS, fill: 'both' }).currentTime = Math.max(0, age);
   }
   return el;
 }

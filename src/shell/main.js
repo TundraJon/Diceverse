@@ -511,12 +511,20 @@ const ctx = () => ({
   vibrate: () => { if (navigator.vibrate) { try { navigator.vibrate(150); } catch { /* ignore */ } } },
 });
 
+// Which way the dice travel across the screen: a human throws from the bottom (up); a bot throws from where its chip sits:
+// bot seat 1 from the top right (down and to the left), seat 2 from the left (to the right), seat 3 from the right (to the left).
+const BOT_THROWS = [[-0.7, 0.7], [1, 0], [-1, 0]];
+function throwDirection() {
+  const seat = session && view ? session.options.seats && session.options.seats[view.current] : null;
+  return seat && seat.isBot ? BOT_THROWS[(view.current - 1) % BOT_THROWS.length] : [0, -1];
+}
+
 let throwFrom = -1e9; // when the current dice throw began
 function render(tumble) {
   decorate();
   const c = ctx();
   const now = performance.now();
-  if (tumble) { throwFrom = now; startThrow(now); }
+  if (tumble) { throwFrom = now; startThrow(now, throwDirection()); }
   c.tumble = tumble || now - throwFrom < ROLL_MS; // a re-render in the middle of a throw carries the throw on
   beginDice();
   G.view.render(ui, view, session, c);
