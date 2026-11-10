@@ -16,13 +16,16 @@ const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
 
 // A silhouette (climb, fall or summit) in a seat's color, centered on the circle it is added to. All three share one height (--fig).
+// The glow is on the outer span: a filter on the masked span itself would be cut off by its own mask.
 function figure(kind, color, extra) {
   const f = FIGURES[kind];
-  const e = el('span', `fig ${kind}${extra ? ' ' + extra : ''}`);
+  const e = el('span', `figw ${kind}${extra ? ' ' + extra : ''}`);
   e.style.width = `calc(var(--fig) * ${(f.w / f.h).toFixed(4)})`;
-  e.style.background = color;
-  e.style.webkitMaskImage = `url("${f.uri}")`;
-  e.style.maskImage = `url("${f.uri}")`;
+  const m = el('span', 'fig');
+  m.style.background = color;
+  m.style.webkitMaskImage = `url("${f.uri}")`;
+  m.style.maskImage = `url("${f.uri}")`;
+  e.appendChild(m);
   e.setAttribute('aria-hidden', 'true');
   return e;
 }

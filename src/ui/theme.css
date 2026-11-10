@@ -244,11 +244,13 @@ body.fast .cover { transition: none; }
 .cm { width: 100%; aspect-ratio: 1; min-width: 6px; border-radius: 2px; }
 /* Cliffhanger figures: one height for all three (--fig), a seat-colored silhouette via a mask, centered on its circle */
 .climbboard { --fig: calc(var(--d) * 1.4); }
-.fig { position: absolute; left: 50%; top: 50%; z-index: 3; height: var(--fig); transform: translate(-50%, -50%); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9)); pointer-events: none; visibility: visible; }
-.fig.live { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff); }
-.fig.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; }
-.fig.summit.pop { animation: figpop 0.35s ease-out; }
-.fig.fall { opacity: 0; animation: figfall 0.7s ease-in both; }
+/* the outer .figw carries the position, the animation and the glow; the inner .fig is the masked silhouette (a filter on the masked span itself would be cut off by the mask) */
+.figw { position: absolute; left: 50%; top: 50%; z-index: 3; height: var(--fig); transform: translate(-50%, -50%); filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9)); pointer-events: none; visibility: visible; }
+.fig { display: block; width: 100%; height: 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
+.figw.live { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff); }
+.figw.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; }
+.figw.summit.pop { animation: figpop 0.35s ease-out; }
+.figw.fall { opacity: 0; animation: figfall 0.7s ease-in both; }
 @keyframes figpop { from { transform: translate(-50%, -100%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
 @keyframes figfall { from { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); } to { opacity: 0; transform: translate(-50%, calc(-50% + var(--drop, 0px))) rotate(-20deg); } }
 .ccol.owned .cd { visibility: hidden; outline: none; } /* a won column draws no circles (the summit figure stays) */
@@ -259,7 +261,7 @@ body.fast .cover { transition: none; }
 .dice.climb .die { --s: 46px; }
 .controls button.pair { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1.1; }
 .controls button .sub { font-size: 0.68rem; font-weight: 600; opacity: 0.75; }
-@media (prefers-reduced-motion: reduce) { .fig.summit.pop, .fig.fall { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .figw.summit.pop, .figw.fall { animation: none; } }
 
 /* Settings (name and avatar), the menu's gear button, and the one-line talk/thinking text */
 .screen { position: relative; }

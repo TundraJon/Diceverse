@@ -609,3 +609,12 @@ Verification (scratch scripts using `tests-helpers.cjs`, none committed): `prefl
 - [x] Found and not fixed: `q19` fails 3 checks ("compact sheet (<=300px)": the Settings sheet is 307 px tall); it fails the same way on the commit before Space Salvage, so it is not from this build. Logged for the user to decide.
 - [ ] Needs a real-device check: how the silhouettes, the 1 px rope and the 80% transparent circles look on the user's phone, and whether the fall reads at 36 px.
 
+## Build Log 35 (completed)
+
+Cliffhanger figures: the white glow now actually shows (a correction to Build Log 34; the user asked for the fix after seeing the mockup).
+
+- [x] Cause (my mistake in Build Log 34): the white halo was a CSS `filter` on the same element that has the silhouette `mask`. A filter is applied before the mask, so the mask cut the glow off and it never showed in the game; my Build Log 34 screenshots did not make this visible. Found while rendering outline mockups for the green summit figure on the blue sky.
+- [x] Fix: `figure()` in `src/ui/views/cliffhanger-view.js` now builds an outer `span.figw` (position, size, animation, the glow) around an inner `span.fig` (the seat-colored masked silhouette). `src/ui/theme.css`: the position, transform, animation and `filter` rules moved from `.fig` to `.figw` (`.figw.live`, `.figw.summit`, `.figw.summit.pop`, `.figw.fall`; the reduced-motion rule too); `.fig` is now just the mask. The glow values are unchanged (the white halo the user saw in the mockup). No black outline was added (the user did not choose one).
+
+Verification (scratch scripts, none committed): `preflight` clean. The Space Salvage-era figure script updated for the two-span structure: 79 checks, 0 failures, 0 JS errors, 6 s (the glow is on the outer span and the masked span has none; a screenshot of the summit figure with and without the glow differs; the earlier size, centering, rope, circle and fall checks still pass at 390x844, 360x740, 320x640 and 768x1024). Zoomed before and after crop looked at: a soft white glow now surrounds the green figure on the sky. Neighbors: `q14` 42 of 42, `q20` 23 of 23; the Cliffhanger suite `ui.cjs` 32 of 33 (the same expected failure as in Build Log 34, the removed mountain flag). Needs a real-device check: how the glow reads on the user's phone.
+
