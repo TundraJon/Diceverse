@@ -8,7 +8,7 @@ const TALK_MS = 3500; // a spoken line stays this long
 const STALE_MS = 4000; // a line that waited longer than this for its turn to talk is dropped
 
 // A "big" bank or score, per game (a bot's face goes to WINNING).
-const BIG_BANK = { pig: 20, farkle: 1000, cliffhanger: 4 };
+const BIG_BANK = { pig: 20, farkle: 1000, cliffhanger: 4, salvage: 5 };
 // A roll with this much at stake makes a bot nervous (Pig and Farkle: turn points; Cliffhanger: all three markers down;
 // Shut the Box: 6 or less still open).
 const STAKES = { pig: 20, farkle: 1000 };
@@ -132,6 +132,9 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
         if (stake && (ev.turnPoints || 0) >= stake) tense(i);
         break;
       }
+      case 'SHOT': // defensive fire one hit short of ending the turn makes a bot nervous
+        if (gameId === 'salvage' && ev.fire === ev.limit - 1) tense(i);
+        break;
       case 'MOVED':
         if (gameId === 'cliffhanger' && Object.keys(view.markers).length === 3) tense(i);
         break;

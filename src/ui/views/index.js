@@ -3,5 +3,6 @@ import { farkleView } from './farkle-view.js';
 import { yachtView } from './yacht-view.js';
 import { shutboxView } from './shutbox-view.js';
 import { cliffhangerView } from './cliffhanger-view.js';
+import { salvageView } from './salvage-view.js';
 
-export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView };
+export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView };
