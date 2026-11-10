@@ -295,7 +295,7 @@ body.fast .cover { transition: none; }
 
 /* Space Salvage: symbol dice, the haul and fire boxes, the bin line and the danger meter */
 .die.sym .face { display: flex; align-items: center; justify-content: center; padding: 0; }
-.die.sym .symface { font-size: calc(var(--s) * 0.5); line-height: 1; text-align: center; }
+.die.sym .symface { font-size: calc(var(--s) * 0.5); line-height: 1; text-align: center; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px rgba(255,255,255,0.9)); } /* a light halo so a gray symbol stands out on any body colour */
 .die.sym .symface.two { font-size: calc(var(--s) * 0.3); letter-spacing: -0.04em; }
 .die.k-green .face { background: linear-gradient(145deg, #6fd68a, #2f9e55); }
 .die.k-yellow .face { background: linear-gradient(145deg, #fde68a, #e0b21f); }

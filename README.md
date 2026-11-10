@@ -17,18 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 26 — Space Salvage: a light halo around every symbol so ⚙️ and 🛰️ are easy to see (user's pick: option B, all dice)
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Source (user):** the ⚙️ on the green Scout Probe die is hard to see (gray gear on mid-green). The user chose option B (a light halo or outline around the symbol, no disc, no body color change) on all dice, not only the green ones.
-
-**Change (CSS only, `src/ui/theme.css`):** `.die.sym .symface` gets a thin white halo made with `filter: drop-shadow(...)`, so it follows the symbol's shape on every body color (green, yellow, red, crew purple) and on all six faces. *(Added by Claude. Change before authorizing if wanted.)* Starting values: two stacked drop-shadows, `0 0 1px #fff` and `0 0 3px rgba(255,255,255,0.85)`; I will adjust them after looking at screenshots so the gear reads clearly without a smeared look on 💥 and 🔋. No rules, view or bot changes; the double symbols (⚙️⚙️, 💥💥) get the same halo.
-
-**Verification plan:** `npm run build`, `preflight` clean; one screenshot at 390x844 (2x scale) of a roll with a green, a yellow, a red and a crew die before and after, looked at by eye; the Space Salvage browser check for symbols and layout re-run (about 80 s); the dice suite re-run (the shared `.die` rules are untouched, so a quick check only). Needs a real-device check: how the halo looks on the user's phone.
-
-**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
-
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -603,4 +592,13 @@ Verification (scratch scripts using `tests-helpers.cjs` and Node, none committed
 - [x] Bugs found during verification: my first bot (one roll ahead, default risk and noise) won only 52 to 56%; fixed by the rollout, the win bonus and the smaller risk and noise above. Two test expectations were wrong (a missing red die counted as undefined, and a stale turn after the game ends, as in Pig); fixed in the tests, not the app.
 - [x] Neighbors re-run (shared code touched: `dice.js`, `moods.js`, the game list): the 3D dice suite 20 of 20, 0 JS errors; the Cliffhanger suite 32 of 33, 0 JS errors; the one failure is an outdated expectation ("menu: five games"; the menu now lists six), not an app bug.
 - [ ] Needs a real-device check: how the ⚙️ 🛰️ 💥 🔋 🛡️ symbols look on the cubes on the user's phone, and the tap size of ROLL AGAIN and STOW.
+
+## Build Log 33 (completed)
+
+Space Salvage: a light halo around every symbol so the gear and the satellite are easy to see (was Queue 26; the user's pick, option B, on all dice).
+
+- [x] `src/ui/theme.css`: `.die.sym .symface` gets `filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px rgba(255,255,255,0.9))`, a white halo that follows each symbol's shape on all four body colors and all faces (the doubles too). No rules, view or bot change.
+- [x] Tuned by eye (the spec allowed it): my first values (`0 0 1px #fff`, `0 0 3px rgba(255,255,255,0.85)`) were visible but faint on the gear, so the halo is now three stacked shadows as above. The 💥 and 🔋 still look crisp, not smeared.
+
+Verification (scratch scripts, none committed): `preflight` clean. Screenshots at 390 px wide, 2x, of a green, yellow, red and crew die with each symbol, before and after: the gear on the green die now has a clear bright edge. Space Salvage browser suite re-run: 106 checks, 0 failures, 0 JS errors, 70 s. Dice suite: 20 of 20, 0 JS errors, 62 s. The screenshot used hand-built dice markup of the same classes, so a roll in the running game was covered by the browser suite rather than by a picture. Needs a real-device check: how the halo looks on the user's phone.
 
