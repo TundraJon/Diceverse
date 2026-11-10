@@ -17,7 +17,21 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 30 — Pig and Farkle: show the target on the game screen
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** "Playing Pig, there is no indication what the target number is." Checked: Pig and Farkle show the target only in the menu summary and the How to play sheet; Space Salvage, Cliffhanger and Pirate Plunder show theirs in the chips. The user chose **option A** (the target in each player's chip) and **yes** to doing Farkle in the same build.
+
+**Change** *(layout details Added by Claude. Change before authorizing if wanted.)*:
+- `src/ui/panels.js`: `renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts)` gets an optional `opts` `{ target, fmt }`. With a `target`, the chip's total row becomes a small flex row: the existing `.total` element (its text stays the plain total, so existing checks that read `.chip .total` keep working) followed by a smaller `.tgt` element reading `/ 100` (`fmt` formats it, Farkle's `/ 10,000`). Without `opts`, nothing changes (Shut the Box). The chip's `aria-label` reads "name: 0 of 100" when a target is shown.
+- `src/ui/views/pig-view.js` passes `{ target: st.options.target }`; `src/ui/views/farkle-view.js` passes `{ target: o.target, fmt }` (the same number format as its How to play and menu text).
+- `src/ui/theme.css`: `.chip .trow` (flex, baseline aligned, wraps if needed), `.chip .tgt` (about 0.85rem, muted color). The big total keeps its 1.8rem size; at the narrowest phones the target may wrap under the total rather than overflow.
+- Solo shows the same (one chip, "0 / 100").
+
+**Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Playwright at 390x844, 360x740 and 320x640 for Pig (targets 50, 100 and 150, one and two dice, vs Bots, Pass & Play and Solo) and Farkle (targets 2,500, 5,000 and 10,000, with the "not on board" note and the "+n this turn" line): every chip shows its total and `/ target`; the target equals the house rule in the menu; no chip content overflows its chip and no sideways scroll, including a total of 9,950 against 10,000 and the "+n this turn" line; the totals still update after a bank; screenshots of both games at 390 and 320 looked at. Neighbors re-run: the Pig and Farkle suites (their `.chip .total` checks), and Shut the Box's chips unchanged. Needs a real-device check: how the chips look on the user's phone.
+
+**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
