@@ -44,6 +44,7 @@ A design settled in one sitting can skip the Planner and go straight to the Queu
 - **Cleanup your own build makes obsolete** (a Queue/Planner entry the build just resolved) is removed in the same commit. Unrelated things you notice are logged and left alone.
 - **Catch your own mistakes.** If verification finds a bug your change introduced, fix it before calling the build done and say so in the Log.
 - **Audit cross-references.** When editing numbered or cross-referenced content (help text, section numbers), update every reference and confirm with an automated check.
+- **Never tell the result before the dice stop.** *(Added at the user's request.)* While dice are rolling, and for at least 250 ms after they stop moving (`ROLL_MS` + `REVEAL_MS` in `src/ui/dice.js`; also with reduced motion and for bots), the app must not show anything that depends on the result: no dimming or highlighting, no previews or hints, no enabled or disabled changes, no totals or counts, no banners or status text, and no screen-reader announcement of the roll. It must look as if the app does not know the outcome until the dice have settled and the pause has passed. Every new or changed dice screen follows this and its test must check it: sample the screen during the roll and until 250 ms after the stop, and confirm nothing result-dependent has changed.
 - **Say what you could not check.** Real-device behavior (touch feel, real file pickers, real network) gets flagged "needs a real-device check", never silently skipped.
 
 ## Commits
@@ -92,6 +93,7 @@ Tests must stay inside the time budget: about 10 to 60 seconds for a simple fix,
 - **Blaming the app for a test bug.** Several first-run failures were wrong expectations (a wrong expected value, a click on the wrong thing). Check the test first.
 - **Sticking to one assumption about layout.** `100vh` on Android Chrome is taller than the visible screen, so a button pinned to the bottom of a `100vh` container disappears. Pin bottom-anchored UI with `position: fixed` and use `dvh` for heights, and test with a simulated browser bar.
 - **Unguarded browser storage.** Wrap every `localStorage` and IndexedDB call in try/catch so the app still works when storage is refused, and say so in the UI.
+- **A tell before the dice stop.** The user found Pirate Plunder dimming the already-kept dice while they were still rolling, which made the app look as if it knew the result. An audit then found Pig, Farkle and Shut the Box showing their result the instant the dice stopped, with no 250 ms wait, and every game announcing the roll to screen readers when the throw starts. See the rule "Never tell the result before the dice stop" in Working conventions.
 - **Scope creep.** New behavior that was not asked for (even small, even helpful) goes in the spec marked as an addition, or is asked about first.
 - **Building to the wrong path.** *(Added by Claude.)* The playable app is `index.html` at the repo root, not `dist/`. `npm run build` writes it.
 

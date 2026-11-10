@@ -17,7 +17,27 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 29 — No tell before the dice stop: fix Pirate Plunder, Pig, Farkle and Shut the Box, and the roll announcements
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** in Pirate Plunder the dice are greyed out while they are being thrown and settling, which looks as if the app knows the result before they stop. The user asked for a standing rule (now in `CLAUDE.md`, Working conventions: "Never tell the result before the dice stop": nothing result-dependent on screen while the dice roll and for at least 250 ms after they stop). The audit below applies it to every dice game.
+
+**Audit (read-only, from the views; findings, not yet fixed):**
+- **Pirate Plunder:** `render` dims a die as soon as its new face is a face already kept (`taken` in `src/ui/views/plunder-view.js`), which shows during the throw. *(the reported problem)*
+- **Pig, Farkle, Shut the Box:** their `ROLLED` event waits only `ROLL_MS` (reduced motion 150 ms), so the result (points, bust or farkle banner, the choices, the tile hints) appears the instant the dice stop, with no 250 ms pause. Yacht, Cliffhanger and Space Salvage already wait `ROLL_MS + REVEAL_MS` and hide previews until then.
+- **All seven games:** the `ROLLED` handler calls `ctx.announce("... rolled 4, 6")` at the start of the throw, so a screen reader speaks the result before the dice stop.
+
+**Changes** *(the shared constant and the announcement mechanism are Added by Claude. Change before authorizing if wanted.)*:
+1. `src/ui/views/plunder-view.js`: dim a kept face only when `!ctx.busy` (after the wait), never during the throw or the pause.
+2. Pig, Farkle and Shut the Box views: the `ROLLED` delay becomes `ROLL_MS + REVEAL_MS` (reduced motion `REVEAL_MS`), like Yacht, Cliffhanger, Space Salvage and Pirate Plunder. Each roll in these games therefore takes 0.25 s longer; bots too.
+3. `src/ui/dice.js` exports `SETTLE_MS = ROLL_MS + REVEAL_MS` and every view's `ROLLED` handler uses it, so the wait cannot drift between games.
+4. Announcements: a view's `reduce` may return `after: "text"`; `present()` in `src/shell/main.js` announces it when the event's delay is over (instead of `ctx.announce` at the start of the throw). All seven games' roll announcements move to it.
+5. `CLAUDE.md`: already updated (rule and Mistakes entry); the project map notes `SETTLE_MS`.
+
+**Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 3 minutes):** `preflight` clean. A generic Playwright check run in each of the seven games at real speed: take a snapshot of everything result-dependent (every button's label and disabled state, `.hint`, `.turnline`, the banner, the badges and info lines, and every class on dice, tiles and chips other than the cube transforms) before the roll; click ROLL; sample every 50 ms until `SETTLE_MS` (1.25 s) has passed; confirm the snapshot is identical to the one before the roll (apart from the dice themselves and a "Rolling…" status) for the whole time, then confirm the result appears right after. The same with reduced motion (no throw, but a 250 ms pause) and for a bot's roll. Check the live region's text is empty until the wait is over. Re-run the neighbors that touch these views: the dice suite, `ui.cjs` for Cliffhanger, the Space Salvage and Pirate Plunder suites, and the Pig, Farkle and Shut the Box suites. Screenshots not needed. Needs a real-device check: whether the 0.25 s pause feels right in Pig, Farkle and Shut the Box on the user's phone.
+
+**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
