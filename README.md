@@ -17,7 +17,31 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 32 — Dice throws come from the thrower's side of the screen, in every game
+
+**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
+
+**Source (user):** "All games, when the dice are thrown from the bottom, they should tumble bottom to top. From the left, left to right. From the right, right to left. From the top, top to bottom. Right now they behave bizarrely and look odd." Then: bots throw from **where their chip sits on the screen**: the 2-player bot sits at the top right, so its dice come from there; the 2nd bot sits to the user's left, so from the left; the 3rd sits to the user's right, so from the right. The user agreed with the rest of Claude's recommendations (the human always from the bottom; Solo and Pass & Play from the bottom; held or kept dice do not move).
+
+**Today:** every throw is the same animation in `renderDie` (`src/ui/dice.js`): the die drops from 2.8 die sizes above, with a small sideways offset that alternates by die, and bounces upward on the screen (heights of -0.9 and -0.32), as if seen from the side. The direction never depends on who rolls.
+
+**1. Who throws from where** *(the table is the user's; the vectors are Added by Claude. Change before authorizing if wanted.)*:
+
+| Roller | Dice come from | Travel direction on the screen (x right, y down) |
+|---|---|---|
+| A human seat (You, Solo, every Pass & Play player) | the bottom | up (0, -1) |
+| Bot seat 1 | the top right corner | down and left (-0.7, 0.7) |
+| Bot seat 2 | the left | right (1, 0) |
+| Bot seat 3 | the right | left (-1, 0) |
+
+**2. How** *(Added by Claude. Change before authorizing if wanted.)*:
+- `src/ui/dice.js`: `startThrow(at, dir)` also takes the travel direction and stores it; `renderDie` reads it, so **no game view changes**. `src/shell/main.js` (`render`, where `startThrow` is called) works the direction out from the current seat: not a bot gives up; a bot gives its seat's vector from the table.
+- The throw animation (the Web Animations API, still 1.0 s, still two animations per die: the cube and its shadow, the shadow keeps its timing) becomes: each die starts about 3.2 die sizes behind the middle on the thrower's side, with a small sideways offset that varies by die (the existing `START` table), and travels along the travel direction with ease-out to the spot where it rests. It spins as a **rolling die**: `rotate3d` about the in-screen axis perpendicular to the travel, 540 to 720 degrees decaying to 0, composed with the existing resting rotation so the cube still lands exactly on its value. The "bounces" are three short pulses toward the camera (scale 1.0 to about 1.25, 1.12 and 1.04 and back) with the shadow shrinking while the die is high.
+- Unchanged: `ROLL_MS` 1.0 s and the 0.25 s settle pause (`SETTLE_MS`), `?speed=0` and reduced motion (no throw), held or kept dice (no animation), each die's resting face, the "no tell" rule.
+
+**3. Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 3 minutes):** `preflight` clean. Playwright at real speed: for a human throw (Solo and Pass & Play) and for each bot seat (vs Bots with 4 players, watching each bot's first throw), read the cube's animation keyframes and positions: at about 50 ms every die is displaced from its resting spot **toward the thrower's side** (up-screen offset for the bottom throw: below its rest; left for seat 2, and so on), the displacement shrinks to 0 by the end, the rolling axis is perpendicular to the travel, and the die ends on its rest transform; the dice suite (the face at the centre of every resting die equals the rolled value, 20 checks) re-run for all seven games; the animation counts (two per thrown die, none for held dice) still hold in Yacht and Farkle; the "no tell" check (54 checks) still passes; `?speed=0` and reduced motion show no throw. Needs a real-device check: how the throws look and feel on the user's phone, and whether the sideways throws read well at the narrowest width.
+
+**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
 
 ## Build Planner
 
