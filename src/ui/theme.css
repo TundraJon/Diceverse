@@ -250,7 +250,7 @@ body.fast .cover { transition: none; }
 .figw.live { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff); }
 .figw.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; }
 .figw.summit.pop { animation: figpop 0.35s ease-out; }
-.figw.fall { opacity: 0; animation: figfall 0.7s ease-in both; }
+.figw.fall { opacity: 0; animation: figfall 1.4s ease-in both; }
 @keyframes figpop { from { transform: translate(-50%, -100%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
 @keyframes figfall { from { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); } to { opacity: 0; transform: translate(-50%, calc(-50% + var(--drop, 0px))) rotate(-20deg); } }
 .ccol.owned .cd { visibility: hidden; outline: none; } /* a won column draws no circles (the summit figure stays) */

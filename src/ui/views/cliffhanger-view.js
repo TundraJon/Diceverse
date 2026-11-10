@@ -272,7 +272,7 @@ export const cliffhangerView = {
         ctx.log(`${name(ev.seat)} blew it`);
         ctx.announce(`${name(ev.seat)} blew it and lost this turn's climb`);
         ctx.vibrate();
-        delay = ctx.reduced ? 600 : 1500;
+        delay = ctx.reduced ? 600 : 1800;
         break;
       case 'BANKED':
         ev.cols.forEach((m) => { view.prog[ev.seat][m.col] = m.to; });

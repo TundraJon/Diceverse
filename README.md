@@ -618,3 +618,12 @@ Cliffhanger figures: the white glow now actually shows (a correction to Build Lo
 
 Verification (scratch scripts, none committed): `preflight` clean. The Space Salvage-era figure script updated for the two-span structure: 79 checks, 0 failures, 0 JS errors, 6 s (the glow is on the outer span and the masked span has none; a screenshot of the summit figure with and without the glow differs; the earlier size, centering, rope, circle and fall checks still pass at 390x844, 360x740, 320x640 and 768x1024). Zoomed before and after crop looked at: a soft white glow now surrounds the green figure on the sky. Neighbors: `q14` 42 of 42, `q20` 23 of 23; the Cliffhanger suite `ui.cjs` 32 of 33 (the same expected failure as in Build Log 34, the removed mountain flag). Needs a real-device check: how the glow reads on the user's phone.
 
+## Build Log 36 (completed)
+
+Cliffhanger: the falling climbers fall at half the speed (the user: "they go too fast").
+
+- [x] `src/ui/theme.css`: `.figw.fall` animation `figfall` 0.7 s to 1.4 s (half the speed). The 120 ms stagger between figures is unchanged.
+- [x] `src/ui/views/cliffhanger-view.js`: the `BLOWN` event's present delay 1.5 s to 1.8 s (reduced motion stays 0.6 s), because the last figure now finishes at 0.24 + 1.4 = 1.64 s and would otherwise be cut off when the turn ends. The "BLOWN IT!" banner therefore stays about 0.3 s longer.
+
+Verification (scratch scripts, none committed): `preflight` clean. The figure script, 81 checks, 0 failures, 0 JS errors, 6 s: each of the three falls lasts 1400 ms and starts 120 ms apart; about 1.45 s in, all three figures are still on screen and the last is still falling; after the event they are gone; the other figure checks pass. The Cliffhanger suite `ui.cjs` 32 of 33 (the same expected "mountain flag" failure; its banner-time limit updated to 1.8 s). Needs a real-device check: whether the new speed feels right on the user's phone.
+
