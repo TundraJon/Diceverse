@@ -1,6 +1,7 @@
 // Cliffhanger view: eleven columns shaped like a mountain (the 7 column is the peak) in front of a drawn snow-peak.
 import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
 import { statusOverride } from '../avatars.js';
+import { FIGURES } from '../figures.js';
 import { LEN, splits, chooseOptions, stuck } from '../../games/cliffhanger.js';
 
 const el = (tag, cls, text) => {
@@ -13,6 +14,18 @@ const COLS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 // Older saves have no seat colors: these fixed ones (by seat) are the fallback. New games store each seat's color.
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
+
+// A silhouette (climb, fall or summit) in a seat's color, centered on the circle it is added to. All three share one height (--fig).
+function figure(kind, color, extra) {
+  const f = FIGURES[kind];
+  const e = el('span', `fig ${kind}${extra ? ' ' + extra : ''}`);
+  e.style.width = `calc(var(--fig) * ${(f.w / f.h).toFixed(4)})`;
+  e.style.background = color;
+  e.style.webkitMaskImage = `url("${f.uri}")`;
+  e.style.maskImage = `url("${f.uri}")`;
+  e.setAttribute('aria-hidden', 'true');
+  return e;
+}
 
 // Cosmetic background: sky, far hills, the main peak with a snow cap, and a tree line. Drawn inline (no image files).
 // The shapes are filled in by drawPeak() from the measured top dots, so the slopes pass through the center of every
@@ -78,7 +91,7 @@ export const cliffhangerView = {
     sheet.appendChild(el('h2', null, 'How to play Cliffhanger'));
     [
       `Be the first to win ${options.winCols} columns. There is one column for every dice total from 2 to 12: the rare totals have short columns, 7 has the longest.`,
-      'On your turn, roll four dice and split them into two pairs any way you like. The sum of each pair is a column to climb. You have only three brown markers per turn: a new column takes a marker, a column you already have a marker in moves up one space.',
+      'On your turn, roll four dice and split them into two pairs any way you like. The sum of each pair is a column to climb. You have only three climbers per turn: a new column takes a climber, a column you already have a climber in moves up one space. The colored squares show progress you have already banked.',
       'You must climb if you can. If only one of a pair’s columns can be used, you climb that one. A pair with the same total (7 and 7) climbs that column two spaces.',
       'After climbing you may BANK (your markers become permanent progress) or ROLL AGAIN. If a roll lets you climb no column at all, you blow it: this turn’s climbing is lost (earlier progress stays) and your turn ends. Once all three markers are down, every roll must move one of them.',
       'You win a column only when you BANK with a marker on its top space. A won column is closed to everyone and wipes out other players’ progress in it. A marker on top that you did not bank does not count.',
@@ -107,7 +120,9 @@ export const cliffhangerView = {
       dice: st.turn.dice.slice(),
       rollId: session.log.length,
       banner: null,
-      slip: false,
+      fall: null,
+      fallAt: 0,
+      popCol: null,
     };
   },
 
@@ -118,11 +133,9 @@ export const cliffhangerView = {
     ui.board = el('div', 'climbboard');
     ui.board.insertAdjacentHTML('afterbegin', PEAK_SVG);
     ui.cols = el('div', 'climbcols');
-    ui.climber = el('div', 'climber', '\u{1F9D7}');
-    ui.climber.setAttribute('aria-hidden', 'true');
     ui.banner = el('div', 'banner');
     ui.banner.hidden = true;
-    ui.board.append(ui.cols, ui.climber, ui.banner);
+    ui.board.append(ui.cols, ui.banner);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => drawPeak(ui)).observe(ui.board); // rotate or resize: redraw
     ui.dice = el('div', 'dice climb');
     ui.hint = el('div', 'hint');
@@ -156,23 +169,31 @@ export const cliffhangerView = {
       const mine = view.prog.map((p, i) => `${view.seats[i].name} ${p[c]}`).filter((_, i) => view.prog[i][c] > 0).join(', ');
       col.setAttribute('role', 'img');
       col.setAttribute('aria-label', `Column ${c}, ${LEN[c]} spaces${view.owner[c] !== null ? `, won by ${view.seats[view.owner[c]].name}` : ''}${mine ? `, progress: ${mine}` : ''}${view.markers[c] ? `, marker on space ${view.markers[c]}` : ''}`);
-      // the summit mark sits above the top space of a won column (its row is always reserved so nothing moves)
-      const flag = el('div', 'cflag', view.owner[c] !== null ? '\u{1F3D4}️' : '');
-      if (view.owner[c] !== null) flag.style.filter = `drop-shadow(0 0 3px ${colorOf(view, view.owner[c])})`;
-      col.appendChild(flag);
+      // the row above the top space is always reserved so nothing moves (the summit figure may reach into it)
+      col.appendChild(el('div', 'cflag'));
       for (let step = LEN[c]; step >= 1; step--) {
         const d = el('div', 'cd' + (step === LEN[c] ? ' top' : ''));
         const who = view.prog.map((p, i) => (p[c] === step ? i : -1)).filter((i) => i >= 0);
         who.forEach((i) => { const m = el('span', 'cm'); m.style.background = colorOf(view, i); d.appendChild(m); });
-        if (step === LEN[c] && view.owner[c] !== null) d.style.background = colorOf(view, view.owner[c]);
-        if (view.markers[c] === step) d.appendChild(el('span', 'cring'));
+        // the active player's live marker is a climber (falling after a blow-it); banked progress stays as squares
+        if (view.markers[c] === step) {
+          const lost = view.fall && view.fall.find((m) => m.col === c);
+          if (lost) {
+            const fig = figure('fall', colorOf(view, view.current));
+            const idx = view.fall.indexOf(lost);
+            fig.style.setProperty('--drop', `calc((var(--d) + 3px) * ${Math.max(0, step - Math.max(lost.from, 1))})`);
+            fig.style.animationDelay = `${idx * 120 - Math.max(0, performance.now() - view.fallAt)}ms`;
+            d.appendChild(fig);
+          } else d.appendChild(figure('climb', colorOf(view, view.current), 'live'));
+        }
+        // a won column: the arm-up figure stands on the top space (its circles are not drawn)
+        if (step === LEN[c] && view.owner[c] !== null) d.appendChild(figure('summit', colorOf(view, view.owner[c]), view.popCol === c ? 'pop' : ''));
         col.appendChild(d);
       }
       col.appendChild(el('div', 'clabel', String(c)));
       ui.cols.appendChild(col);
     });
     drawPeak(ui);
-    ui.climber.className = 'climber' + (view.slip ? ' slip' : '');
     ui.banner.hidden = !view.banner;
     ui.banner.textContent = view.banner ? view.banner.text : '';
     ui.banner.className = 'banner' + (view.banner && view.banner.good ? ' hot' : '');
@@ -232,7 +253,6 @@ export const cliffhangerView = {
         view.dice = ev.dice.slice();
         view.rollId += 1;
         view.banner = null;
-        view.slip = false;
         tumble = true;
         delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the choices appear 0.25 s after the dice stop
         ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
@@ -244,7 +264,8 @@ export const cliffhangerView = {
         break;
       case 'BLOWN':
         view.banner = { text: 'BLOWN IT! Progress lost' };
-        view.slip = true;
+        view.fall = ev.lost.map((m) => ({ col: m.col, from: m.from, to: m.to }));
+        view.fallAt = performance.now();
         ctx.log(`${name(ev.seat)} blew it`);
         ctx.announce(`${name(ev.seat)} blew it and lost this turn's climb`);
         ctx.vibrate();
@@ -258,6 +279,7 @@ export const cliffhangerView = {
         break;
       case 'COLUMN_WON':
         view.owner[ev.col] = ev.seat;
+        view.popCol = ev.col;
         view.seats[ev.seat].won += 1;
         ev.removedFrom.forEach((i) => { view.prog[i][ev.col] = 0; });
         view.banner = { text: `${name(ev.seat)} won column ${ev.col}!`, good: true };
@@ -268,7 +290,8 @@ export const cliffhangerView = {
       case 'TURN_ENDED':
         view.markers = {};
         view.banner = null;
-        view.slip = false;
+        view.fall = null;
+        view.popCol = null;
         view.seats[ev.seat].turns += 1;
         break;
       case 'TURN_STARTED':

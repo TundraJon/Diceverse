@@ -236,22 +236,30 @@ body.fast .cover { transition: none; }
 .climbboard { --d: min(26px, calc((100vw - 32px - 12px) / 11 - 4px)); position: relative; border-radius: 12px; overflow: hidden; padding: 6px 6px 8px; border: 1px solid var(--line); }
 .peakbg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .climbcols { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; }
-.ccol { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.cd { position: relative; width: var(--d); height: var(--d); border-radius: 50%; background: rgba(8, 28, 40, 0.62); display: grid; grid-template-columns: repeat(2, 1fr); align-content: center; justify-items: center; gap: 1px; padding: calc(var(--d) * 0.18); }
+.ccol { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+/* the rope: 1 px, from the center of the top circle to the center of the bottom one (flag row 18 px + gap, and the label + gap, plus half a circle) */
+.ccol::before { content: ""; position: absolute; left: 50%; width: 1px; margin-left: -0.5px; top: calc(21px + var(--d) / 2); bottom: calc(0.72rem + 3px + var(--d) / 2); background: #8a5a2b; }
+.cd { position: relative; width: var(--d); height: var(--d); border-radius: 50%; background: rgba(8, 28, 40, 0.124); display: grid; grid-template-columns: repeat(2, 1fr); align-content: center; justify-items: center; gap: 1px; padding: calc(var(--d) * 0.18); }
 .cd.top { outline: 1px dashed rgba(251,191,36,0.8); }
 .cm { width: 100%; aspect-ratio: 1; min-width: 6px; border-radius: 2px; }
-.cring { position: absolute; inset: -3px; border-radius: 50%; border: 3px solid #c58b4e; box-shadow: 0 0 6px rgba(197,139,78,0.9); }
-.ccol.owned .cd:not(.top) { opacity: 0.4; }
+/* Cliffhanger figures: one height for all three (--fig), a seat-colored silhouette via a mask, centered on its circle */
+.climbboard { --fig: calc(var(--d) * 1.4); }
+.fig { position: absolute; left: 50%; top: 50%; z-index: 3; height: var(--fig); transform: translate(-50%, -50%); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1.5px rgba(255,255,255,0.9)); pointer-events: none; visibility: visible; }
+.fig.live { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #fff); }
+.fig.summit { transform: translate(-50%, -100%); transform-origin: 50% 100%; }
+.fig.summit.pop { animation: figpop 0.35s ease-out; }
+.fig.fall { opacity: 0; animation: figfall 0.7s ease-in both; }
+@keyframes figpop { from { transform: translate(-50%, -100%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
+@keyframes figfall { from { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); } to { opacity: 0; transform: translate(-50%, calc(-50% + var(--drop, 0px))) rotate(-20deg); } }
+.ccol.owned .cd { visibility: hidden; outline: none; } /* a won column draws no circles (the summit figure stays) */
 .clabel { font-size: 0.72rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1; }
 .cflag { height: 18px; line-height: 18px; font-size: 14px; }
-.climber { position: absolute; left: 10px; bottom: 120px; z-index: 2; font-size: 22px; transition: transform 0.7s ease-in, opacity 0.7s; }
-.climber.slip { transform: translateY(46px) rotate(25deg); opacity: 0.2; }
 .climbboard .banner { z-index: 3; top: 44px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
 .dice.climb { gap: 10px; }
 .dice.climb .die { --s: 46px; }
 .controls button.pair { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1.1; }
 .controls button .sub { font-size: 0.68rem; font-weight: 600; opacity: 0.75; }
-@media (prefers-reduced-motion: reduce) { .climber { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .fig.summit.pop, .fig.fall { animation: none; } }
 
 /* Settings (name and avatar), the menu's gear button, and the one-line talk/thinking text */
 .screen { position: relative; }
