@@ -35,10 +35,10 @@ header.bar h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.06em; color: va
 .panel h2 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 
 /* Menu */
-.hero { text-align: center; padding: 18px 0 6px; }
-.hero .logo { font-size: 3rem; }
-.hero h1 { margin: 4px 0; font-size: 2rem; color: var(--gold); letter-spacing: 0.08em; }
-.hero p { margin: 0; color: var(--muted); }
+.hero { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 56px 0 4px; } /* logo and title on one line; the right padding keeps clear of the settings button */
+.hero .logo { font-size: 2rem; line-height: 1; }
+.hero h1 { margin: 0; font-size: 1.5rem; color: var(--gold); letter-spacing: 0.08em; }
+.hero p { display: none; }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .seg button { min-height: 48px; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; font-weight: 600; }
 .seg button[aria-pressed="true"] { background: var(--gold); color: var(--ink); border-color: var(--gold); }
@@ -224,7 +224,9 @@ body.fast .cover { transition: none; }
 .tray .banner { top: 14px; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap; }
 
 /* Menu: the game picker wraps into rows of three (five games no longer fit on one row) */
-.seg.games { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); grid-auto-columns: auto; }
+.seg.games { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); grid-auto-columns: auto; }
+.seg.games button { min-height: 40px; padding: 2px 4px; font-size: 0.78rem; line-height: 1.1; }
+.btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* Cliffhanger */
 .table.climbwrap { flex: none; justify-content: flex-start; align-items: stretch; gap: 6px; min-height: 0; padding: 0; }

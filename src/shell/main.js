@@ -200,11 +200,9 @@ function renderMenu() {
     modePanel.appendChild(row);
   }
   screen.appendChild(modePanel);
-
-  // Players: last panel; hidden in Solo (nothing sits below it, so no row jumps).
+  // Players: a row inside the Mode panel; hidden in Solo.
   if (settings.mode !== 'solo') {
-    const pp = el('div', 'panel');
-    const prow = el('div', 'row');
+    const prow = el('div', 'row sub');
     prow.appendChild(el('span', null, 'Players'));
     const st = el('div', 'stepper');
     const minus = el('button', null, '−');
@@ -218,8 +216,7 @@ function renderMenu() {
     plus.addEventListener('click', () => { settings.players++; persistSettings(); renderMenu(); });
     st.append(minus, count, plus);
     prow.appendChild(st);
-    pp.appendChild(prow);
-    screen.appendChild(pp);
+    modePanel.appendChild(prow); // the Players row sits inside the Mode panel to save a panel's height
   }
 
   const h = settings.house[gameId];
@@ -235,7 +232,9 @@ function renderMenu() {
   rules.addEventListener('click', () => { useGame(gameId); openRules(settings.house[gameId]); });
   const start = el('button', 'primary', 'Start');
   start.addEventListener('click', () => startNew());
-  screen.append(hr, rules, start);
+  const btnrow = el('div', 'btnrow'); // House rules and How to play share a row
+  btnrow.append(hr, rules);
+  screen.append(btnrow, start);
   app.appendChild(screen);
 }
 
