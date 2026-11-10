@@ -1,5 +1,5 @@
 // Yacht view: five tappable dice (tap = hold), a roll counter, and the category sheet.
-import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { RULESETS, RULESET_IDS, UPPER_KEYS, UPPER_TARGET, categoryList, potential, totals, comparisonRows } from '../../blocks/category-sheet.js';
@@ -219,6 +219,7 @@ export const yachtView = {
     const name = (s) => view.seats[s].name;
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         ev.ids.forEach((id, i) => { view.dice[id] = ev.dice[i]; });
@@ -226,8 +227,8 @@ export const yachtView = {
         view.banner = null;
         view.viewSeat = ev.seat;
         tumble = true;
-        delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the score previews appear 0.25 s after the dice stop
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.join(', ')}`; // spoken once the dice have settled
         break;
       case 'SCORED': {
         const seat = view.seats[ev.seat];
@@ -258,6 +259,6 @@ export const yachtView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };

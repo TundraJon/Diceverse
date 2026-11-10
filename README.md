@@ -17,27 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 29 — No tell before the dice stop: fix Pirate Plunder, Pig, Farkle and Shut the Box, and the roll announcements
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Source (user):** in Pirate Plunder the dice are greyed out while they are being thrown and settling, which looks as if the app knows the result before they stop. The user asked for a standing rule (now in `CLAUDE.md`, Working conventions: "Never tell the result before the dice stop": nothing result-dependent on screen while the dice roll and for at least 250 ms after they stop). The audit below applies it to every dice game.
-
-**Audit (read-only, from the views; findings, not yet fixed):**
-- **Pirate Plunder:** `render` dims a die as soon as its new face is a face already kept (`taken` in `src/ui/views/plunder-view.js`), which shows during the throw. *(the reported problem)*
-- **Pig, Farkle, Shut the Box:** their `ROLLED` event waits only `ROLL_MS` (reduced motion 150 ms), so the result (points, bust or farkle banner, the choices, the tile hints) appears the instant the dice stop, with no 250 ms pause. Yacht, Cliffhanger and Space Salvage already wait `ROLL_MS + REVEAL_MS` and hide previews until then.
-- **All seven games:** the `ROLLED` handler calls `ctx.announce("... rolled 4, 6")` at the start of the throw, so a screen reader speaks the result before the dice stop.
-
-**Changes** *(the shared constant and the announcement mechanism are Added by Claude. Change before authorizing if wanted.)*:
-1. `src/ui/views/plunder-view.js`: dim a kept face only when `!ctx.busy` (after the wait), never during the throw or the pause.
-2. Pig, Farkle and Shut the Box views: the `ROLLED` delay becomes `ROLL_MS + REVEAL_MS` (reduced motion `REVEAL_MS`), like Yacht, Cliffhanger, Space Salvage and Pirate Plunder. Each roll in these games therefore takes 0.25 s longer; bots too.
-3. `src/ui/dice.js` exports `SETTLE_MS = ROLL_MS + REVEAL_MS` and every view's `ROLLED` handler uses it, so the wait cannot drift between games.
-4. Announcements: a view's `reduce` may return `after: "text"`; `present()` in `src/shell/main.js` announces it when the event's delay is over (instead of `ctx.announce` at the start of the throw). All seven games' roll announcements move to it.
-5. `CLAUDE.md`: already updated (rule and Mistakes entry); the project map notes `SETTLE_MS`.
-
-**Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 3 minutes):** `preflight` clean. A generic Playwright check run in each of the seven games at real speed: take a snapshot of everything result-dependent (every button's label and disabled state, `.hint`, `.turnline`, the banner, the badges and info lines, and every class on dice, tiles and chips other than the cube transforms) before the roll; click ROLL; sample every 50 ms until `SETTLE_MS` (1.25 s) has passed; confirm the snapshot is identical to the one before the roll (apart from the dice themselves and a "Rolling…" status) for the whole time, then confirm the result appears right after. The same with reduced motion (no throw, but a 250 ms pause) and for a bot's roll. Check the live region's text is empty until the wait is over. Re-run the neighbors that touch these views: the dice suite, `ui.cjs` for Cliffhanger, the Space Salvage and Pirate Plunder suites, and the Pig, Farkle and Shut the Box suites. Screenshots not needed. Needs a real-device check: whether the 0.25 s pause feels right in Pig, Farkle and Shut the Box on the user's phone.
-
-**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -680,4 +660,16 @@ Pirate Plunder: white tiles, so the gold coins can be seen (the user: "can't see
 - [x] `src/ui/theme.css`: `.pk` (a tile) background `linear-gradient(160deg, #f6e3b6, #d9b36a)` to `linear-gradient(160deg, #ffffff, #e6ebef)` and text `#3a2410` to `#1f2937`. The small tiles in the tapped-chip stack view (`.stackp .mini`) got the same colors so every tile looks alike *(a consistency change I made)*. The taken, turned-over, glowing and chosen tile styles are unchanged.
 
 Verification (scratch script, none committed): `preflight` clean; 3 checks, 0 failures, 0 JS errors, 1 s: the tiles' computed background is the white gradient with dark text, and the stack-view tiles are white too. Screenshot of the tile row (taken, chosen and open tiles) looked at: the gold coins read clearly. The tile layout and sizes did not change, so the earlier layout checks were not re-run. Needs a real-device check: how the white tiles and coins look on the user's phone.
+
+## Build Log 40 (completed)
+
+No tell before the dice stop: Pirate Plunder, Pig, Farkle and Shut the Box fixed, and the roll announcements moved (was Queue 29; the rule is in `CLAUDE.md`).
+
+- [x] `src/ui/dice.js`: new `SETTLE_MS = ROLL_MS + REVEAL_MS`. Every view's `ROLLED` delay is now `ctx.reduced ? REVEAL_MS : SETTLE_MS` (Pig, Farkle and Shut the Box were `ROLL_MS`, reduced motion 150 ms, so each of their rolls now takes 0.25 s longer; bots too; Yacht, Cliffhanger, Space Salvage and Pirate Plunder used the same sum written out).
+- [x] `src/ui/views/plunder-view.js`: a kept face is dimmed (`taken`) only when `!ctx.busy`, so nothing dims while the dice move or settle (the reported problem).
+- [x] Announcements: the seven views' `reduce` now return `after: "... rolled ..."` instead of calling `ctx.announce` at the start of the throw; `present()` in `src/shell/main.js` speaks it when the event's delay is over.
+- [x] Found by the new test and fixed (not in the audit): Shut the Box showed "Roll 10" (the total) in the tray while the dice were still rolling. `src/ui/views/shutbox-view.js` now shows "Rolling…" until the dice have settled (a `view.settling` flag set by `ROLLED` and cleared by any later event).
+- [x] `CLAUDE.md` project map: `SETTLE_MS` and `after` noted.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. **Reproduced first** on the build before the change: the new check failed for Pig (5 different screens for 10 rolls at 100 ms to 1.12 s, and with reduced motion) and for Pirate Plunder (a die was dimmed from 100 ms on; the live-region announcement differed at 450 ms and later). New generic Playwright check, 54 checks, 0 failures, 0 JS errors, 150 s, in all seven games at 390x844: for 10 different seeded first rolls, a snapshot of the whole screen (everything except the dice themselves and their value labels, plus the screen-reader live region) at 100, 450, 800 and 1,120 ms after the click is identical whatever was rolled; at 1.65 s the screens differ (the result shows); the same with reduced motion at 60 and 200 ms with 6 rolls; and for Pirate Plunder two mid-turn saved games (a roll that hits an already-kept face, and one that does not): no dimmed or selected die and no banner until 1.12 s, then the kept faces dim. Neighbors: Pirate Plunder suite 180 of 180; Farkle suite all pass; Shut the Box suite 61 of 62 (the one known outdated "games listed" expectation); Pig suite one failure, the same "turn handed to a bot" race logged before; dice suite 20 of 20 (see below). The check uses 6 to 10 seeds per game, so a leak that depends on a rare roll (a Farkle on the first roll, a Shut the Box with no move) is not guaranteed to be caught. Needs a real-device check: whether the 0.25 s pause feels right in Pig, Farkle and Shut the Box on the user's phone, and that the roll is spoken only after the dice stop with a real screen reader.
 

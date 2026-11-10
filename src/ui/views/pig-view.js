@@ -1,5 +1,5 @@
 // Pig view: rendering and event presentation for the Pig screen.
-import { renderDie, ROLL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 
@@ -78,12 +78,13 @@ export const pigView = {
     const name = (s) => view.seats[s].name;
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         view.dice = ev.dice.slice();
         tumble = true;
-        delay = ctx.reduced ? 150 : ROLL_MS; // the result shows when the dice land
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(' and ')}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.join(' and ')}`; // spoken once the dice have settled
         break;
       case 'SCORED':
         view.turnPoints = ev.turnPoints;
@@ -119,6 +120,6 @@ export const pigView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };

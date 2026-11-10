@@ -1,5 +1,5 @@
 // Space Salvage view: three symbol dice, the haul and defensive-fire boxes, the bin, and the danger meter.
-import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
 import { dangerChance, binCounts, CREW_TYPES } from '../../games/salvage.js';
@@ -189,13 +189,14 @@ export const salvageView = {
     const name = (s) => view.seats[s].name;
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         view.rolled = ev.dice.map((d) => ({ ...d }));
         view.banner = null;
         tumble = true;
-        delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the choices appear 0.25 s after the dice stop
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.map((d) => WORD[d.sym]).join(', ')}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.map((d) => WORD[d.sym]).join(', ')}`; // spoken once the dice have settled
         break;
       case 'TALLY':
         view.points = ev.points;
@@ -252,6 +253,6 @@ export const salvageView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };

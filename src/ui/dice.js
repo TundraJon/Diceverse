@@ -6,6 +6,8 @@
 // category to score).
 export const ROLL_MS = 1000;
 export const REVEAL_MS = 250;
+// Nothing that depends on a roll's result may show until the dice have stopped and this long has passed (the rule in CLAUDE.md).
+export const SETTLE_MS = ROLL_MS + REVEAL_MS;
 
 // Pip positions on a 3 x 3 grid for each face. Opposite faces add to 7 (1/6, 2/5, 3/4).
 const PIPS = {

@@ -1,5 +1,5 @@
 // Pirate Plunder view: the tile row, the dice you kept, the dice you rolled (tap one to keep all of that face), and the claim choice.
-import { renderDie, ROLL_MS, REVEAL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { statusOverride } from '../avatars.js';
 import { apply, claimOptions, coinsOf, faceValue, tileNumbers, MAP } from '../../games/plunder.js';
 
@@ -190,7 +190,7 @@ export const plunderView = {
     ui.rollTray.appendChild(el('h4', null, picking ? 'Rolled: tap a number to keep all of those dice' : 'Rolled'));
     ui.dice = el('div', 'dice pkdice');
     free.forEach((d) => {
-      const taken = d.face > 0 && view.kept.includes(d.face);
+      const taken = !ctx.busy && d.face > 0 && view.kept.includes(d.face); // shown only after the dice have settled
       const btn = el('button', 'dieBtn' + (view.sel !== null && d.face === view.sel ? ' sel' : '') + (taken ? ' taken' : ''));
       btn.disabled = !picking || taken || d.face === 0;
       btn.setAttribute('aria-pressed', String(view.sel !== null && d.face === view.sel));
@@ -258,6 +258,7 @@ export const plunderView = {
     const name = (s) => view.seats[s].name;
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         ev.dice.forEach((d) => { view.dice[d.id].face = d.face; });
@@ -266,8 +267,8 @@ export const plunderView = {
         view.pick = null;
         view.banner = null;
         tumble = true;
-        delay = ctx.reduced ? REVEAL_MS : ROLL_MS + REVEAL_MS; // the choices appear 0.25 s after the dice stop
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.map((d) => (d.face === MAP ? 'a map' : d.face)).join(', ')}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.map((d) => (d.face === MAP ? 'a map' : d.face)).join(', ')}`; // spoken once the dice have settled
         break;
       case 'SET_ASIDE':
         ev.ids.forEach((id) => { view.dice[id].state = 'kept'; });
@@ -321,6 +322,6 @@ export const plunderView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };

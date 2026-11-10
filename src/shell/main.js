@@ -560,10 +560,11 @@ function doActions(actions, i) {
 function present(events, i, done) {
   if (i >= events.length) { done(); return; }
   const c = ctx();
-  const { delay, tumble } = G.view.reduce(view, events[i], c);
+  const { delay, tumble, after } = G.view.reduce(view, events[i], c);
   moods.onEvent(events[i], G.id, view);
   render(tumble);
-  sched.after(delay, () => present(events, i + 1, done));
+  // `after` is a screen-reader announcement that must not be spoken before the dice have settled
+  sched.after(delay, () => { if (after) announce(after); present(events, i + 1, done); });
 }
 
 /* ---------- after events: bot turn or game over ---------- */

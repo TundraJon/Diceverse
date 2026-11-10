@@ -1,5 +1,5 @@
 // Shut the Box view: a wooden box with 12 tiles (6 + 6), a tall felt dice tray, and a sliding cover for a shut box.
-import { renderDie, ROLL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { validSets, oneDieAllowed } from '../../blocks/tile-board.js';
@@ -129,6 +129,7 @@ export const shutboxView = {
     const selSum = sel.reduce((a, b) => a + b, 0);
     const info = el('div', 'trayinfo');
     if (!n) info.textContent = session.isOver() ? '' : cur.isBot ? (statusOverride(view, cur, false) || `${cur.name} is thinking…`) : 'Roll the dice';
+    else if (view.settling) info.textContent = 'Rolling\u2026'; // the total is not shown until the dice have settled
     else info.textContent = `Roll ${view.target}${flipping ? ` · selected ${sel.length ? `${sel.join(' + ')} = ${selSum}` : 'none'}` : ''}`;
     ui.tray.appendChild(info);
     ui.tray.appendChild(ui.banner);
@@ -174,11 +175,13 @@ export const shutboxView = {
   },
 
   reduce(view, ev, ctx) {
+    view.settling = ev.type === 'ROLLED'; // set while a roll's dice are moving and for the pause after; any later event clears it
     const name = (s) => view.seats[s].name;
     const size = view.tiles.filter((t) => t !== 'na').length;
     view.animTiles = [];
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         view.dice = ev.dice.slice();
@@ -187,8 +190,8 @@ export const shutboxView = {
         view.selected = [];
         view.banner = null;
         tumble = true;
-        delay = ctx.reduced ? 150 : ROLL_MS; // the result shows when the dice land
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(' and ')}, total ${ev.target}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.join(' and ')}, total ${ev.target}`; // spoken once the dice have settled
         break;
       case 'FLIPPED':
         ev.ids.forEach((id) => { view.tiles[id - 1] = 'shut'; });
@@ -257,6 +260,6 @@ export const shutboxView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };

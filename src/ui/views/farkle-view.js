@@ -1,5 +1,5 @@
 // Farkle view: six tappable dice, a kept row, live selection score, and the turn bar.
-import { renderDie, ROLL_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { scoreSelection, bestSelection, scoreTable } from '../../blocks/combo-table.js';
@@ -186,6 +186,7 @@ export const farkleView = {
     const name = (s) => view.seats[s].name;
     let delay = 0;
     let tumble = false;
+    let after = null;
     switch (ev.type) {
       case 'ROLLED':
         if (ev.fresh) view.dice = blankDice();
@@ -194,8 +195,8 @@ export const farkleView = {
         view.selected = [];
         view.banner = null;
         tumble = true;
-        delay = ctx.reduced ? 150 : ROLL_MS; // the result shows when the dice land
-        ctx.announce(`${name(ev.seat)} rolled ${ev.dice.join(', ')}`);
+        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing result-dependent shows until the dice have stopped and 0.25 s have passed
+        after = `${name(ev.seat)} rolled ${ev.dice.join(', ')}`; // spoken once the dice have settled
         break;
       case 'SCORED':
         ev.ids.forEach((id) => { view.dice.find((x) => x.id === id).state = 'kept'; });
@@ -249,6 +250,6 @@ export const farkleView = {
       default:
         break;
     }
-    return { delay, tumble };
+    return { delay, tumble, after };
   },
 };
