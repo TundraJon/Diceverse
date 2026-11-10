@@ -50,7 +50,7 @@ export const pigView = {
 
   render(ui, view, session, ctx) {
     const st = session.state;
-    renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints);
+    renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints, undefined, { target: st.options.target });
     ui.dice.innerHTML = '';
     ui.dice.className = 'dice' + (st.options.dice === 2 ? ' two' : '');
     for (let i = 0; i < st.options.dice; i++) {

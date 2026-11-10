@@ -1,5 +1,6 @@
 // Reusable panels: ScoreStrip and TurnBar.
-export function renderScoreStrip(container, seats, current, turnPoints, onSeatClick) {
+// opts.target (and opts.fmt) adds a smaller "/ target" beside each total.
+export function renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts) {
   container.innerHTML = '';
   container.className = 'scores' + (seats.length === 1 ? ' one' : '');
   seats.forEach((s, i) => {
@@ -18,7 +19,17 @@ export function renderScoreStrip(container, seats, current, turnPoints, onSeatCl
     const tp = document.createElement('div');
     tp.className = 'tp';
     tp.textContent = i === current && turnPoints > 0 ? `+${turnPoints} this turn` : s.note || '';
-    chip.append(name, total, tp);
+    if (opts && opts.target != null) {
+      const fmt = opts.fmt || String;
+      const trow = document.createElement('div');
+      trow.className = 'trow';
+      const tgt = document.createElement('div');
+      tgt.className = 'tgt';
+      tgt.textContent = `/ ${fmt(opts.target)}`;
+      trow.append(total, tgt);
+      chip.setAttribute('aria-label', `${s.name}: ${s.total} of ${fmt(opts.target)}`);
+      chip.append(name, trow, tp);
+    } else chip.append(name, total, tp);
     if (onSeatClick) {
       chip.tabIndex = 0;
       chip.setAttribute('role', 'button');

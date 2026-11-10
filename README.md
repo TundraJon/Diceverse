@@ -17,21 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 30 — Pig and Farkle: show the target on the game screen
-
-**Status: Not yet authorized to build.** Waiting for an explicit go-ahead from the user.
-
-**Source (user):** "Playing Pig, there is no indication what the target number is." Checked: Pig and Farkle show the target only in the menu summary and the How to play sheet; Space Salvage, Cliffhanger and Pirate Plunder show theirs in the chips. The user chose **option A** (the target in each player's chip) and **yes** to doing Farkle in the same build.
-
-**Change** *(layout details Added by Claude. Change before authorizing if wanted.)*:
-- `src/ui/panels.js`: `renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts)` gets an optional `opts` `{ target, fmt }`. With a `target`, the chip's total row becomes a small flex row: the existing `.total` element (its text stays the plain total, so existing checks that read `.chip .total` keep working) followed by a smaller `.tgt` element reading `/ 100` (`fmt` formats it, Farkle's `/ 10,000`). Without `opts`, nothing changes (Shut the Box). The chip's `aria-label` reads "name: 0 of 100" when a target is shown.
-- `src/ui/views/pig-view.js` passes `{ target: st.options.target }`; `src/ui/views/farkle-view.js` passes `{ target: o.target, fmt }` (the same number format as its How to play and menu text).
-- `src/ui/theme.css`: `.chip .trow` (flex, baseline aligned, wraps if needed), `.chip .tgt` (about 0.85rem, muted color). The big total keeps its 1.8rem size; at the narrowest phones the target may wrap under the total rather than overflow.
-- Solo shows the same (one chip, "0 / 100").
-
-**Verification plan (scratch scripts using `tests-helpers.cjs`; none committed; about 2 minutes):** `preflight` clean. Playwright at 390x844, 360x740 and 320x640 for Pig (targets 50, 100 and 150, one and two dice, vs Bots, Pass & Play and Solo) and Farkle (targets 2,500, 5,000 and 10,000, with the "not on board" note and the "+n this turn" line): every chip shows its total and `/ target`; the target equals the house rule in the menu; no chip content overflows its chip and no sideways scroll, including a total of 9,950 against 10,000 and the "+n this turn" line; the totals still update after a bank; screenshots of both games at 390 and 320 looked at. Neighbors re-run: the Pig and Farkle suites (their `.chip .total` checks), and Shut the Box's chips unchanged. Needs a real-device check: how the chips look on the user's phone.
-
-**Bookkeeping:** a new Build Log entry, this Queue entry removed, one commit.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -686,4 +672,14 @@ No tell before the dice stop: Pirate Plunder, Pig, Farkle and Shut the Box fixed
 - [x] `CLAUDE.md` project map: `SETTLE_MS` and `after` noted.
 
 Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. **Reproduced first** on the build before the change: the new check failed for Pig (5 different screens for 10 rolls at 100 ms to 1.12 s, and with reduced motion) and for Pirate Plunder (a die was dimmed from 100 ms on; the live-region announcement differed at 450 ms and later). New generic Playwright check, 54 checks, 0 failures, 0 JS errors, 150 s, in all seven games at 390x844: for 10 different seeded first rolls, a snapshot of the whole screen (everything except the dice themselves and their value labels, plus the screen-reader live region) at 100, 450, 800 and 1,120 ms after the click is identical whatever was rolled; at 1.65 s the screens differ (the result shows); the same with reduced motion at 60 and 200 ms with 6 rolls; and for Pirate Plunder two mid-turn saved games (a roll that hits an already-kept face, and one that does not): no dimmed or selected die and no banner until 1.12 s, then the kept faces dim. Neighbors: Pirate Plunder suite 180 of 180; Farkle suite all pass; Shut the Box suite 61 of 62 (the one known outdated "games listed" expectation); Pig suite one failure, the same "turn handed to a bot" race logged before; dice suite 20 of 20 (see below). The check uses 6 to 10 seeds per game, so a leak that depends on a rare roll (a Farkle on the first roll, a Shut the Box with no move) is not guaranteed to be caught. Needs a real-device check: whether the 0.25 s pause feels right in Pig, Farkle and Shut the Box on the user's phone, and that the roll is spoken only after the dice stop with a real screen reader.
+
+## Build Log 41 (completed)
+
+Pig and Farkle: the target shows in every chip (was Queue 30; the user chose option A and yes to Farkle).
+
+- [x] `src/ui/panels.js`: `renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts)` takes an optional `opts` `{ target, fmt }`. With a target the chip's total sits in a `.trow` flex row beside a smaller `.tgt` ("/ 100", "/ 10,000"); the `.total` element still holds the plain total; the chip's `aria-label` reads "name: 0 of 100". Without `opts` nothing changes (Shut the Box).
+- [x] `src/ui/views/pig-view.js` passes `{ target: st.options.target }`; `src/ui/views/farkle-view.js` passes `{ target: o.target, fmt }`. `src/ui/theme.css`: `.chip .trow` (wraps, so the target drops under the total on the narrowest phones) and `.chip .tgt`.
+- [x] Logged, not fixed: Farkle's chip total has no thousands separator ("2500") while its target does ("/ 10,000"); the spec kept the total plain so existing checks keep working.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Playwright, with 0 JS errors: for Pig (targets 50, 100, 150; one and two dice; vs Bots, Pass & Play, Solo) at 390x844, 360x740 and 320x640 every chip shows "/ target" and its total and aria label, and nothing overflows a chip or the page; for Farkle (targets 2,500, 5,000, 10,000; vs Bots and Solo) every chip shows "/ 10,000" etc., and a worst case text (a 9950 total with a "+1350 this turn" line) fits at all three sizes (at 320 the target wraps under the total); after a real Pig bank the total is above 0 and the target is unchanged. Screenshots looked at. Neighbors: Pig suite one failure, the same "turn handed to a bot" race logged before; Farkle suite all pass; Shut the Box suite 61 of 62 (the known outdated "games listed" check). Needs a real-device check: how the chips look on the user's phone.
 

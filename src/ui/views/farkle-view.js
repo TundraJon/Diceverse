@@ -98,7 +98,7 @@ export const farkleView = {
     const human = !session.isOver() && !cur.isBot && !ctx.busy;
     const picking = human && phase === 'select';
 
-    renderScoreStrip(ui.scores, view.seats.map((s) => ({ ...s, note: o.entry > 0 && !s.onBoard ? 'not on board' : '' })), view.current, view.turnPoints);
+    renderScoreStrip(ui.scores, view.seats.map((s) => ({ ...s, note: o.entry > 0 && !s.onBoard ? 'not on board' : '' })), view.current, view.turnPoints, undefined, { target: o.target, fmt });
 
     // kept dice (set aside this turn)
     ui.kept.innerHTML = '';
