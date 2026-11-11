@@ -17,7 +17,14 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+**Queue 35: Pig — racing pigs (the user's pick; "all recommendations" for the open points).** Not yet authorized to build.
+
+- Art: the user's FreeSVG pig (a top-down black silhouette, snout at the bottom, curly tail at the top, nostrils and ear lines as light details) converted like the diver (`src/ui/diver.js` style, new module `src/ui/pig-art.js`): body mask in the player's color, the nostrils and ear lines kept dark. Source logged as FreeSVG (CC0).
+- Screen (`src/ui/views/pig-view.js`, `src/ui/theme.css`): a shared winding track (a snake of rows like Deep Dive, drawn with the same path-line approach) with one space per 5 points, so target 50 / 100 / 150 = 10 / 20 / 30 spaces, a number every 25 points (25, 50, ...), the start at the first space and the barn at the end showing the target number. Each player's pig sits at their banked score (spaces = floor(score / 5), the pig between spaces is not shown), several pigs on one space are fanned out a little. The pig faces along the track. The score strip above stays as it is.
+- Turn points: the current player gets a ghost pig (the same shape, see-through, a dashed outline) ahead of their real pig by the turn points (clamped to the barn). A bust: the ghost tumbles into the mud and fades (the real pig stays). Two dice "double ones": the real pig also hops back to the start. A bank: the ghost slides into place and becomes the real pig.
+- No-tell rule: the ghost does not move, tumble or appear until the dice have settled plus 250 ms (`SETTLE_MS`, same as every other result); its test samples the screen during the roll and until 250 ms after the stop.
+- Track must fit at 390, 360, 320 px and 768 px wide without sideways scrolling, with 4 players; the Pig suite and the no-tell check are re-run. Old saves are not affected (the view only draws).
+- Choices made by Claude, per "all recommendations": shared track (not lanes), 5 points per space, the whole pig in the player's color (option A, not a base ring), two-dice Pig works the same. *(Added by Claude. Change before authorizing if wanted: the ghost's look, the 25-point numbers, the barn drawn as a simple 🏠-style shape.)*
 
 ## Build Planner
 
@@ -173,9 +180,6 @@ Claude's recommendation: build the base game first; then add only the hero dice 
 
 ### Planner 18 — Pirate Plunder alternate skins: Monster Hunt and others (idea)
 When Pirate Plunder (Queue 28) is built, the same rules can wear another theme by swapping a small theme table (names, icons, banners). The user chose **Monster Hunt** as the first alternate: each tile is a monster, its number is its hit points, the prizes are 💀 skulls (trophies), the sixth face is the ⚔️ sword that counts 5 and must be kept, your total is your damage, and stealing a top tile is a kill steal. Other themes shown to the user and not chosen: D&D-flavored Thieves' Guild Heist (💰, 🗝️), Potion Brewing (🧪, 🔮), Wizard's Library (✨, 🪄), Necromancer's Crypt (👻, 🕯️); Cook-off (🍖, 🔥), Treasure Hoard (💎, 🗝️), Space Cargo (⭐, 🚀), Bake Sale (🍰, 🥚), Fishing Derby (🐟, 🎣), Gold Rush (🥇, ⛏️), Fossil Dig (🦴, 🖌️), Safari Photo (🦁, 📷), Arcade Tickets (🎟️, 🕹️), Harvest Festival (🥕, 🚜), Arctic Expedition (🐧, 🛷), Trick-or-Treat (🍬, 🎃). Open: whether the skin is a per-game house rule or a global setting; nothing is decided.
-
-### Planner 19 — Pig: racing pigs (idea, design in progress; the user's pick)
-A winding track to a barn that shows the target (this also answers the old "no target shown" complaint). Each player's pig sits at their banked score; the turn points show as a ghost pig dashing ahead, and a 1 sends the ghost tumbling into the mud (the real pig stays). All result-dependent motion follows the no-tell rule (after `SETTLE_MS`). Open questions: (1) pig art: the user supplies a FreeSVG pig (like the diver and sub), or a colored emoji until then; (2) one shared track with colored pigs, or a lane per player *(Added by Claude: shared snake track like Deep Dive, one space = 5 points, so 50 / 100 / 150 = 10 / 20 / 30 spaces, a number every 25)*; (3) two-dice Pig works the same.
 
 ### Planner 20 — Space Salvage: rebuild the ship (idea, design in progress; the user's pick)
 Each player has a wrecked ship that is repaired as they bank salvage (the target 10 / 13 / 15 / 20 = a finished ship); fire dice flash red warning lights on a bust. Open questions: (1) ship art: the user supplies a FreeSVG spaceship silhouette *(Added by Claude: it is drawn as a progress fill from the tail to the nose in the player's color, with the unrepaired part as a dark outline, rather than cut into pieces)*; (2) on a 4-player phone screen four ships are tight *(Added by Claude: your ship large, the others as small ships in a row under the chips)*.
