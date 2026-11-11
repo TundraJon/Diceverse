@@ -146,7 +146,7 @@ function renderMenu() {
   gear.addEventListener('click', openSettings);
   screen.appendChild(gear);
   const hero = el('div', 'hero');
-  hero.append(el('div', 'logo', '🎲'), el('h1', null, 'DICEVERSE'), el('p', null, 'dice companion'));
+  hero.append(el('div', 'logo', '🎲'), el('h1', null, 'DiceVerse'), el('p', null, 'dice companion'));
   screen.appendChild(hero);
 
   GAME_ORDER.forEach((id) => {

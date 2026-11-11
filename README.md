@@ -768,3 +768,13 @@ Space Salvage: rebuild the ship (was Queue 36).
 - [x] `CLAUDE.md` project map: added `src/ui/pig-art.js` and `src/ui/ship-art.js` (and the submarine in `diver.js`).
 
 Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Playwright, 20 checks, 0 failures, 0 JS errors: the first screen (4 ships, the first large, 20 parts each and none built, the large ship about 170 px, unique gradient ids, a different dark color for each seat), parts built = `ceil(total x 20 / target)` at targets 10, 13 and 20, a bust flashes the ship, six layouts (390x844, 360x740, 360x640, 320x640, 1 player, 768x1024: no sideways scroll, the controls on screen, the page no taller than before, which is 1 px over at 844 even without ships), 3 full games (2 players target 10, 4 players target 13, solo) to the end screen and Pass & Play (the large ship follows the player to move). The no-tell check for Space Salvage 8 of 8. Screenshots looked at (390x844 first screen and mid-game, 360x740). Needs a real-device check: the ships' look and size on the user's phone, and how the red alarm and the snap-in feel.
+
+## Build Log 50 (completed)
+
+The title is written "DiceVerse".
+
+- [x] `src/shell/main.js`: the menu title text is `DiceVerse` (was `DICEVERSE`; the gold color, size and letter spacing are unchanged).
+- [x] `src/shell/index.template.html`: the page `<title>` is `DiceVerse` (was `Diceverse`), so the browser tab and the home-screen name match.
+- [x] Not changed: the hosting address and repo name (`Diceverse`), the saved-data keys (`diceverse:`) and `package.json`.
+
+Verification: `preflight` clean; Playwright, 5 checks, 0 failures, 0 JS errors: the menu title text and DOM text are `DiceVerse` (not uppercased by CSS), the page title is `DiceVerse`, no sideways scroll at 390 px; screenshot looked at. Needs a real-device check: none. The home-screen name of an already installed copy may keep the old name until it is reinstalled.
