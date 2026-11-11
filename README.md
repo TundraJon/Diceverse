@@ -26,6 +26,15 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 - Track must fit at 390, 360, 320 px and 768 px wide without sideways scrolling, with 4 players; the Pig suite and the no-tell check are re-run. Old saves are not affected (the view only draws).
 - Choices made by Claude, per "all recommendations": shared track (not lanes), 5 points per space, the whole pig in the player's color (option A, not a base ring), two-dice Pig works the same. *(Added by Claude. Change before authorizing if wanted: the ghost's look, the 25-point numbers, the barn drawn as a simple 🏠-style shape.)*
 
+**Queue 36: Space Salvage — rebuild the ship (the user's pick; "all recommendations" with the changes below).** Not yet authorized to build.
+
+- Art: the user's own 20-part spaceship SVG (made by the user; parts 01 nose to 20 tail) as `src/ui/ship-art.js`, drawn inline per ship with gradient ids made unique per ship (several ships on one page would otherwise share the first ship's colors). User changes to the layout: parts 13 to 20 slide up 65 units so part 13 tucks under part 12 (the way part 07 is), and parts 19 and 20 slide up a further 36 units so part 19 covers about 30% of part 18 (part 20 moves with 19 *(Added by Claude. Change before authorizing if wanted)*). Draw order: parts 1 to 11, 13 to 20, then 12 on top. The view box is recomputed to fit.
+- Player color: the dark gradient fills (`metal-shadow`, the dark panels, windows, engine ellipses, fins, nozzle) are outright the player's color (a dark and a light shade of it), the silver parts stay silver, plus a soft halo in the player's color (a `drop-shadow` on a wrapper, not on the masked art). No colored bar.
+- Parts shown = min(20, ceil(salvage x 20 / target)) from the banked salvage only, so the ship completes exactly at the target (target 10 adds 2 parts per point; 13 and 15 add 1 or 2). Unbuilt parts are drawn as dark see-through ghosts (13% opacity, gray) so the whole ship is always visible. New parts snap in on a bank (about 300 ms).
+- Bust: red warning lights flash on the ship (a red halo flashing twice, about 1.2 s); the parts stay. No-tell rule: nothing appears or changes until the dice settle plus 250 ms; the test samples during the roll and until 250 ms after the stop.
+- Layout (`src/ui/views/salvage-view.js`, `src/ui/theme.css`): your ship about 170 px tall, the other players' ships about 70 px in a row under the score chips (Pass & Play: the current player's ship is the large one); fits at 390, 360, 320 and 768 px with 4 players, the controls stay on screen, no sideways scroll. The score strip stays. Salvage rules, bot and saves are untouched.
+- Mock looked at and approved in chat (blue and orange, 20/20, 10/20 and small sizes).
+
 ## Build Planner
 
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
@@ -180,9 +189,6 @@ Claude's recommendation: build the base game first; then add only the hero dice 
 
 ### Planner 18 — Pirate Plunder alternate skins: Monster Hunt and others (idea)
 When Pirate Plunder (Queue 28) is built, the same rules can wear another theme by swapping a small theme table (names, icons, banners). The user chose **Monster Hunt** as the first alternate: each tile is a monster, its number is its hit points, the prizes are 💀 skulls (trophies), the sixth face is the ⚔️ sword that counts 5 and must be kept, your total is your damage, and stealing a top tile is a kill steal. Other themes shown to the user and not chosen: D&D-flavored Thieves' Guild Heist (💰, 🗝️), Potion Brewing (🧪, 🔮), Wizard's Library (✨, 🪄), Necromancer's Crypt (👻, 🕯️); Cook-off (🍖, 🔥), Treasure Hoard (💎, 🗝️), Space Cargo (⭐, 🚀), Bake Sale (🍰, 🥚), Fishing Derby (🐟, 🎣), Gold Rush (🥇, ⛏️), Fossil Dig (🦴, 🖌️), Safari Photo (🦁, 📷), Arcade Tickets (🎟️, 🕹️), Harvest Festival (🥕, 🚜), Arctic Expedition (🐧, 🛷), Trick-or-Treat (🍬, 🎃). Open: whether the skin is a per-game house rule or a global setting; nothing is decided.
-
-### Planner 20 — Space Salvage: rebuild the ship (idea, design in progress; the user's pick)
-Each player has a wrecked ship that is repaired as they bank salvage (the target 10 / 13 / 15 / 20 = a finished ship); fire dice flash red warning lights on a bust. Open questions: (1) ship art: the user supplies a FreeSVG spaceship silhouette *(Added by Claude: it is drawn as a progress fill from the tail to the nose in the player's color, with the unrepaired part as a dark outline, rather than cut into pieces)*; (2) on a 4-player phone screen four ships are tight *(Added by Claude: your ship large, the others as small ships in a row under the chips)*.
 
 ## Build Log 1 (completed)
 
