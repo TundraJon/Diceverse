@@ -397,3 +397,20 @@ body.fast .cover { transition: none; }
 .dvdice { display: flex; gap: 12px; padding: 4px 4px 4px 0; }
 .dvdice .die { --s: 40px; }
 .controls .quiet { background: rgba(255,255,255,0.1); color: var(--text); }
+
+/* Pig: the racing-pigs track (a pen, a snake of rows of 10 spaces, 5 points a space, the barn at the end) */
+.pgtrack { position: relative; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.28); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.pgpen { align-self: flex-start; min-width: 150px; min-height: 30px; box-sizing: border-box; padding: 4px 8px; border-radius: 8px; background: rgba(251,191,36,0.16); color: #fbbf24; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: flex-start; }
+.pggrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.pgcell { aspect-ratio: 1.25; min-width: 0; border-radius: 6px; background: rgba(120,80,40,0.38); display: grid; place-items: center; position: relative; }
+.pgcell b { color: rgba(253,230,138,0.9); font-size: clamp(8px, 2.5vw, 11px); font-weight: 700; }
+.pgcell.barn { background: rgba(180,71,47,0.35); }
+.pgcell.barn { display: flex; align-items: center; justify-content: center; gap: 1px; }
+.pgcell.barn svg { width: 42%; height: auto; display: block; flex: none; }
+.pgcell.barn b { font-size: clamp(8px, 2.4vw, 10px); color: #fde68a; }
+.pgw { position: absolute; width: 46px; aspect-ratio: 200 / 98; pointer-events: none; transition: left 0.4s ease, top 0.4s ease; }
+.pgw.flip { transform: scaleX(-1); }
+.pgw.pgghost { opacity: 0.5; z-index: 5; }
+.pgw[hidden] { display: none; }
+.pgl { position: absolute; inset: 0; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+.pgfresh .pgw, .pgw.pgnomove { transition: none; }
