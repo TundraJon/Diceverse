@@ -17,7 +17,11 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+**Queue 34: Pirate Plunder tile size and coin layout, and a submarine for Deep Dive.** Not yet authorized to build.
+
+- Pirate Plunder tiles (`src/ui/views/plunder-view.js`, `src/ui/theme.css`): number and coins 1.4x their current size (`.pk b` and `.pk span`, the stack view's `.mini` follows). Coins in a small grid per tile: 1 = one coin; 2 = two in a row; 3 = two on top, the third centered below; 4 = 2 x 2. Tiles must still fit at 390, 360 and 320 px wide.
+- Deep Dive submarine: the user's FreeSVG submarine (black silhouette, three portholes, tower with periscope, propeller and tail fin at the left, faces right) replaces the "SUB" pill at the start of the path, 50 px wide, with "SUB" written on its side. The portholes are see-through. Converted to a transparent PNG like the diver (`src/ui/diver.js` style, new data in its own module); `drawLine` must keep starting at the sub. *(Added by Claude. Change before authorizing if wanted: black or dark navy hull; the "SUB" text white on the hull.)*
+- Divers shrink a little to make room *(the user said "might have to shrink the divers a little"; the exact size is open, see the question in the chat).*
 
 ## Build Planner
 
