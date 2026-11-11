@@ -2,6 +2,7 @@
 import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
+import { shipSvg } from '../ship-art.js';
 import { dangerChance, binCounts, CREW_TYPES } from '../../games/salvage.js';
 
 const el = (tag, cls, text) => {
@@ -27,6 +28,33 @@ const TABLE = {
 };
 const symbolsOf = (type) => TABLE[type].map((c) => SYM[c]);
 const bodyOf = (type) => (CREW_TYPES.includes(type) ? 'crew' : type);
+
+const SHIP_PARTS = 20;
+const partsBuilt = (total, target) => Math.min(SHIP_PARTS, Math.ceil((total * SHIP_PARTS) / target)); // the ship is complete exactly at the target
+
+// The fleet: your ship large, the others small beside it (Pass & Play: the player to move is the large one). Sizes are
+// chosen from the room between the last line of the screen and the buttons, so the controls never leave the screen.
+function fitFleet(ui, reset) {
+  if (!ui.fleet || !ui.fleet.childElementCount) return;
+  const f = ui.fleet;
+  if (reset) ui.fleetMax = null;
+  f.hidden = false;
+  f.style.setProperty('--lg', '0px');
+  f.style.setProperty('--sm', '0px');
+  // the danger meter comes and goes; keep room for it so the ships do not change size every turn
+  const reserve = ui.meter.hidden ? 54 : 0;
+  const free = ui.controls.getBoundingClientRect().top - ui.hint.getBoundingClientRect().bottom - 16 - reserve;
+  const many = f.childElementCount > 1;
+  const sm = many && free >= 200 ? 66 : 0;
+  let lg = Math.min(170, free - (sm ? sm + 8 : 0));
+  if (ui.fleetMax != null) lg = Math.min(lg, ui.fleetMax); // it only ever gets smaller (until the screen is resized)
+  ui.fleetMax = lg;
+  f.hidden = lg < 48;
+  f.classList.toggle('nosmall', !sm);
+  f.style.setProperty('--lg', `${Math.max(0, lg)}px`);
+  f.style.setProperty('--sm', `${sm}px`);
+}
+
 
 export const salvageView = {
   title: 'SPACE SALVAGE',
@@ -92,7 +120,10 @@ export const salvageView = {
     ui.hint = el('div', 'hint');
     const stage = el('div', 'salvstage');
     stage.append(ui.dice, ui.banner);
-    ui.table.append(ui.chips, stage, ui.boxes, ui.binline, ui.badges, ui.meter, ui.hint);
+    ui.fleet = el('div', 'fleet');
+    ui.shipN = {}; // parts shown the last time, so only new parts animate in
+    ui.table.append(ui.chips, ui.fleet, stage, ui.boxes, ui.binline, ui.badges, ui.meter, ui.hint);
+    window.addEventListener('resize', () => fitFleet(ui, true));
   },
 
   render(ui, view, session, ctx) {
@@ -175,6 +206,26 @@ export const salvageView = {
         : phase === 'decide' ? 'Stow the haul or roll again'
           : 'Roll the three dice');
 
+    // the fleet: every player's ship, one part per share of the target in the hold
+    const target = st.options.target;
+    const big = (() => { const k = view.seats.findIndex((x) => x.me); return k >= 0 ? k : view.current; })();
+    const order = [big].concat(view.seats.map((_, i) => i).filter((i) => i !== big));
+    ui.fleet.innerHTML = '';
+    order.forEach((i, k) => {
+      const built = partsBuilt(view.seats[i].total, target);
+      const before = ui.shipN[i];
+      const fresh = before !== undefined && built > before ? before + 1 : 0;
+      ui.shipN[i] = built;
+      const w = el('div', `shipw ${k === 0 ? 'big' : 'small'}`);
+      w.style.setProperty('--glow', colorOf(view, i));
+      w.innerHTML = shipSvg(`s${i}`, colorOf(view, i), built, fresh);
+      w.setAttribute('role', 'img');
+      w.setAttribute('aria-label', `${view.seats[i].name}'s ship: ${built} of ${SHIP_PARTS} parts built`);
+      if (view.alarm === i) w.classList.add('alarm'); // a bust: red warning lights
+      ui.fleet.appendChild(w);
+    });
+    view.alarm = null;
+
     // controls
     const bankLabel = `STOW ${view.points}`;
     renderTurnBar(ui.controls, phase === 'decide' || view.points > 0 || view.rolled.length
@@ -183,6 +234,7 @@ export const salvageView = {
         { label: bankLabel, cls: 'btn-bank', disabled: !human || phase !== 'decide', onClick: () => ctx.act([{ type: 'BANK' }]) },
       ]
       : [{ label: 'ROLL', cls: 'btn-roll span2', disabled: !human || over, onClick: () => ctx.act([{ type: 'ROLL' }]) }]);
+    fitFleet(ui);
   },
 
   reduce(view, ev, ctx) {
@@ -216,6 +268,7 @@ export const salvageView = {
         break;
       case 'BUSTED':
         view.points = 0;
+        view.alarm = ev.seat;
         view.banner = { text: 'Hold sealed. Reel her in!' };
         ctx.log(`${name(ev.seat)} was reeled in and lost ${ev.lost}`);
         ctx.announce(`${name(ev.seat)} was reeled in and lost the haul`);
