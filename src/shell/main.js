@@ -608,7 +608,7 @@ function showGameOver() {
   const winners = res.winners || (res.winner !== null && res.winner !== undefined ? [res.winner] : []);
   const optSeats = session.options.seats || [];
   const names = winners.map((i) => st.seats[i].name);
-  const winText = winners.length > 1 ? `It's a tie: ${names.join(' and ')}` : `${names[0]} ${isMe(optSeats[winners[0]]) ? 'win' : 'wins'}`;
+  const winText = winners.length > 1 ? `It's a tie: ${names.join(' and ')}` : `${names[0]} ${isMe(optSeats[winners[0]]) && names[0] === 'You' ? 'win' : 'wins'}`;
   announce(solo ? soloTitle : winText);
   openSheet((sheet, close) => {
     sheet.appendChild(el('h2', null, solo ? soloTitle : winners.length > 1 ? `\u{1F91D} ${winText}` : `\u{1F3C6} ${winText}!`));

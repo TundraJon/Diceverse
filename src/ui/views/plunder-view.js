@@ -187,7 +187,7 @@ export const plunderView = {
 
     // the dice you rolled: tap one to keep all the dice of that face
     ui.rollTray.innerHTML = '';
-    ui.rollTray.appendChild(el('h4', null, picking ? 'Rolled: tap a number to keep all of those dice' : 'Rolled'));
+    ui.rollTray.appendChild(el('h4', null, 'Rolled'));
     ui.dice = el('div', 'dice pkdice');
     free.forEach((d) => {
       const taken = !ctx.busy && d.face > 0 && view.kept.includes(d.face); // shown only after the dice have settled

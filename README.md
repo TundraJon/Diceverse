@@ -737,3 +737,12 @@ Pirate Plunder tiles 1.4x with a coin grid; Deep Dive submarine picture and smal
 - [x] Divers shrink (the user's pick C): board token 150% to 120% of a chip wide, the one on the sub 46 px to 37 px.
 
 Verification: `preflight` clean. Plunder: tile content stays inside every tile at 390, 360 and 320 px wide (16 tiles each; tiles 41 x 53, 38 x 48, 33 x 42 px; no sideways scroll), the coin positions measured per layout (1, 2 in a row, 3 = two over one centered, 4 = 2 x 2), screenshot at 320 looked at; the Plunder suite 180 of 180. Deep Dive: sub measures 50 x 37 px, yellow, mask set, diver on the sub 37 px, line still starts at the sub, screenshots at 390 and 320 looked at, 0 JS errors; the Deep Dive UI suite 76 of 76. Needs a real-device check: how readable the 1.4x coins are and how the sub and smaller divers look on the user's phone.
+
+## Build Log 47 (completed)
+
+Two wording fixes from the user: the duplicate Pirate Plunder instruction and "Jon win!" on the winner screen.
+
+- [x] `src/ui/views/plunder-view.js`: the "Rolled" tray title is always just "Rolled" (it said "Rolled: tap a number to keep all of those dice" while picking, repeating the info line under the dice, which keeps "Tap a number to keep all of those dice" and the "Keeping ..." text). The user's pick A.
+- [x] `src/shell/main.js` (end-of-game text): "win" is used only when the winner is the human seat and the name is exactly "You"; any other name gets "wins" ("Jon wins!", bots as before). The cause: the human seat is "me" even with a custom name, and "me" chose "win". This is shared by every game and also the screen-reader announcement. The user's pick A.
+
+Verification: both reproduced first (Plunder: tray title and info line read the same; winner text "Jon win!" read from the code: seat is me, name "Jon"). After: Plunder tray titles are "Kept..." and "Rolled", the info line unchanged; 28 full Deep Dive games vs a bot with the name "Jon" and with "You": the human's wins read "Jon wins!" (12 of 14) and "You win!" (11 of 14), the bot's wins read "<Bot> wins!", 0 JS errors. Not run: the other seven games (same shared code path). Needs a real-device check: none.
