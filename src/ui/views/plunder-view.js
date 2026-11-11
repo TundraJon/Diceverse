@@ -165,7 +165,7 @@ export const plunderView = {
       const isOpt = sv === 'mid' && midOpts.some((x) => x.tile === n);
       const tile = el('div', 'pk' + (sv === 'down' ? ' down' : sv === 'mid' ? '' : ' gone') + (isOpt ? ' opt' : '') + (chosen && chosen.tile === n ? ' hot' : ''));
       if (sv === 'mid') {
-        tile.append(el('b', null, String(n)), el('span', null, THEME.coin.repeat(coinsOf(n))));
+        tile.append(el('b', null, String(n)), (() => { const cg = el('span', 'g' + coinsOf(n)); for (let k = 0; k < coinsOf(n); k++) cg.appendChild(el('i', null, THEME.coin)); return cg; })());
         tile.setAttribute('role', isOpt ? 'button' : 'img');
         tile.setAttribute('aria-label', `Tile ${n}, ${coinsOf(n)} coin${coinsOf(n) === 1 ? '' : 's'}${isOpt ? ', you can take it' : ''}`);
         if (isOpt) { tile.tabIndex = 0; tile.addEventListener('click', () => { view.pick = n; this.render(ui, view, session, ctx); }); }

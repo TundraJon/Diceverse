@@ -17,11 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-**Queue 34: Pirate Plunder tile size and coin layout, and a submarine for Deep Dive.** Not yet authorized to build.
-
-- Pirate Plunder tiles (`src/ui/views/plunder-view.js`, `src/ui/theme.css`): number and coins 1.4x their current size (`.pk b` and `.pk span`, the stack view's `.mini` follows). Coins in a small grid per tile: 1 = one coin; 2 = two in a row; 3 = two on top, the third centered below; 4 = 2 x 2. Tiles must still fit at 390, 360 and 320 px wide.
-- Deep Dive submarine: the user's FreeSVG submarine (black silhouette, three portholes, tower with periscope, propeller and tail fin at the left, faces right) replaces the "SUB" pill at the start of the path, 50 px wide, with "SUB" written on its side. The portholes are see-through. Converted to a transparent PNG like the diver (`src/ui/diver.js` style, new data in its own module); `drawLine` must keep starting at the sub. *(Added by Claude. Change before authorizing if wanted: black or dark navy hull; the "SUB" text white on the hull.)*
-- Divers shrink a little to make room *(the user said "might have to shrink the divers a little"; the exact size is open, see the question in the chat).*
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -731,3 +727,13 @@ Deep Dive: the diver's player-color gear drew below the black-and-white diver (b
 - [x] `src/ui/views/dive-view.js`: the four diver layers now use the classes `dv-outline`, `dv-skin`, `dv-body`, `dv-gear` (in `diver()` and in the mask CSS of `ensureDiverCss`). No other code touched.
 
 Verification: before the fix the layer measurements above; after, all four layers measure 18.8 px at the same top, in the SUB pill and on the board. Zoomed screenshots at 4x of the diver on the board look right (blue fins and tank on the diver). Deep Dive UI suite 76 of 76, 0 JS errors (its two selectors for the layers updated). Needs a real-device check: none beyond Build Log 44's.
+
+## Build Log 46 (completed)
+
+Pirate Plunder tiles 1.4x with a coin grid; Deep Dive submarine picture and smaller divers (was Queue 34).
+
+- [x] `src/ui/theme.css` / `src/ui/views/plunder-view.js`: tile number `clamp(16.8px, 5.32vw, 21px)` and coins `clamp(8.4px, 2.8vw, 11.2px)` (1.4x the old sizes); the coins are now one `<i>` per coin in a grid (`span.g1` to `span.g4`): 1 = one, 2 = two in a row, 3 = two over one centered (`i:nth-child(3)` spans both columns), 4 = 2 x 2. Not changed: the stack view's `.stackp .mini` text (the queue note said it "follows"; I left it alone since it is a line of text, not a tile; say if you want it bigger).
+- [x] `src/ui/diver.js` (`SUBMARINE`, 240 x 178 PNG mask, 7.8 KB) and `src/ui/views/dive-view.js` / `theme.css`: the user's FreeSVG submarine (public domain), converted from the picture to a transparent mask with the three portholes as holes, drawn in yellow `#fbbf24` at 50 px wide, replaces the "SUB" pill (`.subpill` removed; `.subimg`, `role="img"`, `aria-label="Submarine"`; no text on it, the user's pick C). `drawLine` starts at `.subimg`. The user chose yellow over navy: navy was nearly invisible on the dark board in the mock.
+- [x] Divers shrink (the user's pick C): board token 150% to 120% of a chip wide, the one on the sub 46 px to 37 px.
+
+Verification: `preflight` clean. Plunder: tile content stays inside every tile at 390, 360 and 320 px wide (16 tiles each; tiles 41 x 53, 38 x 48, 33 x 42 px; no sideways scroll), the coin positions measured per layout (1, 2 in a row, 3 = two over one centered, 4 = 2 x 2), screenshot at 320 looked at; the Plunder suite 180 of 180. Deep Dive: sub measures 50 x 37 px, yellow, mask set, diver on the sub 37 px, line still starts at the sub, screenshots at 390 and 320 looked at, 0 JS errors; the Deep Dive UI suite 76 of 76. Needs a real-device check: how readable the 1.4x coins are and how the sub and smaller divers look on the user's phone.

@@ -337,8 +337,11 @@ body.fast .cover { transition: none; }
 .pkstage .banner { top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; z-index: 4; }
 .pkrow { display: grid; grid-template-columns: repeat(var(--cols, 8), 1fr); gap: 4px; width: 100%; }
 .pk { aspect-ratio: 5 / 6.4; border-radius: 7px; background: linear-gradient(160deg, #ffffff, #e6ebef); color: #1f2937; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; box-shadow: 0 1px 3px rgba(0,0,0,0.5); min-width: 0; }
-.pk b { font-size: clamp(12px, 3.8vw, 15px); line-height: 1; }
-.pk span { font-size: clamp(6px, 2vw, 8px); line-height: 1; min-height: 9px; white-space: nowrap; }
+.pk b { font-size: clamp(16.8px, 5.32vw, 21px); line-height: 1; }
+.pk span { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; font-size: clamp(8.4px, 2.8vw, 11.2px); line-height: 1; min-height: 11px; white-space: nowrap; }
+.pk span.g1 { grid-template-columns: auto; }
+.pk span.g3 i:nth-child(3) { grid-column: 1 / span 2; justify-self: center; }
+.pk span i { font-style: normal; }
 .pk.gone { background: none; border: 1px dashed rgba(255,255,255,0.18); box-shadow: none; }
 .pk.down { background: linear-gradient(160deg, #3b4a45, #26332f); box-shadow: none; }
 .pk.opt { outline: 2px dashed rgba(251,191,36,0.9); outline-offset: 1px; cursor: pointer; }
@@ -369,7 +372,8 @@ body.fast .cover { transition: none; }
 .pathsvgwrap { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 .pathsvg { display: block; }
 .subb { position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 34px; }
-.subpill { background: #fbbf24; color: #3a2410; border-radius: 10px; padding: 4px 10px; font-weight: 800; font-size: 0.8rem; }
+/* the submarine: a yellow mask picture, 50 px wide (the picture is 240 x 178) */
+.subimg { display: inline-block; width: 50px; aspect-ratio: 240 / 178; background: #fbbf24; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
 .chr { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; border-radius: 8px; }
 .chr.r0 { background: rgba(125,211,252,0.20); }
 .chr.r1 { background: rgba(56,189,248,0.14); }
@@ -378,9 +382,9 @@ body.fast .cover { transition: none; }
 .ch { position: relative; aspect-ratio: 1; border-radius: 8px; background: rgba(255,255,255,0.06); display: grid; place-items: center; min-width: 0; }
 .ch b { display: grid; place-items: center; width: 84%; height: 84%; color: #1f2937; font-size: clamp(8px, 2.6vw, 11px); }
 .ch.blank { border: 1px dashed rgba(255,255,255,0.35); background: rgba(6,32,46,0.6); }
-.dvw { position: absolute; left: 50%; top: 50%; width: 150%; aspect-ratio: 272 / 111; transform: translate(-50%, -50%); z-index: 3; pointer-events: none; }
+.dvw { position: absolute; left: 50%; top: 50%; width: 120%; aspect-ratio: 272 / 111; transform: translate(-50%, -50%); z-index: 3; pointer-events: none; }
 .dvw.flip { transform: translate(-50%, -50%) scaleX(-1); }
-.dvw.insub { position: relative; left: auto; top: auto; width: 46px; transform: none; display: inline-block; }
+.dvw.insub { position: relative; left: auto; top: auto; width: 37px; transform: none; display: inline-block; }
 .dvw.insub.back { opacity: 0.85; }
 .dvl { position: absolute; inset: 0; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
 .divestatus .srow { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; }

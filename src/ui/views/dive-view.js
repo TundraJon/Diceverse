@@ -1,7 +1,7 @@
 // Deep Dive view: the air, the line of chips as a snake with a path line and depth bands, the divers, the dice and the choices.
 import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { statusOverride } from '../avatars.js';
-import { DIVER } from '../diver.js';
+import { DIVER, SUBMARINE } from '../diver.js';
 import { points, pipsOf, canTurnBack } from '../../games/dive.js';
 
 // All the theme words live here so another skin is a small change.
@@ -38,7 +38,7 @@ function ensureDiverCss() {
   if (document.getElementById('dive-diver-css')) return;
   const st = document.createElement('style');
   st.id = 'dive-diver-css';
-  st.textContent = ['outline', 'skin', 'body', 'gear'].map((k) => `.dvl.dv-${k}{-webkit-mask-image:url("${DIVER[k]}");mask-image:url("${DIVER[k]}")}`).join('\n');
+  st.textContent = ['outline', 'skin', 'body', 'gear'].map((k) => `.dvl.dv-${k}{-webkit-mask-image:url("${DIVER[k]}");mask-image:url("${DIVER[k]}")}`).join('\n') + `\n.subimg{-webkit-mask-image:url("${SUBMARINE.mask}");mask-image:url("${SUBMARINE.mask}")}`;
   document.head.appendChild(st);
 }
 
@@ -64,7 +64,7 @@ function drawLine(ui) {
   const svg = pa && pa.querySelector('.pathsvg');
   if (!svg) return;
   const pr = pa.getBoundingClientRect();
-  const sub = pa.querySelector('.subpill');
+  const sub = pa.querySelector('.subimg');
   const cells = [...pa.querySelectorAll('.ch')].sort((a, b) => a.dataset.i - b.dataset.i);
   if (!pr.width || !cells.length) return;
   const c = (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2 - pr.left, r.top + r.height / 2 - pr.top]; };
@@ -179,7 +179,10 @@ export const diveView = {
     ui.path.innerHTML = '';
     ui.path.appendChild(el('div', 'pathsvgwrap')).appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg')).setAttribute('class', 'pathsvg');
     const subb = el('div', 'subb');
-    subb.appendChild(el('span', 'subpill', '⛴ SUB'));
+    const subimg = el('span', 'subimg');
+    subimg.setAttribute('role', 'img');
+    subimg.setAttribute('aria-label', 'Submarine');
+    subb.appendChild(subimg);
     view.divers.forEach((d, i) => { if (d.pos === 0) subb.appendChild(diver(colorOf(view, i), skinOf(view.seats[i].face), false, `${view.seats[i].name}${d.back ? ' is back on board' : ' is on the sub'}`, d.back ? 'insub back' : 'insub')); });
     ui.path.appendChild(subb);
     const n = view.line.length;
