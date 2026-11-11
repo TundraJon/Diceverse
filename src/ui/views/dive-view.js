@@ -38,7 +38,7 @@ function ensureDiverCss() {
   if (document.getElementById('dive-diver-css')) return;
   const st = document.createElement('style');
   st.id = 'dive-diver-css';
-  st.textContent = ['outline', 'skin', 'body', 'gear'].map((k) => `.dvl.${k}{-webkit-mask-image:url("${DIVER[k]}");mask-image:url("${DIVER[k]}")}`).join('\n');
+  st.textContent = ['outline', 'skin', 'body', 'gear'].map((k) => `.dvl.dv-${k}{-webkit-mask-image:url("${DIVER[k]}");mask-image:url("${DIVER[k]}")}`).join('\n');
   document.head.appendChild(st);
 }
 
@@ -46,7 +46,7 @@ function ensureDiverCss() {
 function diver(color, skin, left, label, cls) {
   const w = el('span', `dvw${cls ? ' ' + cls : ''}${left ? ' flip' : ''}`);
   [['outline', '#fff'], ['skin', skin], ['body', '#0b1220'], ['gear', color]].forEach(([k, bg]) => {
-    const l = el('span', `dvl ${k}`);
+    const l = el('span', `dvl dv-${k}`);
     l.style.background = bg;
     w.appendChild(l);
   });
