@@ -5,5 +5,6 @@ import { shutboxView } from './shutbox-view.js';
 import { cliffhangerView } from './cliffhanger-view.js';
 import { salvageView } from './salvage-view.js';
 import { plunderView } from './plunder-view.js';
+import { diveView } from './dive-view.js';
 
-export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView };
+export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView };
