@@ -17,7 +17,14 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+**Queue 37: Pig track: pigs under the dice, pigs walk the trail, a dirt trail instead of squares.** Not yet authorized to build.
+
+- Layers (`src/ui/theme.css`): the pigs and the ghost sit below the flying dice (dice are z-index 3, the pigs now 4 to 6); the pigs get a z-index under the dice (the track's own order stays).
+- Trail (`src/ui/views/pig-view.js`, `src/ui/theme.css`): the grid of squares is replaced by one dirt trail drawn as an SVG path through the space centers (a snake of rows of 10 as now, rounded bends at the row ends, a darker brown edge, a lighter brown fill), no dashed center line. One darker brown dot (a stone) at each space center (the spaces keep the same positions, so a pig still stands on `floor(total / 5)`). Signposts (small wooden boards) at 25, 50, 75 and so on beside the trail instead of numbers on squares. The path and the dots are redrawn on resize (the ResizeObserver already there).
+- Pigs walk the trail: a pig that moves goes space by space along the path (around the bends, down to the next row), about 0.12 s per space, with the whole walk capped at about 1.2 s; going back to the pen (the double-ones reset) walks back the same way (also capped). The first move out of the pen leaves through a gate (a small gate drawn on the pen's exit onto the first space) and then follows the trail. The ghost walks the same way when it moves ahead; on a bust it still tumbles where it stands. Pigs still face the direction of travel.
+- Barn: a bit larger than now (about 1.5x) at the end of the trail, with the target number on one side of the central door (not under it).
+- Not changed: the rules, the score chips, the 5-points-per-space scale, the no-tell timing (the pig only moves after the dice settle plus 250 ms), the pig art.
+- Choices made by Claude. *(Added by Claude. Change before authorizing if wanted: the 0.12 s per space and the 1.2 s cap; the gate on the pen's exit; the stone dots as small as about 4 px; the signposts beside the trail.)*
 
 ## Build Planner
 
