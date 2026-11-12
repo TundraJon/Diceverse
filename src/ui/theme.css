@@ -433,7 +433,7 @@ body.fast .cover { transition: none; }
 .pgw.pgwalk { transition: none; }
 
 /* Liar's Dice: the Bidding Track board, the players' dice and cups in the middle, your cup, the face buttons and the reveal */
-.ldwrap { justify-content: flex-start; gap: 6px; }
+.ldwrap { justify-content: flex-start; gap: 6px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; } /* holding PEEK must not select the words around it */
 .ldboard { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); gap: 3px; width: 100%; }
 .ldsq { position: relative; aspect-ratio: 1; min-width: 0; padding: 0; border: 0; border-radius: 6px; background: linear-gradient(160deg, #fff, #dfe6ec); color: #1f2937; font-weight: 800; font-size: clamp(9px, 3vw, 13px); display: grid; place-items: center; }
 .ldsq.w { background: linear-gradient(160deg, #fde68a, #e0a82e); color: #3a2410; }
@@ -479,15 +479,15 @@ body.fast .cover { transition: none; }
 .ldface .die { --s: 28px; }
 .ldface.sel { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.4); }
 .ldface:disabled { opacity: 0.4; }
-.ldfhint { flex-basis: 100%; text-align: center; color: var(--muted); font-size: 0.75rem; min-height: 1em; }
+.ldfhint { flex-basis: 100%; text-align: center; color: var(--muted); font-size: 0.75rem; line-height: 15px; min-height: 15px; }
 .ldmine { display: flex; justify-content: center; min-height: 40px; }
-.ldyou { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 190px; }
+.ldyou { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 214px; }
 .ldpeek { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 4px 14px; border-radius: 14px; border: 2px solid var(--gold); background: rgba(251,191,36,0.12); color: var(--gold); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; white-space: nowrap; }
 .ldpeek.on { background: var(--gold); color: #1f2937; }
 .ldpeek:disabled { opacity: 0.5; }
 .ldcupbig { display: inline-block; width: 26px; height: 22px; clip-path: polygon(15% 0, 85% 0, 100% 100%, 0 100%); background: currentColor; }
-.ldhand { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: 32px; }
-.ldhand .die { --s: 26px; }
+.ldhand { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: 34px; }
+.ldhand .die { --s: 32px; }
 .ldhand.shake .die { animation: ldshake 0.4s ease-in-out 5; }
 .ldhand.shake .die:nth-child(2n) { animation-delay: -0.13s; animation-direction: reverse; }
 .ldhand.shake .die:nth-child(3n) { animation-delay: -0.27s; }

@@ -119,6 +119,7 @@ export const liarsView = {
 
   build(ui) {
     ui.table.classList.add('ldwrap');
+    ui.table.addEventListener('contextmenu', (e) => e.preventDefault()); // no long-press menu on the playing screen
     ui.scores.hidden = true;
     ui.chips = el('div', 'climbchips');
     ui.banner = el('div', 'banner ldbanner');
