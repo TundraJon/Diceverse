@@ -591,7 +591,8 @@ function afterEvents() {
   const seed = (base ^ (session.log.length * 7919) ^ (seat * 104729)) >>> 0;
   const d = decide(G.mod, obs, seat, cur.preset, seed);
   const closeness = d.margin === null ? 0.3 : 1 - Math.min(1, Math.abs(d.margin) / 5);
-  sched.after(reduced() ? 300 : thinkMs(closeness), () => doActions(d.actions, 0));
+  const hold = G.view.holdMs ? G.view.holdMs(view) : 0; // a screen may ask a bot to wait (Liar's Dice: the cups are still shaking)
+  sched.after(Math.max(reduced() ? 300 : thinkMs(closeness), hold), () => doActions(d.actions, 0));
 }
 
 function showGameOver() {

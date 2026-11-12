@@ -1,6 +1,6 @@
 // Liar's Dice view: the Bidding Track board (30 squares round the edge), the players' dice columns and cups in the middle, your
 // cup (hold to peek), the face buttons, and the challenge reveal. All theme words live in THEME.
-import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
+import { renderDie, REVEAL_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { describeSpace, spaceOf, bidText, faces, legalActions as rulesLegal } from '../../games/liars.js';
@@ -23,6 +23,8 @@ const el = (tag, cls, text) => {
   return e;
 };
 const isFast = () => document.body.classList.contains('fast');
+const SHAKE_MS = 2000; // how long the cups shake at the start of a round (more than the 1.25 s the no-tell rule asks for)
+const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // ---- the ring: position 0 to 29 on the board, clockwise from the top left (10 columns x 7 rows) ----
 const COLS = 10;
@@ -85,11 +87,11 @@ export const liarsView = {
 
   init(session) {
     const v = this.sync(null, session);
-    v.shakeUntil = performance.now() + (isFast() ? 0 : SETTLE_MS); // the first round's cups shake for a moment
+    v.shakeUntil = performance.now() + (isFast() ? 0 : reducedMotion() ? REVEAL_MS : SHAKE_MS); // the first round's cups shake too
     return v;
   },
 
-  sync(_view, session) {
+  sync(prev, session) {
     const st = session.state;
     const humans = st.seats.filter((s) => !s.isBot).length;
     return {
@@ -101,7 +103,7 @@ export const liarsView = {
       hands: st.hands.map((h) => h.slice()),
       wild: st.options.wild,
       shaking: false,
-      shakeUntil: 0,
+      shakeUntil: prev && prev.shakeUntil ? prev.shakeUntil : 0, // a re-sync in the middle of the first shake keeps it
       staged: null,
       peeking: false,
       cover: humans > 1 && !st.seats[st.current].isBot,
@@ -111,6 +113,9 @@ export const liarsView = {
       opener: st.current,
     };
   },
+
+  // How long a bot must still wait before it acts: the cups are shaking (the shell uses the longer of this and its thinking time).
+  holdMs(view) { return Math.max(0, (view.shakeUntil || 0) - performance.now()); },
 
   build(ui) {
     ui.table.classList.add('ldwrap');
@@ -319,13 +324,14 @@ export const liarsView = {
       ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => peek.addEventListener(n, () => on(false)));
       peek.addEventListener('contextmenu', (e) => e.preventDefault());
       peek.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); on(!view.peeking); } });
-      ui.mine.appendChild(peek);
       const dice = el('div', 'ldhand' + (shaking ? ' shake' : ''));
       hand.forEach((v) => {
         if (view.peeking && !shaking) dice.appendChild(renderDie(v, { danger: false }));
         else dice.appendChild(renderDie(null, { danger: false }));
       });
-      ui.mine.appendChild(dice);
+      const box = el('div', 'ldyou'); // the dice and the button that peeks at them: one fixed box, so nothing moves when you peek
+      box.append(dice, peek);
+      ui.mine.appendChild(box);
     }
 
     // pass & play: nobody else's turn is shown until the next player takes the device
@@ -402,7 +408,7 @@ export const liarsView = {
         view.peeking = false;
         view.shaking = true; // the cups shake; nothing about the new dice shows until they have settled
         view.banner = null;
-        delay = ctx.reduced ? REVEAL_MS : SETTLE_MS;
+        delay = ctx.reduced ? REVEAL_MS : SHAKE_MS;
         break;
       case 'TURN_STARTED':
         view.current = ev.seat;
