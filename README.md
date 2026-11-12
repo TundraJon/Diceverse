@@ -17,14 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-**Queue 37: Pig track: pigs under the dice, pigs walk the trail, a dirt trail instead of squares.** Not yet authorized to build.
-
-- Layers (`src/ui/theme.css`): the pigs and the ghost sit below the flying dice (dice are z-index 3, the pigs now 4 to 6); the pigs get a z-index under the dice (the track's own order stays).
-- Trail (`src/ui/views/pig-view.js`, `src/ui/theme.css`): the grid of squares is replaced by one dirt trail drawn as an SVG path through the space centers (a snake of rows of 10 as now, rounded bends at the row ends, a darker brown edge, a lighter brown fill), no dashed center line. One darker brown dot (a stone) at each space center (the spaces keep the same positions, so a pig still stands on `floor(total / 5)`). Signposts (small wooden boards) at 25, 50, 75 and so on beside the trail instead of numbers on squares. The path and the dots are redrawn on resize (the ResizeObserver already there).
-- Pigs walk the trail: a pig that moves goes space by space along the path (around the bends, down to the next row), about 0.12 s per space, with the whole walk capped at about 1.2 s; going back to the pen (the double-ones reset) walks back the same way (also capped). The first move out of the pen leaves through a gate (a small gate drawn on the pen's exit onto the first space) and then follows the trail. The ghost walks the same way when it moves ahead; on a bust it still tumbles where it stands. Pigs still face the direction of travel.
-- Barn: a bit larger than now (about 1.5x) at the end of the trail, with the target number on one side of the central door (not under it).
-- Not changed: the rules, the score chips, the 5-points-per-space scale, the no-tell timing (the pig only moves after the dice settle plus 250 ms), the pig art.
-- Choices made by Claude. *(Added by Claude. Change before authorizing if wanted: the 0.12 s per space and the 1.2 s cap; the gate on the pen's exit; the stone dots as small as about 4 px; the signposts beside the trail.)*
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -785,3 +778,14 @@ The title is written "DiceVerse".
 - [x] Not changed: the hosting address and repo name (`Diceverse`), the saved-data keys (`diceverse:`) and `package.json`.
 
 Verification: `preflight` clean; Playwright, 5 checks, 0 failures, 0 JS errors: the menu title text and DOM text are `DiceVerse` (not uppercased by CSS), the page title is `DiceVerse`, no sideways scroll at 390 px; screenshot looked at. Needs a real-device check: none. The home-screen name of an already installed copy may keep the old name until it is reinstalled.
+
+## Build Log 51 (completed)
+
+Pig track: a dirt trail, pigs that walk it, and the pigs under the dice (was Queue 37).
+
+- [x] `src/ui/views/pig-view.js`, `src/ui/theme.css`: the grid of squares is gone. One dirt trail (an SVG path, `drawTrail`) runs through the space centers as a snake of rows with rounded bends (dark brown edge, brown fill, no dashed line), a darker stone dot at every space center except the barn, signposts at 25, 50, 75 ... in the gap under their row (pulled in from the bends), a small gate (two posts and an open leaf) where the pen opens onto the trail, and the barn at the end, about 1.5 x its old size (52 x 38 px) with the target on the left of the central door. The cells stay as an invisible grid for the positions; the track has more side padding (16 px) so the bends fit, and 10 px between rows.
+- [x] Walking (`walkPoints`, `walk` inside `placePigs`): a pig whose space changed walks the trail space by space (out of the pen through the gate, around the bend points), 0.12 s per space with the whole walk capped at 1.2 s, with the pig turned to its direction of travel; the same walk backwards for the double-ones reset. The ghost starts on its pig's space and walks ahead the same way. No walking (a plain jump, as before) with reduced motion, in the fast test mode (`?speed=0`) and when a resize redraws the track. A bust still makes the ghost tumble where it stands.
+- [x] Layers: `.pgtrack` is now `isolation: isolate`, so the pigs, the ghost and the trail always paint beneath anything in front of the track (the flying dice, `z-index: 3`). I could not make the old build show a die under a pig in a test (the dice never overlapped a pig in my 2-player runs), so this fix rests on the code reading (pig `z-index` 4 to 6 against the die's 3); if the user still sees something odd, ask what exactly they see.
+- [x] Cleanup my own change made obsolete: the barn and number cells (`.pgcell.barn`, `.pgcell b`) are removed from the CSS and the markup.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Playwright, 31 checks, 0 failures, 0 JS errors: the first screen (20 spaces for target 100, all pigs in the pen, the barn and signposts drawn as 25 / 50 / 75 / 100, 19 stones), the ghost and bank behavior (the ghost on `floor((total + turn) / 5)` after the walk, gone after BANK, the pig on `floor(total / 5)`), the bust tumble, 12 layouts (390x844, 360x740, 320x640, 768x1024; targets 50 / 100 / 150; pigs inside the track, no sideways scroll, controls on screen), 3 full games, and a solo real-speed game sampled on every animation frame (2,788 samples of the pigs and the ghost, going around the bend from space 10 to 11): 0 samples off the trail or the pen (`isPointInStroke` on the trail path). A die placed over a pig paints above it (probe) and the track is an isolated stacking context. The no-tell check for Pig 8 of 8. Screenshots looked at (390 and 320 wide). Needs a real-device check: how the walk and the gate look and feel, the signposts' size, whether the layer problem the user saw is really gone, and whether the barn text is readable.

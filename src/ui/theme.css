@@ -399,15 +399,10 @@ body.fast .cover { transition: none; }
 .controls .quiet { background: rgba(255,255,255,0.1); color: var(--text); }
 
 /* Pig: the racing-pigs track (a pen, a snake of rows of 10 spaces, 5 points a space, the barn at the end) */
-.pgtrack { position: relative; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.28); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.pgtrack { position: relative; isolation: isolate; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.28); border-radius: 12px; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .pgpen { align-self: flex-start; min-width: 150px; min-height: 30px; box-sizing: border-box; padding: 4px 8px; border-radius: 8px; background: rgba(251,191,36,0.16); color: #fbbf24; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: flex-start; }
-.pggrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
-.pgcell { aspect-ratio: 1.25; min-width: 0; border-radius: 6px; background: rgba(120,80,40,0.38); display: grid; place-items: center; position: relative; }
-.pgcell b { color: rgba(253,230,138,0.9); font-size: clamp(8px, 2.5vw, 11px); font-weight: 700; }
-.pgcell.barn { background: rgba(180,71,47,0.35); }
-.pgcell.barn { display: flex; align-items: center; justify-content: center; gap: 1px; }
-.pgcell.barn svg { width: 42%; height: auto; display: block; flex: none; }
-.pgcell.barn b { font-size: clamp(8px, 2.4vw, 10px); color: #fde68a; }
+.pggrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px 3px; position: relative; }
+.pgcell { aspect-ratio: 1.25; min-width: 0; }
 .pgw { position: absolute; width: 46px; aspect-ratio: 200 / 98; pointer-events: none; transition: left 0.4s ease, top 0.4s ease; }
 .pgw.flip { transform: scaleX(-1); }
 .pgw.pgghost { opacity: 0.5; z-index: 5; }
@@ -429,3 +424,6 @@ body.fast .cover { transition: none; }
 .shipw.alarm { animation: shpalarm 0.6s ease-in-out 2; }
 @keyframes shpalarm { 0%, 100% { filter: drop-shadow(0 0 6px var(--glow, #3b82f6)); } 50% { filter: drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 6px #ef4444); } }
 @media (prefers-reduced-motion: reduce) { .shp.snap, .shipw.alarm { animation: none; } }
+.pgsvg { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; }
+.pggrid { z-index: 1; }
+.pgw.pgwalk { transition: none; }

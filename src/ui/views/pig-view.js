@@ -39,8 +39,85 @@ function pigEl(color, cls) {
 
 const spaceOf = (score, n) => Math.min(n, Math.floor(score / STEP)); // 0 = still in the pen
 
-// Put every pig (and the current player's ghost) on its space; pigs sharing a space are fanned out a little.
-function placePigs(ui, view, st, animateGhost) {
+// The trail: one dirt path through the space centers (a snake of rows with rounded bends), a stone at every space, signposts
+// at 25, 50, 75 ..., the gate of the pen and the barn at the end. Drawn from the measured positions, so it is redone on resize.
+function geometry(ui) {
+  const tb = ui.track.getBoundingClientRect();
+  const c = (e) => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2 - tb.left, y: r.top + r.height / 2 - tb.top }; };
+  const pen = ui.pen.getBoundingClientRect();
+  const cells = ui.cells.map(c);
+  const rh = cells.length > PER_ROW ? cells[PER_ROW].y - cells[0].y : ui.cells[0].getBoundingClientRect().height * 1.6;
+  return { tb, cells, rh, penC: c(ui.pen), gate: { x: cells[0].x, y: pen.bottom - tb.top } };
+}
+
+function drawTrail(ui, target) {
+  if (!ui.svg || !ui.cells || !ui.cells.length) return;
+  const g = geometry(ui);
+  if (!g.tb.width) return;
+  const n = g.cells.length;
+  const f = (v) => v.toFixed(1);
+  const rows = Math.ceil(n / PER_ROW);
+  let d = `M${f(g.gate.x)} ${f(g.gate.y)} L${f(g.cells[0].x)} ${f(g.cells[0].y)}`;
+  for (let r = 0; r < rows; r++) {
+    const endI = Math.min(n, (r + 1) * PER_ROW) - 1;
+    const e = g.cells[endI];
+    d += ` L${f(e.x)} ${f(e.y)}`;
+    if (r < rows - 1) d += ` A${f(g.rh / 2)} ${f(g.rh / 2)} 0 0 ${r % 2 === 0 ? 1 : 0} ${f(e.x)} ${f(e.y + g.rh)}`;
+  }
+  const edge = Math.max(16, g.rh * 0.74);
+  const fill = Math.max(12, g.rh * 0.6);
+  let h = `<path d="${d}" fill="none" stroke="#5b4023" stroke-width="${f(edge)}" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<path d="${d}" fill="none" stroke="#8a6a3f" stroke-width="${f(fill)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  g.cells.forEach((c, i) => { if (i < n - 1) h += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="2" fill="#4a3319"/>`; });
+  // signposts at every 25 points, in the gap under their row (pulled in from the bends)
+  g.cells.forEach((c, i) => {
+    const space = i + 1;
+    if (space >= n || (space * STEP) % 25 !== 0) return;
+    const rowEnd = space % PER_ROW === 0;
+    const inward = rowEnd ? (Math.floor(i / PER_ROW) % 2 === 0 ? -1 : 1) * g.rh * 0.8 : 0;
+    const x = c.x + inward;
+    const y = c.y + edge / 2 + 5;
+    h += `<rect x="${f(x - 10)}" y="${f(y - 6)}" width="20" height="12" rx="2.5" fill="#5b3a1a" stroke="#d6b36a" stroke-width="1"/>`
+      + `<text x="${f(x)}" y="${f(y + 3)}" font-size="8.5" font-weight="700" text-anchor="middle" fill="#fde68a">${space * STEP}</text>`;
+  });
+  // the gate of the pen: two posts, one leaf swung open
+  const gx = g.gate.x;
+  const gy = g.gate.y;
+  h += `<rect x="${f(gx - 15)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/><rect x="${f(gx + 11)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/>`
+    + `<path d="M${f(gx - 11)} ${f(gy - 2)} L${f(gx - 22)} ${f(gy + 7)}" stroke="#d6b36a" stroke-width="2.5" stroke-linecap="round"/>`;
+  // the barn at the end: about 1.5 x its old size, the target on the left of the central door
+  const b = g.cells[n - 1];
+  h += `<g transform="translate(${f(b.x - 26)} ${f(b.y - 19)})"><path d="M0 16 L26 1 L52 16 V38 H0 Z" fill="#b4472f" stroke="#fde68a" stroke-width="1.6" stroke-linejoin="round"/>`
+    + `<rect x="21.5" y="22" width="9" height="16" fill="#fde68a"/><text x="10.5" y="32" font-size="9" font-weight="800" text-anchor="middle" fill="#fde68a">${target}</text></g>`;
+  ui.svg.setAttribute('viewBox', `0 0 ${f(g.tb.width)} ${f(g.tb.height)}`);
+  ui.svg.setAttribute('width', f(g.tb.width));
+  ui.svg.setAttribute('height', f(g.tb.height));
+  ui.svg.innerHTML = h;
+}
+
+// The points a pig walks through from one space to another: out of the pen through the gate, along the trail and around
+// the bends (the bend point is the far side of the half circle the trail makes).
+function walkPoints(ui, from, to) {
+  const g = geometry(ui);
+  const pts = (a, b) => { // a < b
+    const out = [a === 0 ? g.penC : g.cells[a - 1]];
+    if (a === 0) out.push(g.gate);
+    for (let sp = Math.max(a, 0) + 1; sp <= b; sp++) {
+      if (sp - 1 >= 1 && (sp - 1) % PER_ROW === 0) {
+        const prev = g.cells[sp - 2];
+        const dir = Math.floor((sp - 2) / PER_ROW) % 2 === 0 ? 1 : -1;
+        out.push({ x: prev.x + dir * g.rh / 2, y: prev.y + g.rh / 2 });
+      }
+      out.push(g.cells[sp - 1]);
+    }
+    return out;
+  };
+  return from < to ? pts(from, to) : pts(to, from).reverse();
+}
+
+// Put every pig (and the current player's ghost) on its space; pigs sharing a space are fanned out a little. A pig whose
+// space changed walks there along the trail (not with `ctx` missing, a reduced-motion screen or the fast test mode).
+function placePigs(ui, view, st, ctx) {
   const tr = ui.track;
   if (!tr || !ui.cells) return;
   const n = ui.cellCount;
@@ -52,36 +129,79 @@ function placePigs(ui, view, st, animateGhost) {
     return { x: r.left + r.width / 2 - tb.left, y: r.top + r.height / 2 - tb.top, left: space > 0 && Math.floor((space - 1) / PER_ROW) % 2 === 1 };
   };
   const pw = Math.min(46, Math.round(ui.cells[0].getBoundingClientRect().width * 1.4)); // the pigs shrink with the spaces on a narrow screen
+  const ph = pw * PIG.h / PIG.w;
   [...ui.pigs, ui.ghost].forEach((node) => { node.style.width = `${pw}px`; });
-  const spots = view.seats.map((s) => spaceOf(s.total, n));
+  const canWalk = !!(ctx && !ctx.reduced && !document.body.classList.contains('fast') && ui.pigs[0].animate);
+  const spots = view.seats.map((sp) => spaceOf(sp.total, n));
   const ghostSpace = view.turnPoints > 0 ? spaceOf(view.seats[view.current].total + view.turnPoints, n) : -1;
   const groups = {};
   spots.forEach((sp, i) => { (groups[sp] = groups[sp] || []).push(i); });
-  const put = (node, sp, r, count, shiftX) => {
+  const finalXY = (sp, r, count) => {
     const p = at(sp);
-    const w = pw;
-    const h = w * PIG.h / PIG.w;
     const k = r - (count - 1) / 2;
-    node.style.left = `${Math.max(2, Math.min(tb.width - w - 2, p.x - w / 2 + k * 4 + (shiftX || 0)))}px`;
-    node.style.top = `${p.y - h / 2 + k * 7}px`;
-    node.classList.toggle('flip', p.left);
+    return { x: Math.max(2, Math.min(tb.width - pw - 2, p.x - pw / 2 + k * 4)), y: p.y - ph / 2 + k * 7, flip: p.left };
   };
-  view.seats.forEach((s, i) => {
+  const setNode = (node, xy) => {
+    node.style.left = `${xy.x}px`;
+    node.style.top = `${xy.y}px`;
+    node.classList.toggle('flip', xy.flip);
+  };
+  // walk `node` from space `a` to `b`, ending at `end`
+  const walk = (node, a, b, end) => {
+    const token = {};
+    node._walk = token;
+    node.classList.add('pgwalk');
+    const pts = walkPoints(ui, a, b).map((q) => ({ x: q.x - pw / 2, y: q.y - ph / 2 }));
+    pts[pts.length - 1] = { x: end.x, y: end.y };
+    const lens = pts.slice(1).map((q, i) => Math.hypot(q.x - pts[i].x, q.y - pts[i].y));
+    const sum = lens.reduce((x, y) => x + y, 0) || 1;
+    const total = Math.min(1200, 120 * Math.max(1, Math.abs(b - a)));
+    let i = 1;
+    const finish = () => { if (node._walk === token) { node.classList.remove('pgwalk'); setNode(node, end); } };
+    const next = () => {
+      if (node._walk !== token) return;
+      if (i >= pts.length) { finish(); return; }
+      const p0 = pts[i - 1];
+      const p1 = pts[i];
+      if (Math.abs(p1.x - p0.x) > 0.5) node.classList.toggle('flip', p1.x < p0.x);
+      else if (i === 1 && a === 0) node.classList.remove('flip');
+      const an = node.animate([{ left: `${p0.x}px`, top: `${p0.y}px` }, { left: `${p1.x}px`, top: `${p1.y}px` }], { duration: Math.max(30, total * lens[i - 1] / sum), easing: 'linear', fill: 'forwards' });
+      an.onfinish = () => { node.style.left = `${p1.x}px`; node.style.top = `${p1.y}px`; an.cancel(); i++; next(); };
+    };
+    setNode(node, { x: pts[0].x, y: pts[0].y, flip: node.classList.contains('flip') });
+    next();
+  };
+  view.seats.forEach((sp, i) => {
     const node = ui.pigs[i];
     const g = groups[spots[i]];
-    put(node, spots[i], g.indexOf(i), g.length, 0);
+    const end = finalXY(spots[i], g.indexOf(i), g.length);
+    const was = ui.pigAt[i];
+    ui.pigAt[i] = spots[i];
     node.style.zIndex = i === view.current ? 6 : 4;
+    if (canWalk && was !== undefined && was !== spots[i]) walk(node, was, spots[i], end);
+    else if (!node._walk || !node.classList.contains('pgwalk')) setNode(node, end);
+    else if (was === spots[i] && !canWalk) { node._walk = null; node.classList.remove('pgwalk'); setNode(node, end); }
   });
   const ghostWasHidden = ui.ghost.hidden;
   ui.ghost.hidden = ghostSpace < 0;
   if (ghostSpace >= 0) {
-    if (ghostWasHidden) ui.ghost.classList.add('pgnomove');
     ui.ghost.querySelector('.pg-col').style.background = colorOf(view, view.current);
     const g = groups[ghostSpace] || [];
-    put(ui.ghost, ghostSpace, g.length, g.length + 1, 0);
-    if (ghostWasHidden) { void ui.ghost.offsetWidth; ui.ghost.classList.remove('pgnomove'); }
-  }
-  tr.setAttribute('aria-label', `Track to the barn at ${st.options.target}: ${view.seats.map((s) => `${s.name} ${s.total}`).join(', ')}`);
+    const end = finalXY(ghostSpace, g.length, g.length + 1);
+    const from = ghostWasHidden ? spots[view.current] : ui.ghostAt;
+    ui.ghostAt = ghostSpace;
+    if (ghostWasHidden) ui.ghost.classList.add('pgnomove');
+    if (canWalk && from !== undefined && from !== ghostSpace) {
+      ui.ghost.classList.remove('pgnomove');
+      walk(ui.ghost, from, ghostSpace, end);
+    } else {
+      ui.ghost._walk = null;
+      ui.ghost.classList.remove('pgwalk');
+      setNode(ui.ghost, end);
+      if (ghostWasHidden) { void ui.ghost.offsetWidth; ui.ghost.classList.remove('pgnomove'); }
+    }
+  } else { ui.ghost._walk = null; ui.ghost.classList.remove('pgwalk'); ui.ghostAt = undefined; }
+  tr.setAttribute('aria-label', `Track to the barn at ${st.options.target}: ${view.seats.map((sp) => `${sp.name} ${sp.total}`).join(', ')}`);
 }
 
 const seatsView = (state) => state.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns }));
@@ -123,7 +243,7 @@ export const pigView = {
     ui.track = el('div', 'pgtrack');
     ui.track.setAttribute('role', 'img');
     ui.table.append(ui.track, ui.banner, ui.dice, ui.turnline);
-    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (ui.lastView) placePigs(ui, ui.lastView, ui.lastState); }).observe(ui.track); // rotate or resize: put the pigs back
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (ui.lastView) { drawTrail(ui, ui.target); placePigs(ui, ui.lastView, ui.lastState); } }).observe(ui.track); // rotate or resize: put the pigs back
   },
 
   // The racing-pigs track: a pen, the spaces as a snake of rows (5 points a space) and the barn that shows the target.
@@ -138,18 +258,22 @@ export const pigView = {
       ui.track.innerHTML = '';
       ui.pen = el('div', 'pgpen', 'START');
       ui.cells = [];
+      ui.pigAt = [];
+      ui.ghostAt = undefined;
+      ui.target = target;
+      ui.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      ui.svg.setAttribute('class', 'pgsvg');
+      ui.svg.setAttribute('aria-hidden', 'true');
       const grid = el('div', 'pggrid');
       for (let i = 1; i <= n; i++) {
         const row = Math.floor((i - 1) / PER_ROW);
         const col = (i - 1) % PER_ROW;
-        const c = el('div', 'pgcell' + (i === n ? ' barn' : ''));
+        const c = el('div', 'pgcell');
         c.style.gridArea = `${row + 1} / ${(row % 2 === 0 ? col : PER_ROW - 1 - col) + 1}`;
-        if (i === n) c.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 L12 3 L22 11 V21 H2 Z" fill="#b4472f" stroke="#fde68a" stroke-width="1.2"/><rect x="9" y="13" width="6" height="8" fill="#fde68a"/></svg><b>${target}</b>`;
-        else if ((i * STEP) % 25 === 0) c.appendChild(el('b', null, String(i * STEP)));
         grid.appendChild(c);
         ui.cells.push(c);
       }
-      ui.track.append(ui.pen, grid);
+      ui.track.append(ui.svg, ui.pen, grid);
       ui.pigs = view.seats.map((_, i) => pigEl(colorOf(view, i), 'pgreal'));
       ui.ghost = pigEl(colorOf(view, view.current), 'pgghost');
       ui.ghost.hidden = true;
@@ -173,7 +297,8 @@ export const pigView = {
       }
     }
     const fresh = ui.track.classList.contains('pgfresh');
-    placePigs(ui, view, st);
+    if (fresh || !ui.svg.firstChild) drawTrail(ui, ui.target);
+    placePigs(ui, view, st, ctx);
     if (fresh) { void ui.track.offsetWidth; ui.track.classList.remove('pgfresh'); }
   },
 
