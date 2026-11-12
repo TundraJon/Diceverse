@@ -410,7 +410,6 @@ body.fast .cover { transition: none; }
 .pggrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px 3px; position: relative; }
 .pgcell { aspect-ratio: 1.25; min-width: 0; }
 .pgw { position: absolute; width: 46px; aspect-ratio: 200 / 98; pointer-events: none; transition: left 0.4s ease, top 0.4s ease; }
-.pgw.flip { transform: scaleX(-1); }
 .pgw.pgghost { opacity: 0.5; z-index: 5; }
 .pgw[hidden] { display: none; }
 .pgl { position: absolute; inset: 0; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }

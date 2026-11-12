@@ -69,6 +69,11 @@ function drawTrail(ui, target) {
   let h = `<path d="${d}" fill="none" stroke="#5b4023" stroke-width="${f(edge)}" stroke-linecap="round" stroke-linejoin="round"/>`
     + `<path d="${d}" fill="none" stroke="#8a6a3f" stroke-width="${f(fill)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   g.cells.forEach((c, i) => { if (i < n - 1) h += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="2" fill="#4a3319"/>`; });
+  // a stone at the middle of every bend (not a space: no pig stops on it)
+  for (let r = 0; r < rows - 1; r++) {
+    const e = g.cells[Math.min(n, (r + 1) * PER_ROW) - 1];
+    h += `<circle cx="${f(e.x + (r % 2 === 0 ? 1 : -1) * g.rh / 2)}" cy="${f(e.y + g.rh / 2)}" r="2" fill="#4a3319"/>`;
+  }
   // signposts at every 25 points, in the gap under their row (pulled in from the bends)
   g.cells.forEach((c, i) => {
     const space = i + 1;
@@ -100,13 +105,13 @@ function drawTrail(ui, target) {
 function walkPoints(ui, from, to) {
   const g = geometry(ui);
   const pts = (a, b) => { // a < b
-    const out = [a === 0 ? g.penC : g.cells[a - 1]];
-    if (a === 0) out.push(g.gate);
+    const out = [a === 0 ? { ...g.penC, pen: true } : g.cells[a - 1]];
+    if (a === 0) out.push({ ...g.gate, gate: true });
     for (let sp = Math.max(a, 0) + 1; sp <= b; sp++) {
       if (sp - 1 >= 1 && (sp - 1) % PER_ROW === 0) {
         const prev = g.cells[sp - 2];
         const dir = Math.floor((sp - 2) / PER_ROW) % 2 === 0 ? 1 : -1;
-        out.push({ x: prev.x + dir * g.rh / 2, y: prev.y + g.rh / 2 });
+        out.push({ x: prev.x + dir * g.rh / 2, y: prev.y + g.rh / 2, apex: true });
       }
       out.push(g.cells[sp - 1]);
     }
@@ -139,20 +144,36 @@ function placePigs(ui, view, st, ctx) {
   const finalXY = (sp, r, count) => {
     const p = at(sp);
     const k = r - (count - 1) / 2;
-    return { x: Math.max(2, Math.min(tb.width - pw - 2, p.x - pw / 2 + k * 4)), y: p.y - ph / 2 + k * 7, flip: p.left };
+    return { x: Math.max(2, Math.min(tb.width - pw - 2, p.x - pw / 2 + k * 4)), y: p.y - ph / 2 + k * 7, rot: p.left ? 180 : 0 };
   };
   const setNode = (node, xy) => {
     node.style.left = `${xy.x}px`;
     node.style.top = `${xy.y}px`;
-    node.classList.toggle('flip', xy.flip);
+    node._rot = ((xy.rot % 360) + 360) % 360;
+    node.style.transform = `rotate(${node._rot}deg)`;
   };
   // walk `node` from space `a` to `b`, ending at `end`
   const walk = (node, a, b, end) => {
     const token = {};
     node._walk = token;
     node.classList.add('pgwalk');
-    const pts = walkPoints(ui, a, b).map((q) => ({ x: q.x - pw / 2, y: q.y - ph / 2 }));
+    const raw = walkPoints(ui, a, b);
+    const pts = raw.map((q) => ({ x: q.x - pw / 2, y: q.y - ph / 2 }));
     pts[pts.length - 1] = { x: end.x, y: end.y };
+    // the heading (degrees, 0 = right, 90 = down, 180 = left, 270 = up) the pig has at every point: along the row it walks, down or up at a
+    // bend dot or the gate; a bend turns it through 90 degrees
+    const dirOf = (i0, i1) => { const dx = raw[i1].x - raw[i0].x; const dy = raw[i1].y - raw[i0].y; return Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 0 : 180) : (dy >= 0 ? 90 : 270); };
+    const heads = raw.map((q, i) => {
+      if (q.apex) return raw[i].y > raw[i - 1].y ? 90 : 270;
+      const out = i + 1 < raw.length ? dirOf(i, i + 1) : null;
+      const inn = i > 0 ? dirOf(i - 1, i) : null;
+      if (out !== null && (out === 0 || out === 180)) return out;
+      return inn !== null ? inn : out;
+    });
+    heads[0] = node._rot || 0;
+    heads[heads.length - 1] = end.rot;
+    const rots = [heads[0]];
+    for (let k = 1; k < heads.length; k++) { let d = ((heads[k] - heads[k - 1]) % 360 + 540) % 360 - 180; rots.push(rots[k - 1] + d); } // turn the short way
     const lens = pts.slice(1).map((q, i) => Math.hypot(q.x - pts[i].x, q.y - pts[i].y));
     const sum = lens.reduce((x, y) => x + y, 0) || 1;
     const total = Math.min(1200, 120 * Math.max(1, Math.abs(b - a)));
@@ -163,12 +184,10 @@ function placePigs(ui, view, st, ctx) {
       if (i >= pts.length) { finish(); return; }
       const p0 = pts[i - 1];
       const p1 = pts[i];
-      if (Math.abs(p1.x - p0.x) > 0.5) node.classList.toggle('flip', p1.x < p0.x);
-      else if (i === 1 && a === 0) node.classList.remove('flip');
-      const an = node.animate([{ left: `${p0.x}px`, top: `${p0.y}px` }, { left: `${p1.x}px`, top: `${p1.y}px` }], { duration: Math.max(30, total * lens[i - 1] / sum), easing: 'linear', fill: 'forwards' });
-      an.onfinish = () => { node.style.left = `${p1.x}px`; node.style.top = `${p1.y}px`; an.cancel(); i++; next(); };
+      const an = node.animate([{ left: `${p0.x}px`, top: `${p0.y}px`, transform: `rotate(${rots[i - 1]}deg)` }, { left: `${p1.x}px`, top: `${p1.y}px`, transform: `rotate(${rots[i]}deg)` }], { duration: Math.max(30, total * lens[i - 1] / sum), easing: 'linear', fill: 'forwards' });
+      an.onfinish = () => { node.style.left = `${p1.x}px`; node.style.top = `${p1.y}px`; node.style.transform = `rotate(${rots[i]}deg)`; node._rot = ((rots[i] % 360) + 360) % 360; an.cancel(); i++; next(); };
     };
-    setNode(node, { x: pts[0].x, y: pts[0].y, flip: node.classList.contains('flip') });
+    setNode(node, { x: pts[0].x, y: pts[0].y, rot: heads[0] });
     next();
   };
   view.seats.forEach((sp, i) => {
@@ -292,7 +311,8 @@ export const pigView = {
         g.hidden = false;
         g.classList.add('pgfall');
         ui.track.appendChild(g);
-        const a = g.animate([{ transform: 'rotate(0deg)', opacity: 0.55 }, { transform: 'rotate(540deg) scale(0.6)', opacity: 0 }], { duration: 700, easing: 'ease-in' });
+        const r0 = ui.ghost._rot || 0;
+        const a = g.animate([{ transform: `rotate(${r0}deg)`, opacity: 0.55 }, { transform: `rotate(${r0 + 540}deg) scale(0.6)`, opacity: 0 }], { duration: 700, easing: 'ease-in' });
         a.onfinish = () => g.remove();
       }
     }

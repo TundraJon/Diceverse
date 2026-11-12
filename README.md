@@ -17,12 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-**Queue 39: Pig: a dot at the middle of each bend and pigs that turn through the corners.** Not yet authorized to build.
-
-- A stone dot at the apex of every bend (the middle of the half circle, where the user marked gray dots on their screenshot); it is not a space (no pig stops on it, scores are unchanged).
-- Pigs rotate through the corner instead of flipping: facing right (0 degrees) along a left-to-right row, turning down (90 degrees) at the bend dot, then facing left (180 degrees) along the next row; the same in reverse for a walk back. The mirror (`flip`) is replaced by a rotation, so the pig on a right-to-left row is turned 180 degrees (not mirrored), and a pig standing still faces along its row (0 or 180 degrees). The turn is animated smoothly through the bend (start of the bend, the dot, the end of the bend), within the same 0.12 s per space walking time. The ghost and the tumble follow the same rotation.
-- Tests: sample the pig's heading through a full walk across a bend (right, then down, then left) and confirm it passes the bend dot; re-run the Pig suite and the layout checks.
-- *(Added by Claude. Change before authorizing if wanted: the bend dot is the same dark brown stone as the others, not gray; the rotation replaces the mirror for left-going rows.)*
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -807,3 +802,13 @@ Space Salvage: a steady fleet, the new bust message, the build order, the dice l
 - [x] Inconsistency logged, not fixed: the rules sheet's own text still says you are "reeled in" ("Take n blasts of defensive fire ... you are reeled in and the haul ... floats away").
 
 Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Node: the build order for every count from 0 to 20 (the solid parts are exactly the first `built` of the order; 20 parts every time), 0 bad; the snap animation marks the right 2 parts. Playwright: 12 checks (0 failures): whole games at 390x844 (4 players), 360x740 (3), 360x640 (4) and 320x640 (4): at every step all the ships are drawn, yours is the leftmost, and exactly one set of sizes was seen (170 / 102 at 844, 154 / 93 at 740, 54 / 33 at 360x640, 49 / 29 at 320x640); the legend text, the 4 swatch colors and 3 entries without the crew dice; the meter never shows when Off and shows while deciding when On; no sideways scroll and the controls on screen at all four sizes (the page is 1 px taller than the screen at 844, as it was before). The bust banner text and time measured at real speed with a MutationObserver: 2.2 s (2.0 to 2.6 accepted), 2 checks, 0 failures. The earlier Salvage UI suite 20 of 20; the no-tell check for Space Salvage 8 of 8; screenshot looked at (390x844, legend and both ships). Needs a real-device check: how the legend and the steady fleet look on the user's phone, and whether 2.2 s feels right for the message. On a 320x640 or 360x640 phone the ships are small (49 and 54 px) and the page may scroll a little.
+
+## Build Log 53 (completed)
+
+Pig: a dot at the middle of each bend, and pigs that turn through the corners (was Queue 39).
+
+- [x] `src/ui/views/pig-view.js` `drawTrail`: a stone (the same dark brown, 2 px) at the apex of every bend, the point of the half circle (it is not a space: no pig stops on it and the scores are unchanged).
+- [x] Pigs rotate instead of mirroring (`walk` in `placePigs`, `setNode`, `walkPoints`): the pig's heading at each point of a walk is 0 degrees (right) along a left-to-right row, 90 (down) at a bend dot or the gate, 180 (left) along a right-to-left row (270 when going back up), turned the short way and animated as a `rotate()` together with the move, so it turns through the corner (right, down, left) within the normal walking time; a pig at rest faces along its row (0 or 180 degrees, not mirrored). The ghost's tumble starts from its heading. The `.pgw.flip` mirror rule is removed.
+- [x] Not changed: the rules, the scale, the walking times, the no-tell timing, the trail look otherwise.
+
+Verification (scratch scripts using `tests-helpers.cjs`, none committed): `preflight` clean. Playwright, 33 checks, 0 failures, 0 JS errors: the first screen now has 20 stones (19 spaces + the bend dot); a solo game at `?speed=0.2` sampled every animation frame (875 samples, going round the bend from space 10 to 11 and on to 13): 0 samples off the trail, the heading was right, then down (90, 2 or more samples within a few frames of the dot), then left; the pig passed within 8 px of the bend dot; at rest on the second row it faces left (about 180 degrees); the earlier ghost, bank, bust, layout and full-game checks all still pass. The no-tell check for Pig 8 of 8. Screenshot looked at (the pig pointing down at the bend's dot at 390 wide). Needs a real-device check: how the turn looks and feels at real speed on the user's phone (it is quick: about 0.12 s per space).
