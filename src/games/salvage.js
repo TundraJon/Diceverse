@@ -54,6 +54,11 @@ export const meta = {
       options: [{ value: 'none', label: 'None' }, { value: 'crew', label: 'Crew' }], default: 'none',
       hint: () => 'Crew swaps three dice for Security, Mechanic and Android dice with double salvage, double fire, fuel cells and shields.',
     },
+    {
+      key: 'meter', label: 'Danger meter',
+      options: [{ value: false, label: 'Off' }, { value: true, label: 'On' }], default: false,
+      hint: () => 'On: while you decide, a bar shows your exact chance of defensive fire on the next roll.',
+    },
   ],
 };
 

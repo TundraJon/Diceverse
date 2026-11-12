@@ -37,24 +37,20 @@ const partsBuilt = (total, target) => Math.min(SHIP_PARTS, Math.ceil((total * SH
 function fitFleet(ui, reset) {
   if (!ui.fleet || !ui.fleet.childElementCount) return;
   const f = ui.fleet;
-  if (reset) ui.fleetMax = null;
+  const key = `${window.innerWidth}x${window.innerHeight}`;
+  if (reset) ui.fleetKey = null;
+  if (ui.fleetKey === key) return; // worked out once per screen size, so the ships never change size or vanish from turn to turn
   f.hidden = false;
   f.style.setProperty('--lg', '0px');
   f.style.setProperty('--sm', '0px');
-  // the danger meter comes and goes; keep room for it so the ships do not change size every turn
-  const reserve = ui.meter.hidden ? 54 : 0;
+  // keep room for what comes and goes: the danger meter (only when that house rule is on) and the crew badges
+  const reserve = (ui.meterOn && ui.meter.hidden ? 54 : 0) + (ui.badges.childElementCount ? 0 : 24) + 24; // the last 24: the salvage box grows to a second line of gears
   const free = ui.controls.getBoundingClientRect().top - ui.hint.getBoundingClientRect().bottom - 16 - reserve;
-  const many = f.childElementCount > 1;
-  const sm = many && free >= 200 ? 66 : 0;
-  let lg = Math.min(170, free - (sm ? sm + 8 : 0));
-  if (ui.fleetMax != null) lg = Math.min(lg, ui.fleetMax); // it only ever gets smaller (until the screen is resized)
-  ui.fleetMax = lg;
-  f.hidden = lg < 48;
-  f.classList.toggle('nosmall', !sm);
-  f.style.setProperty('--lg', `${Math.max(0, lg)}px`);
-  f.style.setProperty('--sm', `${sm}px`);
+  const lg = Math.max(40, Math.min(170, free));
+  ui.fleetKey = key;
+  f.style.setProperty('--lg', `${lg}px`);
+  f.style.setProperty('--sm', `${Math.round(lg * 0.6)}px`);
 }
-
 
 export const salvageView = {
   title: 'SPACE SALVAGE',
@@ -68,7 +64,7 @@ export const salvageView = {
       `On your turn you take three dice from the bin and roll them. ⚙️ Salvage goes in your haul. 💥 Defensive fire goes on the fire side. 🛰️ A drifting target stays in your hand.`,
       `Then you choose: STOW the haul (add it to your cargo hold and pass the turn) or ROLL AGAIN. When you roll again, the drifting targets are rolled together with new dice from the bin, to make three.`,
       `Take ${options.fire} blasts of defensive fire in one turn and the cargo hold slams shut: you are reeled in and the haul you were carrying floats away. Only salvage you have stowed is safe.`,
-      'The danger meter shows your exact chance of defensive fire ending the turn on the next roll.',
+      options.meter ? 'The danger meter shows your exact chance of defensive fire ending the turn on the next roll.' : null,
       options.equalTurns === false
         ? `The first crew to stow ${options.target} salvage wins at once.`
         : `When someone stows ${options.target} salvage, everyone else gets one final turn. The most salvage wins; a tie is played off by the tied leaders only.`,
@@ -81,7 +77,7 @@ export const salvageView = {
 
   summary(h, mode) {
     const mix = { standard: 'standard dice', gentle: 'gentle dice', brutal: 'brutal dice' }[h.mix];
-    return `Target ${h.target} · ${h.fire} fire${mode !== 'solo' && h.equalTurns === false ? ' · first to target' : ''} · ${mix}${h.extra === 'crew' ? ' · crew' : ''}`;
+    return `Target ${h.target} · ${h.fire} fire${mode !== 'solo' && h.equalTurns === false ? ' · first to target' : ''} · ${mix}${h.extra === 'crew' ? ' · crew' : ''}${h.meter ? ' · danger meter' : ''}`;
   },
 
   init(session) { return this.sync(null, session); },
@@ -175,11 +171,19 @@ export const salvageView = {
     ui.boxes.setAttribute('role', 'group');
     ui.boxes.setAttribute('aria-label', `Salvage this turn ${view.points}. Defensive fire ${view.shots} of ${view.limit}.`);
 
-    // the bin
+    // the bin, as a legend of the dice colors: a swatch, the name and how many are in the bin
     const b = view.bin;
-    const bits = [`Scout Probes ${b.green}`, `Freighters ${b.yellow}`, `Warships ${b.red}`];
-    if (view.full.crew) bits.push(`Crew ${b.crew}`);
-    ui.binline.textContent = `In the bin: ${bits.join(' · ')}${view.hand ? ` · drifting kept: ${view.hand}` : ''}`;
+    const kinds = [['green', 'Scout Probes', b.green], ['yellow', 'Freighters', b.yellow], ['red', 'Warships', b.red]];
+    if (view.full.crew) kinds.push(['crew', 'Crew', b.crew]);
+    ui.binline.innerHTML = '';
+    kinds.forEach(([k, label, count]) => {
+      const it = el('span', 'lgi');
+      it.append(el('i', `sw k-${k}`), document.createTextNode(`${label} ${count}`));
+      ui.binline.appendChild(it);
+    });
+    if (view.hand) ui.binline.appendChild(el('span', 'lgi', `drifting kept: ${view.hand}`));
+    ui.binline.setAttribute('role', 'group');
+    ui.binline.setAttribute('aria-label', `In the bin: ${kinds.map(([, label, count]) => `${label} ${count}`).join(', ')}${view.hand ? `, drifting kept ${view.hand}` : ''}`);
 
     // effects of the crew dice
     ui.badges.innerHTML = '';
@@ -187,7 +191,7 @@ export const salvageView = {
     if (view.shield) ui.badges.appendChild(el('span', 'badge', '\u{1F6E1}️ One more hit to go'));
 
     // danger meter: only while choosing, never while the dice are rolling or a bot plays
-    const choosing = phase === 'decide' && human;
+    const choosing = !!st.options.meter && phase === 'decide' && human;
     ui.meter.hidden = !choosing;
     if (choosing) {
       const pct = Math.round(dangerChance(st) * 100);
@@ -214,7 +218,7 @@ export const salvageView = {
     order.forEach((i, k) => {
       const built = partsBuilt(view.seats[i].total, target);
       const before = ui.shipN[i];
-      const fresh = before !== undefined && built > before ? before + 1 : 0;
+      const fresh = before !== undefined && built > before ? before : -1;
       ui.shipN[i] = built;
       const w = el('div', `shipw ${k === 0 ? 'big' : 'small'}`);
       w.style.setProperty('--glow', colorOf(view, i));
@@ -234,6 +238,7 @@ export const salvageView = {
         { label: bankLabel, cls: 'btn-bank', disabled: !human || phase !== 'decide', onClick: () => ctx.act([{ type: 'BANK' }]) },
       ]
       : [{ label: 'ROLL', cls: 'btn-roll span2', disabled: !human || over, onClick: () => ctx.act([{ type: 'ROLL' }]) }]);
+    ui.meterOn = !!st.options.meter;
     fitFleet(ui);
   },
 
@@ -269,11 +274,11 @@ export const salvageView = {
       case 'BUSTED':
         view.points = 0;
         view.alarm = ev.seat;
-        view.banner = { text: 'Hold sealed. Reel her in!' };
-        ctx.log(`${name(ev.seat)} was reeled in and lost ${ev.lost}`);
-        ctx.announce(`${name(ev.seat)} was reeled in and lost the haul`);
+        view.banner = { text: 'Hold sealed! Retract safety lines!' };
+        ctx.log(`${name(ev.seat)} retracted the safety lines and lost ${ev.lost}`);
+        ctx.announce(`${name(ev.seat)} retracted the safety lines and lost the haul`);
         ctx.vibrate();
-        delay = ctx.reduced ? 600 : 1500;
+        delay = ctx.reduced ? 900 : 2200;
         break;
       case 'BANKED':
         view.points = 0;

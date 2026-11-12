@@ -30,6 +30,11 @@ export const SHIP = {
   ],
 };
 
+// The order the parts are added in: the nose and the spine first, then the cabin sphere, then the wings and engine pods, then the tail,
+// so nothing is ever placed unattached.
+export const BUILD_ORDER = [1, 2, 3, 4, 5, 6, 7, 12, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20];
+const RANK = {};
+BUILD_ORDER.forEach((n, k) => { RANK[n] = k; });
 const UP = (i) => (i >= 19 ? 101 : i >= 13 ? 65 : 0); // part numbers 1 to 20
 const mix = (hex, to, t) => {
   const n = (h) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16));
@@ -39,7 +44,8 @@ const mix = (hex, to, t) => {
 };
 
 // One ship as an SVG string. `uid` makes the gradient ids unique, `color` is the player's color (it replaces the dark
-// gradient fills), `built` is how many parts (0 to 20) are drawn solid and `fresh` is the first part number to animate in.
+// gradient fills), `built` is how many parts (0 to 20) are drawn solid (the first `built` of BUILD_ORDER) and `fresh` is how many
+// were built before this draw, so the later ones animate in (-1: none).
 export function shipSvg(uid, color, built, fresh) {
   const dark = mix(color, '#000000', 0.4);
   const light = mix(color, '#ffffff', 0.35);
@@ -50,8 +56,8 @@ export function shipSvg(uid, color, built, fresh) {
 </defs>`;
   const order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 12];
   const body = order.map((n) => {
-    const on = n <= built;
-    const cls = `shp${on ? '' : ' off'}${on && fresh && n >= fresh ? ' snap' : ''}`;
+    const on = RANK[n] < built;
+    const cls = `shp${on ? '' : ' off'}${on && fresh >= 0 && RANK[n] >= fresh ? ' snap' : ''}`;
     return `<g class="${cls}" transform="translate(0 ${-UP(n)})">${SHIP.parts[n - 1].replace(/\{u\}/g, uid)}</g>`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${SHIP.viewBox}" aria-hidden="true">${defs}${body}</svg>`;
