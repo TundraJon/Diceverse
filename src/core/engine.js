@@ -3,10 +3,10 @@ import { createRng } from './rng.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
-// Actions may carry payloads (`ids` for Farkle SET_ASIDE and Yacht ROLL, `category` for Yacht SCORE, `cols` for Cliffhanger CHOOSE, `tile` for Pirate Plunder CLAIM, `space` and `face` or `total` for a Liar's Dice BID); compare them all.
+// Actions may carry payloads (`ids` for Farkle SET_ASIDE and Yacht ROLL, `category` for Yacht SCORE, `cols` for Cliffhanger CHOOSE, `tile` for Pirate Plunder CLAIM, `space` and `face` or `total` for a Liar's Dice BID, `row` and `n` for a Treasure Trails MARK); compare them all.
 const sortedIds = (a) => (a.ids ? a.ids.slice().sort((x, y) => x - y) : null);
 const sortedCols = (a) => (a.cols ? a.cols.slice().sort((x, y) => x - y) : null); // Cliffhanger CHOOSE {cols}
-const sameAction = (a, b) => a.type === b.type && a.category === b.category && a.tile === b.tile && a.space === b.space && a.face === b.face && a.total === b.total && JSON.stringify(sortedIds(a)) === JSON.stringify(sortedIds(b)) && JSON.stringify(sortedCols(a)) === JSON.stringify(sortedCols(b));
+const sameAction = (a, b) => a.type === b.type && a.category === b.category && a.tile === b.tile && a.space === b.space && a.face === b.face && a.total === b.total && a.row === b.row && a.n === b.n && JSON.stringify(sortedIds(a)) === JSON.stringify(sortedIds(b)) && JSON.stringify(sortedCols(a)) === JSON.stringify(sortedCols(b));
 
 export function createSession(game, options, seed) {
   const rng = createRng(seed);
