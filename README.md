@@ -17,7 +17,13 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+**Queue 38: Space Salvage: steady fleet, new bust message, build order, dice legend (the user's answers: 2, 3 and A).** Not yet authorized to build.
+
+- Fleet (`src/ui/views/salvage-view.js`, `src/ui/theme.css`): all ships are always shown in one row, yours on the left and the other players to the right of it, never dropped or faded in and out by what is on screen. Sizes are worked out once per screen size (and again on resize), not every turn: the big ship's height is the room between the chips and the buttons with space kept for the worst case (the danger meter, the crew badges, a two-line legend), up to 170 px; the other ships are 60% of that. They only get smaller on a short screen, never hidden; under about 48 px of room the ships are drawn at 40 px (and 24 px) and the page may scroll a little. Unbuilt ships (and unbuilt parts) are drawn at about 30% opacity (was 13%) so a player with no parts yet is still visible. *(Added by Claude. Change before authorizing if wanted: the 60% size, the 30% opacity, the 40 / 24 px minimum.)*
+- Bust message: "Hold sealed! Retract safety lines!" (was "Hold sealed. Reel her in!"), shown for 2.2 s (was 1.5 s; with reduced motion 0.9 s, was 0.6 s). The game log and the screen-reader line change to match: "[name] retracted the safety lines and lost [n]" and "[name] retracted the safety lines and lost the haul". *(Added by Claude. Change before authorizing if wanted: the log and announcement wording.)*
+- Build order (`src/ui/ship-art.js`): parts are added in the order 1, 2, 3, 4, 5, 6, 7, 12, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20 (the cabin sphere before the wing struts and the engine pods, so nothing floats unattached). `built` parts means the first `built` of that order, not part numbers 1 to `built`. The draw order stays as it is (12 on top).
+- Dice legend (option A): the "In the bin:" line becomes a legend: a colored die swatch (in the die's color: green, yellow, red, and the crew color) with its name and the count in the bin, for example "Scout Probes 5", "Freighters 3", "Warships 2" and, with the crew dice on, "Crew 3"; "drifting kept: n" stays at the end. It takes the place of the text line (no extra height) and wraps on a narrow screen.
+- Not changed: the rules, the bot, the score chips, the ship art and colors, the no-tell timing (the bust message and the alarm only start after the dice settle plus 250 ms, as now; the legend counts only change after the settle too, as the bin line does now). Tests: the Salvage UI and no-tell checks are re-run, and the fleet is sampled across a whole game at 360x740 and 390x844 to confirm no ship ever disappears or changes size.
 
 ## Build Planner
 
