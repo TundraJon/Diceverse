@@ -115,7 +115,7 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
       case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE': case 'DICE_LOST': case 'PENALTY':
         feel(i, 'SHOCKED');
         break;
-      case 'COLUMN_WON': case 'BOX_SHUT': case 'CHALLENGE_WON': case 'ROW_LOCKED':
+      case 'COLUMN_WON': case 'BOX_SHUT': case 'CHALLENGE_WON': case 'ROW_LOCKED': case 'ROUND_WON':
         feel(i, 'WINNING');
         break;
       case 'BANKED': {

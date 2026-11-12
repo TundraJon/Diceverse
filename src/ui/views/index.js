@@ -8,5 +8,6 @@ import { plunderView } from './plunder-view.js';
 import { diveView } from './dive-view.js';
 import { liarsView } from './liars-view.js';
 import { trailsView } from './trails-view.js';
+import { shipView } from './ship-view.js';
 
-export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, trails: trailsView };
+export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, trails: trailsView, ship: shipView };

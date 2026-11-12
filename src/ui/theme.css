@@ -547,3 +547,35 @@ body.fast .cover { transition: none; }
 .trmr i.on { background: var(--gem); }
 .trmr i.chest { background: rgba(255,255,255,0.28); }
 .trmr i.chest.on { background: var(--gem); }
+
+/* Ship, Captain & Crew: the ship deck with three sockets, the sea, the cargo hold and the round table */
+.scwrap { justify-content: flex-start; gap: 8px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.scrounds { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; width: 100%; }
+.scrow { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: #cbd5e1; padding: 2px 8px; border-radius: 8px; border: 1px solid transparent; }
+.scrow.on { border-color: var(--gold); }
+.scrow.head { font-weight: 800; color: var(--gold); }
+.scrow i { width: 8px; height: 8px; border-radius: 2px; }
+.scrow b { color: var(--gold); min-width: 1.2em; text-align: right; }
+.scv { min-width: 26px; text-align: center; padding: 1px 6px; border-radius: 6px; background: rgba(255,255,255,0.1); }
+.scv.done { background: rgba(251,191,36,0.25); color: var(--gold); font-weight: 800; }
+.scdeck { position: relative; width: 100%; max-width: 380px; }
+.scdeck > svg { display: block; width: 100%; height: auto; }
+.scslots { position: absolute; left: 0; right: 0; top: 56%; display: flex; justify-content: center; gap: 12px; }
+.scslot { width: 17%; aspect-ratio: 1; border: 2px dashed rgba(253,230,138,0.85); border-radius: 12px; background: rgba(0,0,0,0.25); display: grid; place-items: center; position: relative; }
+.scslot.on { border-style: solid; background: rgba(251,191,36,0.2); }
+.scslot b { font-size: 1.4rem; color: rgba(253,230,138,0.55); }
+.scslot small { position: absolute; left: -4px; right: -4px; bottom: -17px; text-align: center; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; color: #fde68a; }
+.scslot .die { --s: clamp(30px, 9vw, 42px); }
+.scsea { display: flex; gap: 12px; justify-content: center; min-height: 52px; margin-top: 14px; }
+.scsea .die { --s: clamp(32px, 10vw, 44px); }
+.scsea.empty { visibility: hidden; }
+.schold { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px 12px; border-radius: 12px; background: rgba(0,0,0,0.28); border: 1px solid var(--line); }
+.schold.full { border-color: var(--gold); }
+.schl { font-size: 0.78rem; color: var(--muted); }
+.scdice { display: flex; gap: 8px; }
+.scdice .die { --s: 34px; }
+.sct { color: var(--gold); font-size: 1.1rem; min-width: 2.2em; }
+.scpips { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.78rem; color: var(--muted); flex-wrap: wrap; }
+.scpips i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--line); }
+.scpips i.on { background: var(--gold); border-color: var(--gold); }
+.scpips em { flex-basis: 100%; text-align: center; font-style: normal; color: var(--gold); font-weight: 700; font-size: 0.9rem; min-height: 1.2em; }
