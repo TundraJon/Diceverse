@@ -481,13 +481,13 @@ body.fast .cover { transition: none; }
 .ldface:disabled { opacity: 0.4; }
 .ldfhint { flex-basis: 100%; text-align: center; color: var(--muted); font-size: 0.75rem; line-height: 15px; min-height: 15px; }
 .ldmine { display: flex; justify-content: center; min-height: 40px; }
-.ldyou { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 214px; }
+.ldyou { display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: calc(var(--ldd, 32px) * 5 + 54px); max-width: 100%; }
 .ldpeek { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 4px 14px; border-radius: 14px; border: 2px solid var(--gold); background: rgba(251,191,36,0.12); color: var(--gold); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; white-space: nowrap; }
 .ldpeek.on { background: var(--gold); color: #1f2937; }
 .ldpeek:disabled { opacity: 0.5; }
 .ldcupbig { display: inline-block; width: 26px; height: 22px; clip-path: polygon(15% 0, 85% 0, 100% 100%, 0 100%); background: currentColor; }
-.ldhand { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: 34px; }
-.ldhand .die { --s: 32px; }
+.ldhand { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: calc(var(--ldd, 32px) + 2px); }
+.ldhand .die { --s: var(--ldd, 32px); }
 .ldhand.shake .die { animation: ldshake 0.4s ease-in-out 5; }
 .ldhand.shake .die:nth-child(2n) { animation-delay: -0.13s; animation-direction: reverse; }
 .ldhand.shake .die:nth-child(3n) { animation-delay: -0.27s; }

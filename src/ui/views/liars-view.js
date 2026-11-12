@@ -53,6 +53,23 @@ const faceWord = (f) => ['', 'ones', 'twos', 'threes', 'fours', 'fives', 'sixes'
 
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, dice: s.dice, turns: s.turns }));
 
+// The dice under your cup grow to use the room that is left on this screen (32 px on a screen with none, up to 48 px), so nothing
+// ever scrolls. Worked out once per screen size, with room kept for the banner that comes and goes.
+const DICE_MIN = 32;
+const DICE_MAX = 48;
+function fitDice(ui, reset) {
+  const t = ui.table;
+  const key = `${window.innerWidth}x${window.innerHeight}`;
+  if (reset) ui.diceKey = null;
+  if (ui.diceKey === key || !ui.controls || !ui.hint) return;
+  t.style.setProperty('--ldd', `${DICE_MIN}px`);
+  const free = ui.controls.getBoundingClientRect().top - ui.hint.getBoundingClientRect().bottom - 8 - (ui.banner.hidden ? 40 : 0);
+  const widthCap = Math.floor((Math.min(window.innerWidth, 560) - 32 - 54) / 5);
+  const size = Math.max(DICE_MIN, Math.min(DICE_MAX, widthCap, DICE_MIN + Math.floor(free)));
+  t.style.setProperty('--ldd', `${size}px`);
+  ui.diceKey = key;
+}
+
 export const liarsView = {
   title: THEME.title,
 
@@ -120,6 +137,7 @@ export const liarsView = {
   build(ui) {
     ui.table.classList.add('ldwrap');
     ui.table.addEventListener('contextmenu', (e) => e.preventDefault()); // no long-press menu on the playing screen
+    window.addEventListener('resize', () => fitDice(ui, true));
     ui.scores.hidden = true;
     ui.chips = el('div', 'climbchips');
     ui.banner = el('div', 'banner ldbanner');
@@ -357,6 +375,7 @@ export const liarsView = {
       { label: bidLabel.toUpperCase().length > 22 ? 'BID' : bidLabel, cls: 'btn-roll', disabled: !human || !staged || shaking, onClick: () => { const a = { type: 'BID', ...(staged.total !== undefined ? { total: staged.total } : { space: staged.space, face: staged.face }) }; view.staged = null; ctx.act([a]); } },
       { label: THEME.call, cls: 'danger', disabled: !human || !canChallenge || shaking, onClick: () => { view.staged = null; ctx.act([{ type: 'CHALLENGE' }]); } },
     ]);
+    fitDice(ui);
   },
 
   reduce(view, ev, ctx) {
