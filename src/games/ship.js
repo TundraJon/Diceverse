@@ -8,6 +8,8 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 export const SLOTS = ['ship', 'captain', 'crew'];
 export const SLOT_VALUE = { ship: 6, captain: 5, crew: 4 };
 export const VOYAGES = 5; // a Solo game
+export const REQUIRED = { full: ['ship', 'captain', 'crew'], mutiny: ['ship', 'crew'], skeleton: ['ship', 'captain'] }; // the roles each crew rule needs
+export const cargoSize = (crew) => 5 - REQUIRED[crew].length; // 2 or 3 cargo dice
 
 export const meta = {
   id: 'ship',
@@ -17,7 +19,7 @@ export const meta = {
   estMinutes: 10,
   tier: 'A',
   soloBest: 'high', // the biggest total over the voyages
-  soloKey: (o) => `${o.rolls}`,
+  soloKey: (o) => `${o.rolls}:${o.crew}:${o.order}:${o.reroll}`,
   soloValue: (res) => res.soloScore,
   soloTitle: (v) => `Total cargo: ${v}`,
   soloLabel: (v) => `${v} cargo`,
@@ -25,6 +27,21 @@ export const meta = {
   houseRules: [
     { key: 'rolls', label: 'Rolls per turn', options: [{ value: 3, label: '3' }, { value: 4, label: '4' }], default: 3 },
     { key: 'target', label: 'Points to win', options: [{ value: 3, label: '3' }, { value: 5, label: '5' }, { value: 7, label: '7' }], default: 5 },
+    {
+      key: 'reroll', label: 'Cargo re-roll',
+      options: [{ value: 'both', label: 'Both dice' }, { value: 'either', label: 'Either die' }], default: 'both',
+      hint: () => 'Both dice: a re-roll takes all the cargo dice. Either die: you hold the cargo dice you want to keep and the others are re-rolled. Either way the new total stays.',
+    },
+    {
+      key: 'order', label: 'Order',
+      options: [{ value: 'strict', label: 'Strict order' }, { value: 'any', label: "Crow's Nest" }], default: 'strict',
+      hint: () => "Strict order: the ship first, then the captain, then the crew. Crow's Nest: you can set them aside in any order.",
+    },
+    {
+      key: 'crew', label: 'Crew needed',
+      options: [{ value: 'full', label: 'Full crew' }, { value: 'mutiny', label: 'Mutiny' }, { value: 'skeleton', label: 'Skeleton Crew' }], default: 'full',
+      hint: () => 'Full crew: a 6, a 5 and a 4 (two cargo dice). Mutiny: only a 6 and a 4, the captain is skipped. Skeleton Crew: only a 6 and a 5. Mutiny and Skeleton Crew leave three cargo dice.',
+    },
   ],
 };
 
@@ -39,6 +56,9 @@ export function setup(options, rng) {
   if (opts.target === false) opts.target = defaultOptions().target; // Solo hides this rule (the shell passes false)
   if (![3, 4].includes(opts.rolls)) throw new Error('Unknown number of rolls');
   if (![3, 5, 7].includes(opts.target)) throw new Error('Unknown points to win');
+  if (!['both', 'either'].includes(opts.reroll)) throw new Error('Unknown cargo re-roll');
+  if (!['strict', 'any'].includes(opts.order)) throw new Error('Unknown order rule');
+  if (!REQUIRED[opts.crew]) throw new Error('Unknown crew rule');
   const seats = (opts.seats || [{ name: 'You', isBot: false }]).map((s) => ({ name: s.name, isBot: !!s.isBot, preset: s.preset || null, turns: 0, wins: 0 }));
   const n = seats.length;
   const starter = n === 1 ? 0 : rng.die(n) - 1; // the first round's starting player is chosen by the rng
@@ -67,7 +87,14 @@ function freshTurn(s) {
 
 export function legalActions(state, seat) {
   if (state.over || seat !== state.current) return [];
-  if (state.turn.phase === 'cargo') return [{ type: 'ROLL' }, { type: 'KEEP' }];
+  if (state.turn.phase === 'cargo') {
+    if (state.options.reroll === 'both') return [{ type: 'ROLL' }, { type: 'KEEP' }];
+    const n = state.turn.cargo.length;
+    const acts = [];
+    for (let m = 1; m < 1 << n; m++) acts.push({ type: 'ROLL', ids: Array.from({ length: n }, (_, i) => i).filter((i) => m & (1 << i)) }); // every non-empty set of cargo dice to re-roll
+    acts.push({ type: 'KEEP' });
+    return acts;
+  }
   return [{ type: 'ROLL' }];
 }
 
@@ -80,15 +107,17 @@ export function result(state) {
 
 export function observe(state) { return clone(state); } // nothing is hidden
 
-// Set aside what can be set aside, in order. Returns the slots that locked in this call.
-function lockIn(t) {
+// Set aside what can be set aside: the needed roles in order (strict) or in any order (Crow's Nest). Returns the slots that locked in this call.
+function lockIn(t, opts) {
   const out = [];
+  const need = REQUIRED[opts.crew];
   const take = (slot) => { const i = t.free.indexOf(SLOT_VALUE[slot]); if (i >= 0) { t.free.splice(i, 1); t.locked[slot] = true; out.push(slot); return true; } return false; };
-  if (!t.locked.ship) take('ship');
-  if (t.locked.ship && !t.locked.captain) take('captain');
-  if (t.locked.captain && !t.locked.crew) take('crew');
+  if (opts.order === 'any') { need.forEach((slot) => { if (!t.locked[slot]) take(slot); }); return out; }
+  for (const slot of need) { if (t.locked[slot]) continue; if (!take(slot)) break; }
   return out;
 }
+
+const isComplete = (t, opts) => REQUIRED[opts.crew].every((k) => t.locked[k]);
 
 function endTurn(s, score, events) {
   const seat = s.current;
@@ -144,26 +173,31 @@ export function apply(state, action, rng) {
   const seat = s.current;
   const t = s.turn;
   if (action.type === 'ROLL') {
-    const complete = SLOTS.every((k) => t.locked[k]);
-    const n = complete ? 2 : 5 - SLOTS.filter((k) => t.locked[k]).length;
-    const dice = Array.from({ length: n }, () => rng.die(6));
-    t.rollsLeft -= 1;
-    events.push({ type: 'ROLLED', seat, dice: dice.slice(), rollsLeft: t.rollsLeft, cargo: complete });
-    if (complete) { // re-rolling both cargo dice: the new total stays
-      t.cargo = dice;
-      const total = dice[0] + dice[1];
+    const complete = isComplete(t, s.options);
+    if (complete) { // re-rolling cargo dice (all of them, or the ones that are not held): the new total stays
+      const idx = s.options.reroll === 'either' ? (action.ids || []).slice().sort((x, y) => x - y) : t.cargo.map((_, i) => i);
+      if (!idx.length || idx.some((i) => !Number.isInteger(i) || i < 0 || i >= t.cargo.length) || new Set(idx).size !== idx.length) throw new Error('Choose cargo dice to re-roll');
+      const dice = idx.map(() => rng.die(6));
+      t.rollsLeft -= 1;
+      events.push({ type: 'ROLLED', seat, dice: dice.slice(), ids: idx.slice(), rollsLeft: t.rollsLeft, cargo: true });
+      idx.forEach((i, k) => { t.cargo[i] = dice[k]; });
+      const total = t.cargo.reduce((a, v) => a + v, 0);
       events.push({ type: 'ROLL_DONE', seat, locked: [] });
-      events.push({ type: 'CARGO', seat, dice: dice.slice(), total });
+      events.push({ type: 'CARGO', seat, dice: t.cargo.slice(), total });
       if (t.rollsLeft <= 0) endTurn(s, total, events); else t.phase = 'cargo';
     } else {
+      const n = 5 - REQUIRED[s.options.crew].filter((k) => t.locked[k]).length;
+      const dice = Array.from({ length: n }, () => rng.die(6));
+      t.rollsLeft -= 1;
+      events.push({ type: 'ROLLED', seat, dice: dice.slice(), rollsLeft: t.rollsLeft, cargo: false });
       t.free = dice;
-      const newly = lockIn(t);
+      const newly = lockIn(t, s.options);
       newly.forEach((slot) => events.push({ type: 'LOCKED', seat, slot, value: SLOT_VALUE[slot] }));
       events.push({ type: 'ROLL_DONE', seat, locked: newly });
-      if (SLOTS.every((k) => t.locked[k])) {
+      if (isComplete(t, s.options)) {
         t.cargo = t.free.slice();
         t.free = [];
-        const total = t.cargo[0] + t.cargo[1];
+        const total = t.cargo.reduce((a, v) => a + v, 0);
         events.push({ type: 'CARGO', seat, dice: t.cargo.slice(), total });
         if (t.rollsLeft <= 0) endTurn(s, total, events); else t.phase = 'cargo';
       } else if (t.rollsLeft <= 0) {
@@ -173,7 +207,7 @@ export function apply(state, action, rng) {
     }
   } else if (action.type === 'KEEP') {
     if (t.phase !== 'cargo') throw new Error('Nothing to keep yet');
-    endTurn(s, t.cargo[0] + t.cargo[1], events);
+    endTurn(s, t.cargo.reduce((a, v) => a + v, 0), events);
   } else {
     throw new Error(`Unknown action ${action.type}`);
   }
@@ -181,17 +215,24 @@ export function apply(state, action, rng) {
 }
 
 // ---- Bot ----
-// The only decision is whether to re-roll the cargo (both dice, and the new total stays).
-const LINES = { cautious: 5, balanced: 6, bold: 7 };
+// The only decision is whether to re-roll cargo (and with Either die, which dice) or keep it. The new total stays.
+const LINES = { 2: { cautious: 5, balanced: 6, bold: 7 }, 3: { cautious: 8, balanced: 9, bold: 10 } };
 export function choose(obs, seat, presetKey, seed) {
   const legal = legalActions(obs, seat);
   if (legal.length === 1) return { actions: [legal[0]], margin: null };
   const rng = createRng(seed);
-  const total = obs.turn.cargo[0] + obs.turn.cargo[1];
-  const line = LINES[presetKey] === undefined ? LINES.balanced : LINES[presetKey];
+  const cargo = obs.turn.cargo;
+  const total = cargo.reduce((a, v) => a + v, 0);
+  const lines = LINES[cargo.length] || LINES[2];
+  const line = lines[presetKey] === undefined ? lines.balanced : lines[presetKey];
   const played = obs.order.slice(0, obs.pos).map((i) => obs.scores[i]).filter((v) => v !== null);
   const best = played.length ? Math.max(...played) : -1;
   const behind = total < best; // behind someone who has already played: any chance is worth it
   const reroll = behind || total <= line - (rng.next() < 0.1 ? 1 : 0);
-  return { actions: [reroll ? { type: 'ROLL' } : { type: 'KEEP' }], margin: null };
+  if (!reroll) return { actions: [{ type: 'KEEP' }], margin: null };
+  if (obs.options.reroll === 'both') return { actions: [{ type: 'ROLL' }], margin: null };
+  // Either die: re-roll every die showing 3 or less, or the lowest one when none does
+  let ids = cargo.map((v, i) => (v <= 3 ? i : -1)).filter((i) => i >= 0);
+  if (!ids.length) { const lo = Math.min(...cargo); ids = [cargo.indexOf(lo)]; }
+  return { actions: [{ type: 'ROLL', ids }], margin: null };
 }

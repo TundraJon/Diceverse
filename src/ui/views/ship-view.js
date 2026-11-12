@@ -3,7 +3,7 @@
 import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
-import { SLOTS, SLOT_VALUE, VOYAGES } from '../../games/ship.js';
+import { SLOTS, SLOT_VALUE, VOYAGES, REQUIRED, cargoSize } from '../../games/ship.js';
 
 const THEME = {
   title: 'SHIP, CAPTAIN & CREW',
@@ -21,14 +21,15 @@ const el = (tag, cls, text) => {
 };
 
 // The ship: sails, a mast with a flag and a hull with planks, behind the three sockets.
-const SHIP_SVG = '<svg viewBox="0 0 360 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
-  + '<path d="M176 8 L176 78" stroke="#6b4a2a" stroke-width="4"/>'
-  + '<path d="M180 12 L180 20 L214 14 Z" fill="#e5484d"/>'
-  + '<path d="M172 16 C120 24 96 52 92 76 L172 76 Z" fill="#f1e7cf" stroke="#cdbb92" stroke-width="1.5"/>'
-  + '<path d="M182 16 C236 26 262 54 266 76 L182 76 Z" fill="#f6edd8" stroke="#cdbb92" stroke-width="1.5"/>'
-  + '<path d="M26 78 L334 78 C326 130 292 146 252 146 L108 146 C68 146 34 130 26 78 Z" fill="#8a5a2b" stroke="#fde68a" stroke-width="2"/>'
-  + '<path d="M34 104 L326 104 M46 126 L314 126" stroke="rgba(0,0,0,0.25)" stroke-width="2"/>'
-  + '<rect x="26" y="74" width="308" height="8" rx="3" fill="#a8742f" stroke="#fde68a" stroke-width="1.5"/>'
+const SHIP_SVG = '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
+  + '<path d="M176 6 L176 84" stroke="#6b4a2a" stroke-width="4"/>'
+  + '<path d="M180 10 L180 18 L214 12 Z" fill="#e5484d"/>'
+  + '<path d="M172 14 C120 22 96 50 92 80 L172 80 Z" fill="#f1e7cf" stroke="#cdbb92" stroke-width="1.5"/>'
+  + '<path d="M182 14 C236 24 262 52 266 80 L182 80 Z" fill="#f6edd8" stroke="#cdbb92" stroke-width="1.5"/>'
+  + '<path d="M22 84 L338 84 C330 160 296 192 254 192 L106 192 C64 192 30 160 22 84 Z" fill="#8a5a2b" stroke="#fde68a" stroke-width="2"/>'
+  + '<path d="M30 118 L330 118 M42 170 L318 170" stroke="rgba(0,0,0,0.22)" stroke-width="2"/>'
+  + '<rect x="22" y="80" width="316" height="9" rx="3" fill="#a8742f" stroke="#fde68a" stroke-width="1.5"/>'
+  + '<rect x="62" y="104" width="236" height="68" rx="10" fill="#2a1a0c" stroke="#fde68a" stroke-width="1.5" stroke-dasharray="4 3"/>'
   + '</svg>';
 
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, wins: s.wins, turns: s.turns }));
@@ -72,12 +73,16 @@ export const shipView = {
       locked: { ...t.locked },
       sea: t.free.slice(),
       cargo: t.cargo ? t.cargo.slice() : null,
-      cargoTotal: t.cargo ? t.cargo[0] + t.cargo[1] : null,
+      cargoTotal: t.cargo ? t.cargo.reduce((x, y) => x + y, 0) : null,
       rollsLeft: t.rollsLeft,
       rolling: false,
       banner: null,
       target: st.options.target,
       rolls: st.options.rolls,
+      crew: st.options.crew,
+      reroll: st.options.reroll,
+      held: [],
+      tumbling: [],
       soloScores: [],
     };
   },
@@ -91,9 +96,8 @@ export const shipView = {
     ui.rounds = el('div', 'scrounds');
     ui.deck = el('div', 'scdeck');
     ui.sea = el('div', 'scsea');
-    ui.hold = el('div', 'schold');
     ui.pips = el('div', 'scpips');
-    ui.table.append(ui.chips, ui.banner, ui.rounds, ui.deck, ui.sea, ui.hold, ui.pips);
+    ui.table.append(ui.chips, ui.banner, ui.rounds, ui.deck, ui.sea, ui.pips);
     ui.table.addEventListener('contextmenu', (e) => e.preventDefault());
   },
 
@@ -140,34 +144,49 @@ export const shipView = {
       });
     }
 
-    // the ship deck: three sockets, filled in order
+    // the ship: the sockets stand ON DECK, the cargo hold is BELOW DECK inside the hull
     ui.deck.innerHTML = SHIP_SVG;
+    const need = REQUIRED[view.crew];
     const slots = el('div', 'scslots');
     SLOTS.forEach((k) => {
-      const slot = el('div', `scslot${view.locked[k] ? ' on' : ''}`);
+      const skip = !need.includes(k);
+      const slot = el('div', `scslot${view.locked[k] ? ' on' : ''}${skip ? ' skip' : ''}`);
       if (view.locked[k]) slot.appendChild(renderDie(SLOT_VALUE[k], { danger: false }));
-      else slot.appendChild(el('b', null, String(SLOT_VALUE[k])));
-      slot.appendChild(el('small', null, THEME.slot[k]));
-      slot.setAttribute('aria-label', `${THEME.slot[k]}${view.locked[k] ? ', in place' : ', empty'}`);
+      else slot.appendChild(el('b', null, skip ? '–' : String(SLOT_VALUE[k])));
+      slot.appendChild(el('small', null, skip ? 'NOT NEEDED' : THEME.slot[k]));
+      slot.setAttribute('aria-label', skip ? `${THEME.slot[k]}, not needed` : `${THEME.slot[k]}${view.locked[k] ? ', in place' : ', empty'}`);
       slots.appendChild(slot);
     });
     ui.deck.appendChild(slots);
+    const hold = el('div', `schold${view.cargo ? ' full' : ''}`);
+    hold.appendChild(el('span', 'schl', THEME.hold));
+    const cd = el('div', 'scdice');
+    const n = cargoSize(view.crew);
+    const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep
+    for (let k = 0; k < n; k++) {
+      const die = renderDie(view.cargo ? view.cargo[k] : null, { tumble: ctx.tumble && !ctx.reduced && view.rolling && !!view.cargo && view.tumbling.includes(k), danger: false });
+      if (pick) {
+        const wrap = el('div', 'schw');
+        const btn = el('button', 'dieBtn' + (view.held[k] ? ' held' : ''));
+        btn.type = 'button';
+        btn.setAttribute('aria-pressed', String(!!view.held[k]));
+        btn.setAttribute('aria-label', `Cargo die showing ${view.cargo[k]}${view.held[k] ? ', kept' : ''}`);
+        btn.appendChild(die);
+        btn.addEventListener('click', () => { view.held[k] = !view.held[k]; this.render(ui, view, session, ctx); });
+        wrap.append(btn, el('div', 'holdTag', view.held[k] ? 'KEPT' : ''));
+        cd.appendChild(wrap);
+      } else cd.appendChild(die);
+    }
+    hold.appendChild(cd);
+    hold.appendChild(el('b', 'sct', view.cargoTotal !== null && !view.rolling ? `= ${view.cargoTotal}` : ''));
+    ui.deck.appendChild(hold);
 
-    // the sea: the dice still in play (blank until the first roll of a turn)
+    // the sea: the dice still in play (blank before the first roll of a turn)
     ui.sea.innerHTML = '';
-    const inPlay = view.cargo ? 0 : 5 - SLOTS.filter((k) => view.locked[k]).length;
+    const inPlay = view.cargo ? 0 : 5 - need.filter((k) => view.locked[k]).length;
     const showing = view.sea.length ? view.sea : Array.from({ length: inPlay }, () => null);
     showing.forEach((v) => ui.sea.appendChild(renderDie(v, { tumble: ctx.tumble && !ctx.reduced && view.rolling && v !== null, danger: false })));
     ui.sea.classList.toggle('empty', !showing.length);
-
-    // the cargo hold
-    ui.hold.innerHTML = '';
-    ui.hold.classList.toggle('full', !!view.cargo);
-    ui.hold.appendChild(el('span', 'schl', THEME.hold));
-    const cd = el('div', 'scdice');
-    for (let k = 0; k < 2; k++) cd.appendChild(renderDie(view.cargo ? view.cargo[k] : null, { tumble: ctx.tumble && !ctx.reduced && view.rolling && !!view.cargo, danger: false }));
-    ui.hold.appendChild(cd);
-    ui.hold.appendChild(el('b', 'sct', view.cargoTotal !== null && !view.rolling ? `= ${view.cargoTotal}` : ''));
 
     // rolls left
     ui.pips.innerHTML = '';
@@ -178,10 +197,19 @@ export const shipView = {
 
     // controls
     if (human && st.turn.phase === 'cargo') {
-      renderTurnBar(ui.controls, [
-        { label: 'RE-ROLL CARGO', cls: 'btn-roll', onClick: () => ctx.act([{ type: 'ROLL' }]) },
-        { label: `KEEP ${view.cargoTotal}`, cls: 'btn-bank', onClick: () => ctx.act([{ type: 'KEEP' }]) },
-      ]);
+      const total = view.cargoTotal;
+      if (view.reroll === 'either') {
+        const free = view.cargo.map((_, i) => i).filter((i) => !view.held[i]);
+        renderTurnBar(ui.controls, [
+          { label: free.length ? `RE-ROLL ${free.length}` : 'ALL KEPT', cls: 'btn-roll', disabled: !free.length, onClick: () => { const ids = free.slice(); view.held = []; ctx.act([{ type: 'ROLL', ids }]); } },
+          { label: `KEEP ${total}`, cls: 'btn-bank', onClick: () => ctx.act([{ type: 'KEEP' }]) },
+        ]);
+      } else {
+        renderTurnBar(ui.controls, [
+          { label: 'RE-ROLL CARGO', cls: 'btn-roll', onClick: () => ctx.act([{ type: 'ROLL' }]) },
+          { label: `KEEP ${total}`, cls: 'btn-bank', onClick: () => ctx.act([{ type: 'KEEP' }]) },
+        ]);
+      }
     } else {
       renderTurnBar(ui.controls, [{ label: 'ROLL', cls: 'btn-roll span2', disabled: !human, onClick: () => ctx.act([{ type: 'ROLL' }]) }]);
     }
@@ -199,7 +227,13 @@ export const shipView = {
         view.banner = null;
         tumble = true;
         delay = ctx.reduced ? REVEAL_MS : SETTLE_MS; // nothing about the roll (a die set aside, the cargo total) shows until the dice have settled and the pause has passed
-        if (ev.cargo) { view.cargo = ev.dice.slice(); view.cargoTotal = null; after = `${name(ev.seat)} re-rolled the cargo: ${ev.dice.join(' and ')}`; } else { view.sea = ev.dice.slice(); after = `${name(ev.seat)} rolled ${ev.dice.join(', ')}`; }
+        view.held = [];
+        view.tumbling = ev.ids ? ev.ids.slice() : [];
+        if (ev.cargo) { // the cargo dice that are re-rolled change; the held ones keep their value
+          (ev.ids || []).forEach((i, k) => { view.cargo[i] = ev.dice[k]; });
+          view.cargoTotal = null;
+          after = `${name(ev.seat)} re-rolled ${ev.dice.length === 1 ? 'a cargo die' : 'the cargo'}: ${ev.dice.join(' and ')}`;
+        } else { view.sea = ev.dice.slice(); after = `${name(ev.seat)} rolled ${ev.dice.join(', ')}`; }
         break;
       case 'LOCKED': {
         view.rolling = false;
@@ -255,6 +289,7 @@ export const shipView = {
         view.sea = [];
         view.cargo = null;
         view.cargoTotal = null;
+        view.held = [];
         view.rollsLeft = view.rolls;
         view.rolling = false;
         if (view.nextRound) { view.nextRound = false; view.round += 1; view.scores = view.seats.map(() => null); view.order = view.seats.map((_, i) => i); } // a new round: the table starts again
