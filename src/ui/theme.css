@@ -225,7 +225,8 @@ body.fast .cover { transition: none; }
 
 /* Menu: the game picker wraps into rows of three (five games no longer fit on one row) */
 .seg.games { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); grid-auto-columns: auto; }
-.seg.games button { min-height: 40px; padding: 2px 4px; font-size: 0.78rem; line-height: 1.1; }
+.seg.games button { min-height: 34px; padding: 2px 4px; font-size: 0.78rem; line-height: 1.1; }
+@media (max-width: 340px) { .seg.games button { min-height: 30px; } } /* nine games: keep the menu on one screen on a very small phone */
 .btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* Cliffhanger */
@@ -430,3 +431,67 @@ body.fast .cover { transition: none; }
 .pgsvg { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; }
 .pggrid { z-index: 1; }
 .pgw.pgwalk { transition: none; }
+
+/* Liar's Dice: the Bidding Track board, the players' dice and cups in the middle, your cup, the face buttons and the reveal */
+.ldwrap { justify-content: flex-start; gap: 6px; }
+.ldboard { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(7, auto); gap: 3px; width: 100%; }
+.ldsq { position: relative; aspect-ratio: 1; min-width: 0; padding: 0; border: 0; border-radius: 6px; background: linear-gradient(160deg, #fff, #dfe6ec); color: #1f2937; font-weight: 800; font-size: clamp(9px, 3vw, 13px); display: grid; place-items: center; }
+.ldsq.w { background: linear-gradient(160deg, #fde68a, #e0a82e); color: #3a2410; }
+.ldsq small { position: absolute; bottom: 1px; left: 0; right: 0; font-size: 6px; line-height: 1; font-weight: 700; text-align: center; }
+.ldsq.off { opacity: 0.2; }
+.ldsq:disabled { opacity: 0.88; }
+.ldsq.off:disabled { opacity: 0.2; }
+.ldsq.opt { box-shadow: 0 0 0 2px rgba(34,211,238,0.7); }
+.ldsq.hasbid { outline: 3px solid #22d3ee; z-index: 2; }
+.ldsq.hasstage { outline: 3px dashed #fbbf24; z-index: 2; }
+.ldtok { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.ldtok .die { --s: 22px; }
+.ldtok .lap { position: absolute; top: -3px; right: -3px; background: #22d3ee; color: #08211a; border-radius: 8px; font-size: 8px; font-style: normal; font-weight: 800; padding: 0 3px; line-height: 11px; }
+.ldcenter { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 4px; min-width: 0; overflow: hidden; }
+.ldbidline { color: var(--gold); font-weight: 800; font-size: 0.85rem; text-align: center; }
+.ldsub { color: var(--muted); font-size: 0.72rem; text-align: center; }
+.ldcols { display: flex; gap: 12px; align-items: flex-end; justify-content: center; }
+.ldcol { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ldcol.out { opacity: 0.35; }
+.ldcol small { font-size: 0.62rem; color: #cbd5e1; }
+.ldcup { display: block; width: 18px; height: 14px; clip-path: polygon(15% 0, 85% 0, 100% 100%, 0 100%); }
+.ldcol.on .ldcup { filter: drop-shadow(0 0 3px #fbbf24); }
+.ldstack { display: flex; flex-direction: column-reverse; gap: 2px; }
+.ldpip { display: block; width: 12px; height: 12px; border-radius: 3px; }
+.ldpip.gone { border: 1px dashed rgba(255,255,255,0.25); box-sizing: border-box; }
+.ldpip.lostd { width: 9px; height: 9px; background: #8795a1; opacity: 0.8; }
+.ldlost { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 3px; font-size: 0.62rem; color: #94a3b8; min-height: 12px; }
+.ldrows { display: flex; flex-direction: column; gap: 3px; }
+.ldrow { display: flex; gap: 6px; align-items: center; }
+.ldrow > i { width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; }
+.ldd.die { --s: 17px; }
+.ldd .tilt { transform: none; }
+.ldrow .die:not(.hit) { opacity: 0.5; }
+.ldd.hit { animation: ldhit 0.45s ease-out both; }
+@keyframes ldhit { from { filter: none; transform: scale(1); } to { filter: drop-shadow(0 0 4px #fbbf24); transform: scale(1.18); } }
+.ldcount { font-size: 0.72rem; color: #e2e8f0; text-align: center; }
+.ldtotals { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.ldtot { width: 34px; min-height: 34px; padding: 0; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,0.08); color: var(--text); font-weight: 800; }
+.ldtot.sel { border-color: var(--gold); background: rgba(251,191,36,0.25); }
+.ldfaces { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.ldfaces[hidden] { display: none; }
+.ldface { min-width: 42px; min-height: 42px; padding: 0; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); display: grid; place-items: center; }
+.ldface .die { --s: 28px; }
+.ldface.sel { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.4); }
+.ldface:disabled { opacity: 0.4; }
+.ldfhint { flex-basis: 100%; text-align: center; color: var(--muted); font-size: 0.75rem; min-height: 1em; }
+.ldmine { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; min-height: 44px; }
+.ldpeek { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 14px; border-radius: 14px; border: 2px solid var(--gold); background: rgba(251,191,36,0.12); color: var(--gold); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.ldpeek.on { background: var(--gold); color: #1f2937; }
+.ldpeek:disabled { opacity: 0.5; }
+.ldcupbig { display: inline-block; width: 26px; height: 22px; clip-path: polygon(15% 0, 85% 0, 100% 100%, 0 100%); background: currentColor; }
+.ldhand { display: flex; gap: 6px; }
+.ldhand .die { --s: 26px; }
+.ldhand.shake .die { animation: ldshake 0.5s ease-in-out 2; }
+@keyframes ldshake { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-5px) rotate(-8deg); } 75% { transform: translateX(5px) rotate(8deg); } }
+.ldcover { position: fixed; inset: 0; z-index: 40; background: rgba(5,22,18,0.98); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.ldcover[hidden] { display: none; }
+.ldcoverbox { text-align: center; display: flex; flex-direction: column; gap: 12px; max-width: 320px; }
+.ldcoverh { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
+.ldcovers { color: var(--muted); font-size: 0.85rem; }
+@media (prefers-reduced-motion: reduce) { .ldhand.shake .die, .ldd.hit { animation: none; } }

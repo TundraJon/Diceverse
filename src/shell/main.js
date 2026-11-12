@@ -140,6 +140,7 @@ function renderMenu() {
   const gameId = settings.game;
   const mod = GAMES[gameId];
   const gview = VIEWS[gameId];
+  if (mod.meta.soloOK === false && settings.mode === 'solo') { settings.mode = 'bots'; persistSettings(); } // a game with no Solo falls back to vs Bots
   const screen = el('section', 'screen');
   const gear = el('button', 'gear', '\u2699\uFE0F');
   gear.setAttribute('aria-label', 'Settings');
@@ -177,7 +178,7 @@ function renderMenu() {
   const modePanel = el('div', 'panel');
   modePanel.appendChild(el('h2', null, 'Mode'));
   const seg = el('div', 'seg');
-  [['bots', 'vs Bots'], ['pass', 'Pass & Play'], ['solo', 'Solo']].forEach(([key, label]) => {
+  [['bots', 'vs Bots'], ['pass', 'Pass & Play'], ['solo', 'Solo']].filter(([key]) => key !== 'solo' || GAMES[gameId].meta.soloOK !== false).forEach(([key, label]) => {
     const b = el('button', null, label);
     b.setAttribute('aria-pressed', String(settings.mode === key));
     b.addEventListener('click', () => { settings.mode = key; persistSettings(); renderMenu(); });

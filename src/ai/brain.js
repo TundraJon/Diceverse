@@ -12,6 +12,7 @@ export const PRESETS = {
 // Returns { actions: [...], margin } where actions are dispatched in order (e.g. SET_ASIDE then ROLL).
 // margin = adjusted value gap between the best and second-best plan (small = close call).
 export function decide(game, obs, seat, presetKey, seed) {
+  if (game.choose) return game.choose(obs, seat, presetKey, seed); // a game that decides by its own odds (Liar's Dice) skips the simulation search
   const plans = game.candidatePlans ? game.candidatePlans(obs, seat) : game.legalActions(obs, seat).map((a) => [a]);
   if (plans.length === 1) return { actions: plans[0], margin: null };
 

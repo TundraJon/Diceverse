@@ -112,10 +112,10 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
         if (mood[i] === 'THINKING' || mood[i] === 'NERVOUS') setMood(i, 'DEFAULT');
         if (botSeat(i) && talkTurn[i] && !spoke[i]) spokeNow(i, 'DEFAULT'); // a talk turn that gave no mood still gets a normal line
         break;
-      case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE':
+      case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE': case 'DICE_LOST':
         feel(i, 'SHOCKED');
         break;
-      case 'COLUMN_WON': case 'BOX_SHUT':
+      case 'COLUMN_WON': case 'BOX_SHUT': case 'CHALLENGE_WON':
         feel(i, 'WINNING');
         break;
       case 'BANKED': {

@@ -7,6 +7,7 @@ import * as cliffhanger from './cliffhanger.js';
 import * as salvage from './salvage.js';
 import * as plunder from './plunder.js';
 import * as dive from './dive.js';
+import * as liars from './liars.js';
 
-export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive };
-export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive'];
+export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars };
+export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars'];
