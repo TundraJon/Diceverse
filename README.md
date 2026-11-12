@@ -17,7 +17,12 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+**Queue 39: Pig: a dot at the middle of each bend and pigs that turn through the corners.** Not yet authorized to build.
+
+- A stone dot at the apex of every bend (the middle of the half circle, where the user marked gray dots on their screenshot); it is not a space (no pig stops on it, scores are unchanged).
+- Pigs rotate through the corner instead of flipping: facing right (0 degrees) along a left-to-right row, turning down (90 degrees) at the bend dot, then facing left (180 degrees) along the next row; the same in reverse for a walk back. The mirror (`flip`) is replaced by a rotation, so the pig on a right-to-left row is turned 180 degrees (not mirrored), and a pig standing still faces along its row (0 or 180 degrees). The turn is animated smoothly through the bend (start of the bend, the dot, the end of the bend), within the same 0.12 s per space walking time. The ghost and the tumble follow the same rotation.
+- Tests: sample the pig's heading through a full walk across a bend (right, then down, then left) and confirm it passes the bend dot; re-run the Pig suite and the layout checks.
+- *(Added by Claude. Change before authorizing if wanted: the bend dot is the same dark brown stone as the others, not gray; the rotation replaces the mirror for left-going rows.)*
 
 ## Build Planner
 
