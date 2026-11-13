@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 960" width="360" height="960">
+  <defs>
+    <style>
+      .ink {
+        stroke: #1A1414;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .skin { fill: #EBB89D; }
+      .hair { fill: #8E8C8E; }
+      .uniform-red { fill: #A81C33; }
+      .uniform-black { fill: #121316; }
+      .gold { fill: #D9B13B; }
+    </style>
+  </defs>
+
+  <!-- LEGS & BOOTS -->
+  <g id="legs">
+    <!-- Black Trousers -->
+    <path class="uniform-black ink" d="M 96,386
+      L 272,386
+      L 264,872
+      L 246,852
+      L 202,872
+      L 194,652
+      L 174,868
+      L 106,846
+      L 82,472
+      Z" />
+
+    <!-- Left Boot (Profile) -->
+    <path class="uniform-black ink" d="M 106,846
+      L 168,868
+      L 168,880
+      C 138,892 102,904 64,910
+      C 46,912 36,906 40,896
+      C 46,888 74,876 92,862
+      Z" />
+
+    <!-- Right Boot (Front) -->
+    <path class="uniform-black ink" d="M 206,868
+      L 242,846
+      L 262,868
+      L 276,906
+      C 278,922 274,938 266,942
+      C 252,946 234,944 224,936
+      L 206,904
+      Z" />
+  </g>
+
+  <!-- ARMS & HANDS AT SIDES -->
+  <g id="arms">
+    <!-- Viewer's Left Arm & Hand -->
+    <path class="uniform-red ink" d="M 70,196
+      L 52,208
+      L 32,468
+      L 72,468
+      L 82,258
+      Z" />
+    <path class="skin ink" d="M 38,468 L 66,468 L 70,524 L 58,528 L 34,514 Z" />
+
+    <!-- Viewer's Right Arm & Hand -->
+    <path class="uniform-red ink" d="M 282,196
+      L 318,208
+      L 338,476
+      L 296,478
+      L 266,226
+      Z" />
+    <path class="skin ink" d="M 300,478 L 332,476 L 336,534 L 304,534 L 296,500 Z" />
+  </g>
+
+  <!-- TORSO (CAPTAIN PICARD STARFLEET TUNIC) -->
+  <g id="torso">
+    <!-- Tunic Base -->
+    <path class="uniform-black ink" d="M 142,140
+      L 212,140
+      L 292,166
+      C 308,172 316,186 318,208
+      L 272,388
+      L 96,388
+      L 82,258
+      L 52,208
+      C 54,186 62,172 78,166
+      Z" />
+
+    <!-- Red Tunic Chest -->
+    <path class="uniform-red ink" d="M 70,196
+      C 134,184 218,184 282,196
+      L 266,226
+      L 232,344
+      L 104,358
+      L 82,258
+      Z" />
+
+    <!-- Black Shoulder Yoke -->
+    <path class="uniform-black ink" d="M 142,140
+      L 212,140
+      L 292,166
+      C 308,172 316,186 318,208
+      L 282,196
+      C 218,184 134,184 70,196
+      L 52,208
+      C 54,186 62,172 78,166
+      Z" />
+
+    <!-- Rank Pips -->
+    <g transform="translate(144, 152) rotate(42)">
+      <circle cx="0" cy="0" r="2.2" class="gold"/>
+      <circle cx="6.2" cy="0" r="2.2" class="gold"/>
+      <circle cx="12.4" cy="0" r="2.2" class="gold"/>
+      <circle cx="18.6" cy="0" r="2.2" class="gold"/>
+    </g>
+
+    <!-- Communicator Badge -->
+    <polygon class="gold" stroke="#1A1414" stroke-width="1.2" points="216,214 224,236 216,230 208,236" />
+  </g>
+
+  <!-- HEAD & BALD TOP -->
+  <g id="head">
+    <!-- Neck -->
+    <path class="skin ink" d="M 144,124 L 144,146 L 167,168 L 210,144 L 208,122 Z" />
+
+    <!-- Face -->
+    <path class="skin ink" d="M 136,64
+      C 136,42 154,30 176,30
+      C 198,30 218,42 220,64
+      L 220,88
+      C 218,112 204,134 182,140
+      C 158,142 136,116 136,88
+      Z" />
+
+    <!-- Hair Temples -->
+    <path class="hair ink" d="M 136,64 C 140,62 144,68 144,76 L 136,86 Z" />
+    <path class="hair ink" d="M 220,64 C 216,60 212,70 212,82 L 220,96 Z" />
+
+    <!-- Eyes, Eyebrows & Nose -->
+    <path class="ink" fill="none" d="M 146,78 L 162,78 M 180,78 L 196,78" />
+    <circle cx="154" cy="87" r="2.5" fill="#1A1414" />
+    <circle cx="190" cy="87" r="2.5" fill="#1A1414" />
+    <path class="ink" fill="none" d="M 170,84 L 160,104 L 180,104" />
+  </g>
+</svg>

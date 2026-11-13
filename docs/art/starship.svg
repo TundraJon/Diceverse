@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" width="1000" height="750">
+  <defs>
+    <style>
+      .hull {
+        fill: #87919D;
+        stroke: #23272D;
+        stroke-width: 3.5;
+        stroke-linejoin: round;
+      }
+      .hull-dark {
+        fill: #5B636E;
+        stroke: #23272D;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      .detail-line {
+        fill: none;
+        stroke: #363C44;
+        stroke-width: 2;
+      }
+      .bussard {
+        fill: #D93214;
+        stroke: #23272D;
+        stroke-width: 3;
+      }
+      .accent-red {
+        fill: #A61C1C;
+      }
+      .accent-blue {
+        fill: #3B7BFF;
+        stroke: #1A3A7A;
+        stroke-width: 1.5;
+      }
+    </style>
+
+    <!-- Simplified Warp Nacelle -->
+    <g id="basic-nacelle">
+      <!-- Main Casing -->
+      <path class="hull" d="M 665,-38 L 950,-42 C 972,-42 982,-24 982,0 C 982,24 972,42 950,42 L 665,38 Z"/>
+      <!-- Red Bussard Collector Cap -->
+      <path class="bussard" d="M 665,-33 L 622,-27 C 606,-24 602,-12 602,0 C 602,12 606,24 622,27 L 665,33 Z"/>
+      <!-- Gold/Dark Collar Band -->
+      <rect x="664" y="-37" width="16" height="74" fill="#D4A636" stroke="#23272D" stroke-width="2.5"/>
+      <!-- Signature Red Pinstripe -->
+      <rect class="accent-red" x="710" y="-4" width="210" height="8" rx="2"/>
+    </g>
+  </defs>
+
+  <!-- 1. NACELLE PYLONS -->
+  <path class="hull-dark" d="M 735,280 L 795,280 L 822,218 L 882,218 L 866,292 C 858,312 835,318 810,318 L 735,318 Z"/>
+  <path class="hull-dark" d="M 735,470 L 795,470 L 822,532 L 882,532 L 866,458 C 858,438 835,432 810,432 L 735,432 Z"/>
+
+  <!-- 2. ENGINEERING / STARDRIVE HULL -->
+  <path class="hull" d="M 555,274
+           C 625,276 705,286 775,296
+           C 825,303 868,314 885,326
+           L 885,424
+           C 868,436 825,447 775,454
+           C 705,464 625,474 555,476 Z"/>
+  <line class="detail-line" x1="585" y1="375" x2="875" y2="375"/>
+
+  <!-- 3. PRIMARY SAUCER SECTION -->
+  <ellipse class="hull" cx="312" cy="375" rx="292" ry="358"/>
+  <!-- Inner Dome & Phaser Ring -->
+  <ellipse class="detail-line" cx="312" cy="375" rx="242" ry="298"/>
+  <ellipse class="detail-line" cx="312" cy="375" rx="192" ry="236"/>
+
+  <!-- 4. BRIDGE SUPERSTRUCTURE & NECK -->
+  <path class="hull-dark" d="M 312,282
+           C 265,282 238,325 238,375
+           C 238,425 265,468 312,468
+           C 342,468 362,448 386,444
+           L 535,436
+           L 535,314
+           L 386,306
+           C 362,302 342,282 312,282 Z"/>
+  <!-- Bridge Dome -->
+  <ellipse class="hull" cx="314" cy="375" rx="44" ry="36"/>
+  <!-- Aft Impulse Engines -->
+  <rect class="accent-blue" x="524" y="346" width="10" height="24" rx="2"/>
+  <rect class="accent-blue" x="524" y="380" width="10" height="24" rx="2"/>
+
+  <!-- 5. PORT & STARBOARD WARP NACELLES -->
+  <use href="#basic-nacelle" transform="translate(0, 182)"/>
+  <use href="#basic-nacelle" transform="translate(0, 568)"/>
+</svg>
