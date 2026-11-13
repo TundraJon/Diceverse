@@ -17,15 +17,19 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 45: Ship, Captain & Crew game-over banner stays at least 2.5 seconds (Not yet authorized to build.)
+
+The user: on Ship, Captain & Crew the game-over banners go by too quickly; they should stay at least 2.5 seconds. Today `GAME_OVER` in `src/ui/views/ship-view.js` waits 600 ms (200 ms with reduced motion) before the shell opens the results sheet (`showGameOver` in `src/shell/main.js`), which covers the banner.
+
+- [ ] `reduce` case `GAME_OVER` (ship-view.js): delay 2500 ms (also with reduced motion, because reading time does not depend on motion), so the banner ("X wins the game!" or "The voyages are over!") is readable before the results sheet opens. *(Added by Claude. Change before authorizing if wanted.)*
+- [ ] Only Ship, Captain & Crew changes; the other games keep their timing.
+- [ ] Not changed unless the user says so: the round banner ("X wins the round", 1300 ms) and "no cargo" (900 ms). Question for the user: should those also stay 2.5 seconds?
+- [ ] Verification: real-speed run to the end of a game, the banner is on screen for at least 2.5 s before the sheet opens; `?speed=0` unaffected.
 
 ## Build Planner
 
-### Planner 23: comments and end reasons go by too quickly
-The user said (while approving Build 62) "I need to be able to read the comments and end reason clearly, goes by too quick." Not yet clear which: the bot talk bubbles, the round/game-over banners ("X wins the round", "no cargo"), the Solo "The voyages are over!" banner, or all games. Open questions: which screens, and how long they should stay (a recommendation: tie the display time to the length of the text, at least 2.5 s, and let a tap dismiss it).
-
-Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
-
+### Planner 23: a second skin for Ship, Captain & Crew (the black galleon)
+The user proposed a second skin: a black three-masted galleon (SVG made with Gemini, 800 x 680, pasted in the chat on 2026-11-13; save it verbatim to `docs/art/galleon.svg` when this is queued). The user left an open space in the middle (the waist between the main mast at x=318..326 and the fore mast at x=542, about y=400 to 530) for three or so dice, like the containers on the freighter. Open questions: where the ship die (6), the captain (5) and the crew (4) stand (my idea: crew in the main mast's crow's nest, captain on the quarterdeck at x=150..246, ship die on the forecastle); where the skin is chosen (a house rule on the game, or a setting); whether the ghost-until-the-6 look and the flat dice carry over; whether the captain and crew drawings are reused or new ones come.
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
