@@ -25,9 +25,9 @@
 
   <!-- UPPER CABIN (WHEELHOUSE) -->
   <g id="upper-cabin">
-    <rect x="102" y="85" width="88" height="68" rx="4" class="cabin-light" />
-    <rect x="145" y="85" width="45" height="68" class="cabin-shade" />
-    <path class="outline" fill="none" d="M 102,153 L 102,91 C 102,87 105,85 109,85 L 183,85 C 187,85 190,87 190,91 L 190,153" />
+    <rect x="112" y="85" width="68" height="68" rx="4" class="cabin-light" />
+    <rect x="146" y="85" width="34" height="68" class="cabin-shade" />
+    <path class="outline" fill="none" d="M 112,153 L 112,91 C 112,87 115,85 119,85 L 173,85 C 177,85 180,87 180,91 L 180,153" />
   </g>
 
   <!-- LOWER SUPERSTRUCTURE & BRIDGE DECK -->
@@ -48,17 +48,17 @@
   <!-- CARGO CONTAINERS -->
   <g id="containers">
     <!-- Container 1 (Left) -->
-    <rect x="252" y="167" width="73" height="68" class="container-dark" />
+    <rect x="258" y="167" width="68" height="68" class="container-dark" />
     <!-- Container 2 (Middle - Highlighted) -->
-    <rect x="325" y="167" width="73" height="68" class="container-light" />
+    <rect x="326" y="167" width="68" height="68" class="container-light" />
     <!-- Container 3 (Right) -->
-    <rect x="398" y="167" width="74" height="68" class="container-dark" />
+    <rect x="394" y="167" width="68" height="68" class="container-dark" />
 
     <!-- Container Outer Frame -->
-    <path class="outline" fill="none" d="M 252,235 L 252,174 C 252,170 255,167 259,167 L 465,167 C 469,167 472,170 472,174 L 472,235" />
+    <path class="outline" fill="none" d="M 258,235 L 258,174 C 258,170 261,167 265,167 L 455,167 C 459,167 462,170 462,174 L 462,235" />
     <!-- Vertical Dividers -->
-    <line class="outline" x1="325" y1="167" x2="325" y2="235" />
-    <line class="outline" x1="398" y1="167" x2="398" y2="235" />
+    <line class="outline" x1="326" y1="167" x2="326" y2="235" />
+    <line class="outline" x1="394" y1="167" x2="394" y2="235" />
   </g>
 
   <!-- SHIP HULL -->
@@ -102,7 +102,5 @@
       C 76,288 66,264 65,235 Z" />
 
     <!-- Broken Waterline Divider Stroke -->
-    <line class="outline" x1="102" y1="316" x2="395" y2="316" />
-    <line class="outline" x1="430" y1="316" x2="503" y2="316" />
   </g>
 </svg>

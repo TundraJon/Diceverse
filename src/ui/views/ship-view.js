@@ -1,15 +1,15 @@
-// Ship, Captain & Crew view: the ship deck with three sockets (ship 6, captain 5, crew 4), the sea with the dice still in play, the cargo hold,
-// the round table. All theme words live in THEME. The art (the ship) is drawn in CSS and inline SVG.
+// Ship, Captain & Crew view: the freighter (the ship die 6 in the wheelhouse, the captain 5 at the helm, the crew 4 in the crow's nest, the cargo dice in
+// the three containers), the sea with the dice still in play, the round table. All theme words live in THEME. The art is src/ui/freighter-art.js.
 import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
 import { SLOTS, SLOT_VALUE, VOYAGES, REQUIRED, cargoSize } from '../../games/ship.js';
+import { freighterSvg, VB, WHEELHOUSE, CONTAINERS } from '../freighter-art.js';
 
 const THEME = {
   title: 'SHIP, CAPTAIN & CREW',
   tagline: 'Find your ship, captain and crew, then count the cargo.',
   slot: { ship: 'SHIP 6', captain: 'CAPTAIN 5', crew: 'CREW 4' },
-  hold: 'Cargo hold',
 };
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
@@ -19,18 +19,6 @@ const el = (tag, cls, text) => {
   if (text != null) e.textContent = text;
   return e;
 };
-
-// The ship: sails, a mast with a flag and a hull with planks, behind the three sockets.
-const SHIP_SVG = '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
-  + '<path d="M176 6 L176 84" stroke="#6b4a2a" stroke-width="4"/>'
-  + '<path d="M180 10 L180 18 L214 12 Z" fill="#e5484d"/>'
-  + '<path d="M172 14 C120 22 96 50 92 80 L172 80 Z" fill="#f1e7cf" stroke="#cdbb92" stroke-width="1.5"/>'
-  + '<path d="M182 14 C236 24 262 52 266 80 L182 80 Z" fill="#f6edd8" stroke="#cdbb92" stroke-width="1.5"/>'
-  + '<path d="M22 84 L338 84 C330 160 296 192 254 192 L106 192 C64 192 30 160 22 84 Z" fill="#8a5a2b" stroke="#fde68a" stroke-width="2"/>'
-  + '<path d="M30 118 L330 118 M42 170 L318 170" stroke="rgba(0,0,0,0.22)" stroke-width="2"/>'
-  + '<rect x="22" y="80" width="316" height="9" rx="3" fill="#a8742f" stroke="#fde68a" stroke-width="1.5"/>'
-  + '<rect x="62" y="104" width="236" height="68" rx="10" fill="#2a1a0c" stroke="#fde68a" stroke-width="1.5" stroke-dasharray="4 3"/>'
-  + '</svg>';
 
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, wins: s.wins, turns: s.turns }));
 
@@ -144,27 +132,29 @@ export const shipView = {
       });
     }
 
-    // the ship: the sockets stand ON DECK, the cargo hold is BELOW DECK inside the hull
-    ui.deck.innerHTML = SHIP_SVG;
+    // the freighter: the ship die in the wheelhouse, the captain at the helm, the crew in the crow's nest, the cargo dice in the containers
     const need = REQUIRED[view.crew];
-    const slots = el('div', 'scslots');
-    SLOTS.forEach((k) => {
-      const skip = !need.includes(k);
-      const slot = el('div', `scslot${view.locked[k] ? ' on' : ''}${skip ? ' skip' : ''}`);
-      if (view.locked[k]) slot.appendChild(renderDie(SLOT_VALUE[k], { danger: false }));
-      else slot.appendChild(el('b', null, skip ? '–' : String(SLOT_VALUE[k])));
-      slot.appendChild(el('small', null, skip ? 'NOT NEEDED' : THEME.slot[k]));
-      slot.setAttribute('aria-label', skip ? `${THEME.slot[k]}, not needed` : `${THEME.slot[k]}${view.locked[k] ? ', in place' : ', empty'}`);
-      slots.appendChild(slot);
-    });
-    ui.deck.appendChild(slots);
-    const hold = el('div', `schold${view.cargo ? ' full' : ''}`);
-    hold.appendChild(el('span', 'schl', THEME.hold));
-    const cd = el('div', 'scdice');
+    const seen = ui.seenLocked || {};
+    const fresh = ctx.reduced ? [] : SLOTS.filter((k) => view.locked[k] && !seen[k]);
+    ui.seenLocked = { ...view.locked };
+    const showTotal = view.cargoTotal !== null && !view.rolling;
+    ui.deck.innerHTML = freighterSvg({ locked: view.locked, need, fresh, total: showTotal ? view.cargoTotal : null });
+    ui.deck.setAttribute('role', 'group');
+    ui.deck.setAttribute('aria-label', SLOTS.map((k) => (need.includes(k) ? `${THEME.slot[k]} ${view.locked[k] ? 'in place' : 'empty'}` : `${THEME.slot[k]} not needed`)).join(', ') + (showTotal ? `, cargo ${view.cargoTotal}` : ''));
+    const place = (cls, pos) => {
+      const e = el('div', cls);
+      e.style.left = `${((pos.x - VB.x) / VB.w * 100).toFixed(3)}%`;
+      e.style.top = `${((pos.y - VB.y) / VB.h * 100).toFixed(3)}%`;
+      ui.deck.appendChild(e);
+      return e;
+    };
+    if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, WHEELHOUSE).appendChild(renderDie(SLOT_VALUE.ship, { danger: false }));
     const n = cargoSize(view.crew);
     const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep
     for (let k = 0; k < n; k++) {
-      const die = renderDie(view.cargo ? view.cargo[k] : null, { tumble: ctx.tumble && !ctx.reduced && view.rolling && !!view.cargo && view.tumbling.includes(k), danger: false });
+      const box = place('scsq', CONTAINERS[k]);
+      if (!view.cargo) continue; // an empty container
+      const die = renderDie(view.cargo[k], { tumble: ctx.tumble && !ctx.reduced && view.rolling && view.tumbling.includes(k), danger: false });
       if (pick) {
         const wrap = el('div', 'schw');
         const btn = el('button', 'dieBtn' + (view.held[k] ? ' held' : ''));
@@ -174,12 +164,9 @@ export const shipView = {
         btn.appendChild(die);
         btn.addEventListener('click', () => { view.held[k] = !view.held[k]; this.render(ui, view, session, ctx); });
         wrap.append(btn, el('div', 'holdTag', view.held[k] ? 'KEPT' : ''));
-        cd.appendChild(wrap);
-      } else cd.appendChild(die);
+        box.appendChild(wrap);
+      } else box.appendChild(die);
     }
-    hold.appendChild(cd);
-    hold.appendChild(el('b', 'sct', view.cargoTotal !== null && !view.rolling ? `= ${view.cargoTotal}` : ''));
-    ui.deck.appendChild(hold);
 
     // the sea: the dice still in play (blank before the first roll of a turn)
     ui.sea.innerHTML = '';

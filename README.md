@@ -17,24 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 44: Ship, Captain & Crew becomes a freighter (Not yet authorized to build.)
-
-Replace the sailing-ship deck and hold on the Ship, Captain & Crew screen with the user's freighter art (`docs/art/freighter.svg`, `captain.svg`, `crew.svg`, designed by the user, SVGs made with Gemini).
-
-- [ ] New module `src/ui/freighter-art.js` (not `ship-art.js`, that is Space Salvage) embeds the three SVGs inline with prefixed class names (`fr-`, `cp-`, `cw-`) because their `.ink`, `.outline`, `.skin` classes clash. Width/height attributes dropped so they scale. *(Added by Claude. Change before authorizing if wanted.)*
-- [ ] Ship die (6) sits in the wheelhouse square (upper cabin).
-- [ ] Captain figure (5) stands at the helm (bridge deck, below the wheelhouse), with a "5" badge next to it.
-- [ ] Crew figure (4) stands in the crow's nest at the top of the mast, with a "4" badge. The nest basket is drawn by me; only the upper body shows.
-- [ ] Cargo dice sit inside the three square containers. Two dice use the left two, three dice use all three (third stays closed in a Full crew).
-- [ ] "CARGO = n" sign painted on the red hull.
-- [ ] A simple wave under the hull in the user's thick-outline style.
-- [ ] Roles a mode skips (Mutiny skips captain, Skeleton skips crew) are dimmed and marked "NOT NEEDED". Figures pop in when locked.
-- [ ] Either-die tap-to-keep works on dice inside the containers (same HELD tag, RE-ROLL / ALL KEPT / KEEP n controls).
-- [ ] No-tell rule unchanged: nothing result-dependent until `SETTLE_MS` after the dice stop. Test samples the screen during the roll.
-- [ ] Sizing: freighter about 250 px tall at 358 px wide, capped by height so nothing scrolls at 390x844, 411x768, 360x740, 320x640 and 768x1024. Captain placed slightly low so his hat does not touch the wheelhouse die.
-- [ ] Rules module `ship.js` untouched. Needs a real-device check for touch targets on the small figures.
-
-Marked as mine (change before authorizing): badge look, wave, basket, pop animation, hull-sign position.
+_Empty — nothing queued right now._
 
 ## Build Planner
 
@@ -805,3 +788,16 @@ Ship, Captain & Crew: three more house rules and the cargo below deck (was Queue
 - [x] `docs/block-spec.md` updated.
 
 Verification (scratch scripts using `tests-helpers.cjs` and Node, none committed): `preflight` clean. Node, rules, 34 + 32 checks, 0 failures: Crow's Nest (a 4 and a 5 with no 6 set aside at once in any order; one die per slot; strict order sets nothing aside), Mutiny (a 6 and a 4 finish in one roll, the 5 stays and counts, max cargo 18, a 4 before the 6 does not count in strict order), Skeleton Crew (the 4 counts as cargo; four dice are rolled after the ship), Skeleton with Crow's Nest, Either die (every non-empty set listed, a held die keeps its value, only the chosen ones change, the new total stays, an empty choice is rejected, a plain ROLL is not legal, 3 dice give 7 sets plus KEEP), Both dice unchanged, the solo key, the bot (3-dice lines, re-rolling the dice showing 3 or less, keeping a 12), 300 random games over all 12 rule combinations all ending, no illegal bot move in any combination. Bot: Balanced still beat a baseline bot in 608 of 1,000 games, re-roll rate cautious 0.46, balanced 0.55, bold 0.69, no illegal move in 200 games. Playwright, 23 + 23 checks and 12 full games, 0 failures, 0 JS errors: the sockets above the deck line and the hold below it inside the hull, no separate cargo box, the sea under the ship; Mutiny and Skeleton Crew (the dimmed socket says NOT NEEDED, three cargo dice, the total is the sum of all three, KEEP names it); Either die (holding the first die keeps its value, the button says RE-ROLL 1, holding all leaves ALL KEPT disabled, letting one go enables RE-ROLL 1; Both dice leaves the dice untappable with RE-ROLL CARGO); Crow's Nest (a captain or crew die set aside before the ship); no tell for a one-die re-roll at real speed (for the first 1.1 s no total, buttons off, "Rolling…"); the five house rules in the sheet; 5 layouts with the new rules (390x844, 411x768, 360x740, 320x640, 768x1024: no sideways scroll, controls on screen, at most 1 px of vertical scroll); full games for every combination of the three new rules (2 to 4 players), a Pass & Play game with Mutiny and Either die, and two Solo games. The earlier Ship, Captain & Crew checks all still pass. Screenshots looked at (390 wide, Mutiny with Either die). Needs a real-device check: the new ship and the hold on the user's phone, and tapping the small cargo dice (about 24 to 32 px).
+
+## Build Log 61 (completed)
+
+Ship, Captain & Crew becomes a freighter (was Queue 44). The art is the user's: the freighter, captain and crew SVGs were designed by the user and generated with Gemini (originals in `docs/art/`).
+
+- [x] `src/ui/freighter-art.js` (new; not `ship-art.js`, that is Space Salvage's ship): the three drawings embedded inline with their class names prefixed `fr-`, `cp-`, `cw-` (they reuse `.ink`, `.outline`, `.skin` with different meanings); the matching CSS is at the end of `src/ui/theme.css`. `freighterSvg({locked, need, fresh, total})` returns the picture (600 x 415 units, 15 units taller than the user's file so the crow's nest has room).
+- [x] Layout (as in the approved mock-up 6): captain (5) scaled to fit the helm square under the deck line (56 units tall, 25 units left of centre plus the user's later nudges); crew (4) at the SAME scale, cut at the waist, rising out of a crow's nest basket drawn by me at the top of the mast; number badges 4 and 5; "CARGO" sign on the red hull ("CARGO = n" once the total is known); a wave on the waterline (the user's two straight waterline lines are replaced by it) and a flat teal water band behind the hull; roles a mode skips are dimmed and say NOT NEEDED (captain on Mutiny, crew on Skeleton); a role not yet found is a ghost, the figure pops in when it is set aside (`scpop`, off with reduced motion).
+- [x] `docs/art/freighter.svg` changed (the original is in git history): the wheelhouse is a true 68 x 68 square and the three containers are true 68 x 68 squares (the user asked for squares), and the two straight waterline lines are removed.
+- [x] `src/ui/views/ship-view.js`: the sailing ship, sockets and hold are gone; the real dice (`renderDie`) are laid over the squares with percent positions: the ship die in the wheelhouse once set aside (a faint 6 before), the cargo dice in the containers (2 in Full crew, the left two; 3 on Mutiny and Skeleton). The dice are drawn at 0.9 of the container width (`--s: 9cqw`) because the cube is drawn tilted and its outline is about 1.2 times its side, so that it fills the square. Either die: tapping a cargo die keeps it (KEPT tag under it), RE-ROLL n and ALL KEPT as before. Screen-reader label on the picture lists the three roles. Obsolete CSS removed (`.scslots`, `.scslot`, `.schold`, `.schl`, `.scdice`, `.sct`).
+- [x] No change to `ship.js`, the bot or the no-tell timing (the lock and the total still appear only after `SETTLE_MS`).
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright, 12 checks, 0 failures, 0 JS errors: figures, dice and sign for Full crew, Mutiny and Skeleton at 390x844; 5 layouts (390x844, 411x768, 360x740, 320x640, 768x1024) with the dice all square and sized to the picture, at most 1 px of vertical scroll (as before); no tell at real speed (nothing in the picture, labels or buttons changes in the first 1.2 s of any roll; no new cargo total during a re-roll); pops seen; Either die (two buttons, RE-ROLL 2, tap keeps, KEPT tag, RE-ROLL 1, ALL KEPT, un-keep and re-roll); NOT NEEDED labels. Screenshots looked at (Full crew, Mutiny, kept die, 320 wide). The full-game run for the Ship rules is the earlier one.
+Needs a real-device check: tapping the cargo dice (41 px at 390 wide), how small the captain and crew look on the phone, and the cube dice against the flat art. Old saves are not affected (no state change).
