@@ -17,7 +17,24 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 44: Ship, Captain & Crew becomes a freighter (Not yet authorized to build.)
+
+Replace the sailing-ship deck and hold on the Ship, Captain & Crew screen with the user's freighter art (`docs/art/freighter.svg`, `captain.svg`, `crew.svg`, designed by the user, SVGs made with Gemini).
+
+- [ ] New module `src/ui/freighter-art.js` (not `ship-art.js`, that is Space Salvage) embeds the three SVGs inline with prefixed class names (`fr-`, `cp-`, `cw-`) because their `.ink`, `.outline`, `.skin` classes clash. Width/height attributes dropped so they scale. *(Added by Claude. Change before authorizing if wanted.)*
+- [ ] Ship die (6) sits in the wheelhouse square (upper cabin).
+- [ ] Captain figure (5) stands at the helm (bridge deck, below the wheelhouse), with a "5" badge next to it.
+- [ ] Crew figure (4) stands in the crow's nest at the top of the mast, with a "4" badge. The nest basket is drawn by me; only the upper body shows.
+- [ ] Cargo dice sit inside the three square containers. Two dice use the left two, three dice use all three (third stays closed in a Full crew).
+- [ ] "CARGO = n" sign painted on the red hull.
+- [ ] A simple wave under the hull in the user's thick-outline style.
+- [ ] Roles a mode skips (Mutiny skips captain, Skeleton skips crew) are dimmed and marked "NOT NEEDED". Figures pop in when locked.
+- [ ] Either-die tap-to-keep works on dice inside the containers (same HELD tag, RE-ROLL / ALL KEPT / KEEP n controls).
+- [ ] No-tell rule unchanged: nothing result-dependent until `SETTLE_MS` after the dice stop. Test samples the screen during the roll.
+- [ ] Sizing: freighter about 250 px tall at 358 px wide, capped by height so nothing scrolls at 390x844, 411x768, 360x740, 320x640 and 768x1024. Captain placed slightly low so his hat does not touch the wheelhouse die.
+- [ ] Rules module `ship.js` untouched. Needs a real-device check for touch targets on the small figures.
+
+Marked as mine (change before authorizing): badge look, wave, basket, pop animation, hull-sign position.
 
 ## Build Planner
 
