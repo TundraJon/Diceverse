@@ -17,19 +17,26 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 45: Ship, Captain & Crew game-over banner stays at least 2.5 seconds (Not yet authorized to build.)
+### Queue 45: Ship, Captain & Crew: every banner stays at least 2.5 seconds (Not yet authorized to build.)
 
-The user: on Ship, Captain & Crew the game-over banners go by too quickly; they should stay at least 2.5 seconds. Today `GAME_OVER` in `src/ui/views/ship-view.js` waits 600 ms (200 ms with reduced motion) before the shell opens the results sheet (`showGameOver` in `src/shell/main.js`), which covers the banner.
+The user: the banners go by too quickly; every banner on this game should stay at least 2.5 seconds ("it's just easier to code it once"). Today `reduce` in `src/ui/views/ship-view.js` waits `GAME_OVER` 600 ms (200 with reduced motion), `ROUND_ENDED` 1300, `TIEBREAK` 1300 and `NO_CARGO` 900, and the shell opens the results sheet (`showGameOver`, `src/shell/main.js`) right after the game-over delay, which covers the banner.
 
-- [ ] `reduce` case `GAME_OVER` (ship-view.js): delay 2500 ms (also with reduced motion, because reading time does not depend on motion), so the banner ("X wins the game!" or "The voyages are over!") is readable before the results sheet opens. *(Added by Claude. Change before authorizing if wanted.)*
-- [ ] Only Ship, Captain & Crew changes; the other games keep their timing.
-- [ ] Not changed unless the user says so: the round banner ("X wins the round", 1300 ms) and "no cargo" (900 ms). Question for the user: should those also stay 2.5 seconds?
-- [ ] Verification: real-speed run to the end of a game, the banner is on screen for at least 2.5 s before the sheet opens; `?speed=0` unaffected.
+- [ ] One constant `BANNER_MS = 2500` at the top of `ship-view.js`, used as the delay of the four banner events: `NO_CARGO`, `TIEBREAK`, `ROUND_ENDED`, `GAME_OVER`. Also with reduced motion (reading time does not depend on motion). *(Added by Claude. Change before authorizing if wanted.)*
+- [ ] Only Ship, Captain & Crew changes; the other games keep their timing. `?speed=0` stays instant (the shell already scales delays).
+- [ ] Verification: real-speed run through a no-cargo turn, a round end, a tie and the game end; each banner is on screen at least 2.5 s (measured) before the next thing happens, and the results sheet opens only after the game-over banner has been up for 2.5 s; `?speed=0` unaffected.
 
-## Build Planner
+### Queue 46: Ship, Captain & Crew second skin: the black galleon (Not yet authorized to build.)
 
-### Planner 23: a second skin for Ship, Captain & Crew (the black galleon)
-The user proposed a second skin: a black three-masted galleon (SVG made with Gemini, 800 x 680, pasted in the chat on 2026-11-13; save it verbatim to `docs/art/galleon.svg` when this is queued). The user left an open space in the middle (the waist between the main mast at x=318..326 and the fore mast at x=542, about y=400 to 530) for three or so dice, like the containers on the freighter. Open questions: where the ship die (6), the captain (5) and the crew (4) stand (my idea: crew in the main mast's crow's nest, captain on the quarterdeck at x=150..246, ship die on the forecastle); where the skin is chosen (a house rule on the game, or a setting); whether the ghost-until-the-6 look and the flat dice carry over; whether the captain and crew drawings are reused or new ones come.
+The user's black galleon (SVG made with Gemini, 800 x 680) and a new pirate captain (500 x 840) as a second skin. Needs before building: the galleon and captain SVGs saved verbatim to `docs/art/` (the user pasted them in the chat; I will transcribe them), a new crew drawing (question to the user: new crew coming, or reuse the existing crew?), and a mock-up approved by the user.
+
+- [ ] House rule `skin` on the game (`src/games/ship.js` `meta.houseRules`): "Ship look": Freighter (default) / Galleon. Cosmetic only: not in the Solo records key and no effect on the rules or the bot. Shown on the house rule screen like the others, and in `summary`. *(The rule's name and wording are mine. Change before authorizing if wanted.)*
+- [ ] `src/ui/galleon-art.js` (new): the galleon and captain embedded inline with prefixed class names (`gl-`, `gc-`), same method as `freighter-art.js`; `ship-view.js` picks the freighter or the galleon from `options.skin`.
+- [ ] Placement (the user's choices): the crew (4) at the front of the ship near the figurehead; the captain (5) on the quarterdeck at the back; the ship die (6) in the captain's quarters at the very back, where the stern windows are now; the three cargo dice in the waist on top of the deck (between the main mast and the fore mast), the same cargo rules as today (2 dice in Full crew, 3 in Mutiny and Skeleton). Flat dice, same as the freighter.
+- [ ] Ghost rule as on the freighter: the whole ship (not the water) is semi-transparent (35%) until the 6 is set aside, then fades to solid (0.35 s).
+- [ ] Badges 4 and 5 beside the figures; "CARGO = n" sign on the hull; NOT NEEDED labels and dimming for a skipped role; pop-in when a figure is set aside; Either-die tap-to-keep with KEPT tag. All as on the freighter. *(Added by Claude. Change before authorizing if wanted.)*
+- [ ] Sizes (mine): the picture is 800 x 680 so it is taller than the freighter (about 304 px at 358 wide); the deck is capped by the free height so nothing scrolls at 390x844, 411x768, 360x740, 320x640 and 768x1024. The dice are about 50 units (room in the waist is about 170 x 50). The captain about 85 units tall. Exact sizes and the sign position are decided on the mock-up.
+- [ ] No-tell timing unchanged; the rules and bot untouched. Needs a real-device check (small figures, tapping the dice).
+
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
