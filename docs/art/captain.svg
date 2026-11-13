@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 540" width="360" height="540">
+  <defs>
+    <style>
+      .ink {
+        stroke: #12151C;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ink-thin {
+        stroke: #12151C;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .skin { fill: #F4D2BE; }
+      .skin-shade { fill: #E3B69E; }
+      .shirt { fill: #5BA1D7; }
+      .shirt-shade { fill: #4488BE; }
+      .hat-black { fill: #1A1E26; }
+      .hat-band { fill: #11141A; }
+      .gold { fill: #E6B83A; }
+      .gold-stroke {
+        stroke: #E6B83A;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+      .hair { fill: #F3D152; }
+      .pants { fill: #F4F5F7; }
+      .pants-shade { fill: #D9DEE5; }
+      .shoes { fill: #5BA1D7; }
+      .shoes-sole { fill: #3E7BAE; }
+    </style>
+  </defs>
+
+  <!-- SHOES -->
+  <g id="shoes">
+    <path class="shoes ink" d="M 88,468 C 72,470 50,476 48,486 C 47,493 68,496 98,495 C 126,494 152,489 156,483 C 159,478 148,472 132,470 Z" />
+    <path class="shoes-sole ink-thin" d="M 50,486 C 72,491 124,489 154,482" />
+    <path class="ink-thin" fill="none" d="M 92,472 C 102,476 116,477 128,475" />
+
+    <path class="shoes ink" d="M 218,471 C 202,473 176,477 176,483 C 176,489 205,494 238,495 C 266,496 286,493 285,485 C 283,475 262,469 246,468 Z" />
+    <path class="shoes-sole ink-thin" d="M 178,483 C 208,489 262,491 283,485" />
+    <path class="ink-thin" fill="none" d="M 206,475 C 218,477 232,476 242,472" />
+  </g>
+
+  <!-- PANTS -->
+  <g id="pants">
+    <path class="pants ink" d="M 76,304
+      C 78,334 90,362 96,386
+      C 101,408 98,434 86,468
+      C 108,474 142,476 164,473
+      C 166,442 162,414 162,390
+      L 172,390
+      C 172,414 168,442 170,473
+      C 192,476 226,474 248,468
+      C 236,434 233,408 238,386
+      C 244,362 256,334 258,304
+      Z" />
+    <path class="pants-shade" d="M 152,386 L 162,390 C 162,414 166,442 164,473 L 154,473 C 156,442 152,414 152,386 Z" />
+    <path class="pants-shade" d="M 172,390 L 182,386 C 182,414 178,442 180,473 L 170,473 C 168,442 172,414 172,390 Z" />
+    <path class="ink-thin" fill="none" d="M 164,344 L 164,388 C 164,392 170,392 172,388" />
+    <path class="ink-thin" fill="none" d="M 102,340 C 110,348 114,358 112,370" />
+    <path class="ink-thin" fill="none" d="M 232,340 C 224,348 220,358 222,370" />
+    <path class="ink-thin" fill="none" d="M 148,412 C 154,404 158,396 162,390" />
+    <path class="ink-thin" fill="none" d="M 186,412 C 180,404 176,396 172,390" />
+  </g>
+
+  <!-- ARMS & HANDS -->
+  <g id="arms">
+    <path class="skin ink" d="M 48,184
+      C 30,206 22,236 26,268
+      C 30,296 42,320 46,336
+      C 42,346 39,358 41,368
+      C 43,372 47,370 48,363
+      C 48,371 50,382 54,383
+      C 57,383 58,374 58,366
+      C 59,374 61,383 65,383
+      C 68,382 68,372 67,364
+      C 69,371 72,378 75,376
+      C 77,375 76,364 73,355
+      C 76,358 80,360 82,357
+      C 84,354 78,342 70,332
+      C 70,310 72,280 76,254
+      L 82,202 Z" />
+    <path class="ink-thin" fill="none" d="M 52,344 C 58,342 64,343 68,346" />
+
+    <path class="skin ink" d="M 286,184
+      C 304,206 312,236 308,268
+      C 304,296 292,320 288,336
+      C 292,346 295,358 293,368
+      C 291,372 287,370 286,363
+      C 286,371 284,382 280,383
+      C 277,383 276,374 276,366
+      C 275,374 273,383 269,383
+      C 266,382 266,372 267,364
+      C 265,371 262,378 259,376
+      C 257,375 258,364 261,355
+      C 258,358 254,360 252,357
+      C 250,354 256,342 264,332
+      C 264,310 262,280 258,254
+      L 252,202 Z" />
+    <path class="ink-thin" fill="none" d="M 282,344 C 276,342 270,343 266,346" />
+  </g>
+
+  <!-- TORSO / BLUE POLO SHIRT -->
+  <g id="torso">
+    <path class="shirt ink" d="M 134,116
+      C 110,126 84,142 66,160
+      L 42,184
+      L 76,206
+      C 68,244 64,282 70,304
+      C 102,326 140,336 168,336
+      C 196,336 234,326 266,304
+      C 272,282 268,244 260,206
+      L 294,184
+      L 270,160
+      C 252,142 226,126 202,116
+      Z" />
+    <path class="shirt-shade" d="M 71,302 C 103,324 140,334 168,334 C 196,334 233,324 265,302 L 263,292 C 231,314 196,324 168,324 C 140,324 105,314 73,292 Z" />
+    <path class="ink-thin" fill="none" d="M 76,206 C 84,186 90,168 94,152" />
+    <path class="ink-thin" fill="none" d="M 260,206 C 252,186 246,168 242,152" />
+    <path class="ink-thin" fill="none" d="M 118,196 C 148,204 188,204 222,196" />
+
+    <path class="skin ink" d="M 134,116 L 154,174 L 194,144 L 202,116 Z" />
+    <path class="shirt ink" d="M 134,116 L 112,152 L 146,154 L 154,174 Z" />
+    <path class="shirt ink" d="M 202,116 L 216,154 L 182,150 L 194,144 Z" />
+  </g>
+
+  <!-- HEAD, HAIR & CAPTAIN'S HAT -->
+  <g id="head">
+    <!-- Neck & Chin Base -->
+    <path class="skin ink" d="M 136,104 L 136,126 C 146,142 178,142 196,122 L 196,98 Z" />
+    <path class="skin-shade" d="M 137,118 C 148,132 174,132 194,116 L 194,122 C 176,138 148,138 137,124 Z" />
+
+    <!-- Blonde Hair Tufts -->
+    <path class="hair ink" d="M 136,72
+      C 128,72 125,80 129,86
+      C 125,90 126,98 133,100
+      L 139,94 Z" />
+    <path class="hair ink" d="M 186,68
+      C 196,68 203,75 200,83
+      C 205,87 204,96 198,99
+      C 203,103 201,112 193,113
+      C 191,118 184,117 182,112
+      L 180,82 Z" />
+
+    <!-- Main Face Shape -->
+    <path class="skin ink" d="M 138,62
+      C 134,72 134,84 134,92
+      C 128,98 128,112 138,118
+      C 143,121 146,122 148,124
+      C 150,131 164,132 168,125
+      C 178,124 188,118 191,108
+      C 193,102 191,96 188,92
+      C 190,82 188,70 182,62
+      Z" />
+
+    <!-- Ear -->
+    <path class="skin ink" d="M 186,88 C 194,85 198,94 193,102 C 190,106 186,106 184,103" />
+    <path class="ink-thin" fill="none" d="M 188,92 C 191,92 191,97 188,99" />
+
+    <!-- Facial Features -->
+    <path fill="#12151C" d="M 137,77 C 141,72 149,72 152,76 C 153,78 150,80 148,79 C 145,77 141,78 139,80 C 137,80 136,78 137,77 Z" />
+    <path fill="#12151C" d="M 162,77 C 166,73 175,74 178,79 C 179,81 176,83 174,81 C 171,78 166,78 163,80 C 161,80 161,78 162,77 Z" />
+
+    <ellipse fill="#12151C" cx="145" cy="85" rx="2.4" ry="3.2" />
+    <ellipse fill="#12151C" cx="168" cy="86" rx="2.4" ry="3.2" />
+    <path class="ink-thin" fill="none" d="M 140,90 C 144,91 148,91 151,89" />
+    <path class="ink-thin" fill="none" d="M 163,91 C 167,92 171,92 174,90" />
+
+    <path class="skin ink" d="M 153,88 C 147,91 146,99 153,101 C 159,102 164,99 162,94" />
+
+    <path class="ink-thin" fill="none" d="M 141,105 C 150,110 165,110 174,105" />
+    <path class="ink-thin" fill="none" d="M 139,103 C 141,105 141,107 139,109" />
+    <path class="ink-thin" fill="none" d="M 175,103 C 173,105 173,107 175,109" />
+    <path class="ink-thin" fill="none" d="M 152,114 C 156,115 160,115 163,114" />
+
+    <!-- CAPTAIN'S HAT -->
+    <g id="captains-hat">
+      <!-- Flared Crown -->
+      <path class="hat-black ink" d="M 136,56
+        C 126,48 122,36 132,27
+        C 146,16 178,18 202,32
+        C 218,41 220,53 206,62
+        C 206,69 203,75 198,78
+        C 182,70 154,66 134,68
+        Z" />
+
+      <!-- Crown Top Edge Highlight -->
+      <path stroke="#384152" stroke-width="1.6" fill="none" stroke-linecap="round" d="M 135,28 C 149,19 178,21 200,34" />
+
+      <!-- Hat Band -->
+      <path class="hat-band ink" d="M 135,55 C 156,52 184,56 206,64 L 204,75 C 184,67 156,63 134,66 Z" />
+
+      <!-- Navy Anchor Patch & "CAPTAIN" Text -->
+      <g transform="translate(159, 36) rotate(5)">
+        <rect x="-11" y="-13" width="22" height="22" rx="2" fill="#182C59" stroke="#0E121A" stroke-width="1.5" />
+        <!-- Gold Anchor -->
+        <line class="gold-stroke" stroke-width="2" x1="0" y1="-8" x2="0" y2="5" />
+        <line class="gold-stroke" stroke-width="1.8" x1="-4" y1="-4" x2="4" y2="-4" />
+        <circle class="gold-stroke" stroke-width="1.5" cx="0" cy="-9.5" r="1.8" />
+        <path class="gold-stroke" stroke-width="2" d="M -6,1 C -6,6 6,6 6,1" />
+        <polyline class="gold-stroke" stroke-width="1.6" points="-7.5,2.5 -6,0.5 -4,2.5" />
+        <polyline class="gold-stroke" stroke-width="1.6" points="4,2.5 6,0.5 7.5,2.5" />
+        <!-- CAPTAIN Text -->
+        <text x="0" y="16" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="6.2" fill="#E6B83A" text-anchor="middle" letter-spacing="0.4">CAPTAIN</text>
+      </g>
+
+      <!-- Braided Gold Cord & Side Button -->
+      <path class="gold-stroke" stroke-width="3.6" d="M 134,61 C 155,58 180,62 197,68" />
+      <path stroke="#8A6414" stroke-width="1.2" stroke-dasharray="2.5 2.5" fill="none" d="M 135,61 C 155,58 180,62 196,68" />
+      <line class="gold-stroke" stroke-width="2" x1="197" y1="68" x2="204" y2="71" />
+      <circle class="gold" stroke="#12151C" stroke-width="1.4" cx="204" cy="71" r="2.8" />
+
+      <!-- Peak / Visor -->
+      <path class="hat-band ink" d="M 134,65
+        C 124,69 116,74 118,77
+        C 121,79 128,76 136,76
+        C 154,77 174,83 188,80
+        C 194,78 198,74 198,71
+        C 178,64 154,61 134,65 Z" />
+
+      <!-- Gold Laurel Leaves ("Scrambled Eggs") on Visor -->
+      <g class="gold-stroke" stroke-width="1.5">
+        <!-- Main Right Branch -->
+        <path d="M 135,70 C 152,73 170,76 188,73" />
+        <path d="M 143,71 L 138,68 M 144,72 L 139,74" />
+        <path d="M 152,73 L 147,69 M 153,73 L 148,76" />
+        <path d="M 161,74 L 156,70 M 162,74 L 157,77" />
+        <path d="M 170,75 L 165,71 M 171,75 L 166,78" />
+        <path d="M 179,74 L 174,70 M 180,74 L 175,77" />
+        <!-- Left Tip Accent -->
+        <path d="M 122,74 L 128,71 M 123,74 L 129,74" />
+      </g>
+    </g>
+  </g>
+</svg>

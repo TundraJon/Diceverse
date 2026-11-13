@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420">
+  <defs>
+    <style>
+      .outline {
+        stroke: #000000;
+        stroke-width: 14;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .cabin-light { fill: #E4F0FA; }
+      .cabin-shade { fill: #C0D8EB; }
+      .deck-light { fill: #D1D6DD; }
+      .deck-shade { fill: #AEB5BF; }
+      .container-dark { fill: #E39F4D; }
+      .container-light { fill: #F9B863; }
+      .hull-red { fill: #F14B3B; }
+      .hull-red-shade { fill: #DC382A; }
+      .hull-teal { fill: #25D5DF; }
+      .hull-teal-shade { fill: #18BBC5; }
+    </style>
+  </defs>
+
+  <!-- MAST -->
+  <line class="outline" x1="145" y1="30" x2="145" y2="85" />
+
+  <!-- UPPER CABIN (WHEELHOUSE) -->
+  <g id="upper-cabin">
+    <rect x="102" y="85" width="88" height="68" rx="4" class="cabin-light" />
+    <rect x="145" y="85" width="45" height="68" class="cabin-shade" />
+    <path class="outline" fill="none" d="M 102,153 L 102,91 C 102,87 105,85 109,85 L 183,85 C 187,85 190,87 190,91 L 190,153" />
+  </g>
+
+  <!-- LOWER SUPERSTRUCTURE & BRIDGE DECK -->
+  <g id="lower-cabin">
+    <!-- Main Cabin Body -->
+    <rect x="78" y="177" width="128" height="58" class="cabin-light" />
+    <rect x="145" y="177" width="61" height="58" class="cabin-shade" />
+    <line class="outline" x1="78" y1="177" x2="78" y2="235" />
+    <line class="outline" x1="206" y1="177" x2="206" y2="235" />
+
+    <!-- Overhanging Deck / Bridge Wing -->
+    <rect x="68" y="153" width="152" height="24" rx="4" class="deck-light" />
+    <rect x="145" y="153" width="75" height="24" rx="4" class="deck-shade" />
+    <!-- Deck Top & Left Outline -->
+    <path class="outline" fill="none" d="M 114,177 L 74,177 C 70,177 68,175 68,171 L 68,159 C 68,155 70,153 74,153 L 214,153 C 218,153 220,155 220,159 L 220,171 C 220,175 218,177 214,177 L 144,177" />
+  </g>
+
+  <!-- CARGO CONTAINERS -->
+  <g id="containers">
+    <!-- Container 1 (Left) -->
+    <rect x="252" y="167" width="73" height="68" class="container-dark" />
+    <!-- Container 2 (Middle - Highlighted) -->
+    <rect x="325" y="167" width="73" height="68" class="container-light" />
+    <!-- Container 3 (Right) -->
+    <rect x="398" y="167" width="74" height="68" class="container-dark" />
+
+    <!-- Container Outer Frame -->
+    <path class="outline" fill="none" d="M 252,235 L 252,174 C 252,170 255,167 259,167 L 465,167 C 469,167 472,170 472,174 L 472,235" />
+    <!-- Vertical Dividers -->
+    <line class="outline" x1="325" y1="167" x2="325" y2="235" />
+    <line class="outline" x1="398" y1="167" x2="398" y2="235" />
+  </g>
+
+  <!-- SHIP HULL -->
+  <g id="hull">
+    <!-- Upper Red Hull Fill -->
+    <path class="hull-red" d="M 65,235
+      L 474,235
+      L 488,217
+      L 532,217
+      L 504,316
+      L 106,316
+      C 82,294 68,266 65,235 Z" />
+
+    <!-- Upper Red Hull Right Shading -->
+    <path class="hull-red-shade" d="M 498,217 L 532,217 L 504,316 L 470,316 Z" />
+
+    <!-- Lower Teal Waterline Hull Fill -->
+    <path class="hull-teal" d="M 106,316
+      L 504,316
+      L 490,362
+      L 84,362
+      Z" />
+
+    <!-- Lower Teal Hull Right Shading -->
+    <path class="hull-teal-shade" d="M 470,316 L 504,316 L 490,362 L 456,362 Z" />
+
+    <!-- Main Hull Outer Stroke -->
+    <path class="outline" fill="none" d="M 65,235
+      L 468,235
+      C 472,235 475,233 478,230
+      L 485,221
+      C 488,218 491,217 495,217
+      L 526,217
+      C 531,217 534,221 533,226
+      L 493,356
+      C 491,360 488,362 483,362
+      L 90,362
+      C 85,362 82,358 84,353
+      L 98,318
+      C 100,314 98,310 95,307
+      C 76,288 66,264 65,235 Z" />
+
+    <!-- Broken Waterline Divider Stroke -->
+    <line class="outline" x1="102" y1="316" x2="395" y2="316" />
+    <line class="outline" x1="430" y1="316" x2="503" y2="316" />
+  </g>
+</svg>
