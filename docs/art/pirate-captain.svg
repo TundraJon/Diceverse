@@ -1,0 +1,491 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 840" width="500" height="840">
+  <defs>
+    <style>
+      .ink {
+        stroke: #1A1310;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ink-thin {
+        stroke: #1A1310;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .skin { fill: #E7AD88; }
+      .skin-light { fill: #F5C8A8; }
+      .skin-shade { fill: #BD7E5B; }
+      .hair-dark { fill: #2B1D16; }
+      .hair-mid { fill: #4A3123; }
+      .hair-light { fill: #7E563B; }
+      .bandana { fill: #A61C1C; }
+      .bandana-shade { fill: #6E0E0E; }
+      .bandana-light { fill: #CC2B2B; }
+      .vest { fill: #3E2D5C; }
+      .vest-shade { fill: #261A3B; }
+      .vest-light { fill: #5A4580; }
+      .shirt { fill: #EAE4D7; }
+      .shirt-shade { fill: #C2B8A5; }
+      .pants { fill: #4E392C; }
+      .pants-shade { fill: #33241B; }
+      .boot { fill: #3A2A1E; }
+      .boot-cuff { fill: #634932; }
+      .leather { fill: #5E3A22; }
+      .leather-dark { fill: #382112; }
+      .gold { fill: #D4AF37; }
+      .silver { fill: #B8C2C7; }
+      .sash { fill: #D8C8C4; }
+      .sash-stripe { stroke: #9E4A52; stroke-width: 2.2; fill: none; }
+    </style>
+
+    <linearGradient id="rumGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF5D6" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#D98A2B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#4A2508" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <radialGradient id="faceGrad" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#F6C9AA"/>
+      <stop offset="65%" stop-color="#E4A782"/>
+      <stop offset="100%" stop-color="#BC7B58"/>
+    </radialGradient>
+  </defs>
+
+  <!-- SHADOW UNDER FEET -->
+  <ellipse cx="255" cy="778" rx="68" ry="8" fill="#1A1310" fill-opacity="0.22"/>
+
+  <!-- BACK HAIR MASS & DREADLOCKS -->
+  <g id="back-hair">
+    <path class="hair-dark ink" d="M 168,36
+      C 122,42 94,94 98,154
+      C 76,184 62,216 78,248
+      C 68,274 82,306 102,324
+      C 94,354 114,384 146,396
+      L 346,386
+      C 374,368 386,338 368,312
+      C 386,292 384,258 364,234
+      C 376,204 364,172 344,154
+      C 334,94 294,36 226,24
+      C 198,20 182,24 168,36 Z"/>
+
+    <!-- Wavy Hair Highlights -->
+    <path class="hair-mid" d="M 114,132 C 88,168 74,208 92,242 C 102,262 88,292 112,318 L 136,308 C 118,284 128,256 116,232 C 102,202 114,168 134,142 Z"/>
+    <path class="hair-light" d="M 96,174 C 76,202 76,228 92,252 C 84,232 88,206 106,184 Z"/>
+    <path class="hair-mid" d="M 326,154 C 354,178 368,214 352,248 C 368,274 366,308 346,334 L 324,322 C 342,296 340,268 328,244 C 340,214 330,182 310,162 Z"/>
+    <!-- Wispy Right Lock -->
+    <path class="hair-light ink-thin" d="M 324,154 C 348,144 374,150 382,166 C 368,158 352,158 338,168 C 352,174 364,188 362,206 C 350,192 338,184 322,186 Z"/>
+
+    <!-- Outer Dreadlocks -->
+    <path class="hair-dark ink" d="M 342,226 C 364,254 378,286 388,314 C 394,328 386,338 380,326 C 370,302 354,274 334,244 Z"/>
+    <path class="hair-mid ink" d="M 332,268 C 352,302 368,336 376,368 C 380,382 370,386 364,372 C 356,342 340,310 322,282 Z"/>
+    <path class="hair-dark ink" d="M 108,292 C 92,326 88,360 94,392 C 98,404 108,400 104,386 C 100,358 106,328 122,302 Z"/>
+  </g>
+
+  <!-- LEGS & PIRATE BOOTS -->
+  <g id="legs">
+    <!-- Left Leg (Viewer's Right - Stepped Back) -->
+    <g id="leg-right">
+      <!-- Breeches -->
+      <path class="pants ink" d="M 244,548 L 298,546 L 316,642 L 256,644 Z"/>
+      <path class="pants-shade" d="M 278,548 L 298,546 L 316,642 L 292,643 Z"/>
+      <path class="ink-thin" fill="none" d="M 262,592 C 278,596 294,594 306,588"/>
+      <path class="ink-thin" fill="none" d="M 264,616 C 280,620 296,618 310,612"/>
+
+      <!-- Slouched Boot Shaft & Foot -->
+      <path class="boot ink" d="M 260,694
+        L 296,694
+        L 294,742
+        C 312,750 328,756 342,762
+        C 346,766 344,774 336,775
+        C 312,777 282,775 254,770
+        C 252,762 254,752 258,744
+        Z"/>
+      <path class="ink-thin" fill="none" d="M 258,722 C 272,726 284,724 295,718"/>
+      <path class="ink-thin" fill="none" d="M 257,738 C 272,742 286,740 296,734"/>
+
+      <!-- Flared Boot Cuff -->
+      <path class="boot-cuff ink" d="M 256,638
+        L 314,638
+        L 332,698
+        C 304,706 272,706 246,696
+        Z"/>
+      <path class="boot" opacity="0.35" d="M 294,638 L 314,638 L 332,698 L 308,702 Z"/>
+    </g>
+
+    <!-- Right Leg (Viewer's Left - Forward) -->
+    <g id="leg-left">
+      <!-- Breeches -->
+      <path class="pants ink" d="M 192,534 L 254,544 L 246,646 L 188,638 Z"/>
+      <path class="pants-shade" d="M 192,534 L 214,538 L 210,640 L 188,638 Z"/>
+      <path class="ink-thin" fill="none" d="M 194,586 C 212,592 232,592 248,586"/>
+      <path class="ink-thin" fill="none" d="M 192,612 C 212,618 230,618 246,612"/>
+
+      <!-- Slouched Boot Shaft & Foot -->
+      <path class="boot ink" d="M 178,704
+        L 216,708
+        L 204,762
+        C 212,770 218,778 216,784
+        C 206,794 194,804 184,812
+        C 176,808 168,796 168,784
+        C 168,772 172,762 174,752
+        Z"/>
+      <path class="ink-thin" fill="none" d="M 175,732 C 188,738 202,738 212,732"/>
+      <path class="ink-thin" fill="none" d="M 173,748 C 186,754 200,754 208,748"/>
+      <path class="ink-thin" fill="none" d="M 172,784 C 186,782 200,784 212,790"/>
+
+      <!-- Flared Boot Cuff -->
+      <path class="boot-cuff ink" d="M 192,632
+        L 246,640
+        L 246,712
+        C 218,718 186,712 162,698
+        Z"/>
+      <path class="boot" opacity="0.35" d="M 192,632 L 212,635 L 188,708 L 162,698 Z"/>
+    </g>
+  </g>
+
+  <!-- LEFT ARM (VIEWER'S RIGHT - EXTENDED WITH GESTURE) -->
+  <g id="arm-right">
+    <!-- Billowing White Sleeve -->
+    <path class="shirt ink" d="M 314,352
+      C 356,348 398,354 434,364
+      C 438,402 442,442 448,478
+      C 414,484 374,476 344,458
+      L 322,424 Z"/>
+    <!-- Sleeve Folds & Shading -->
+    <path class="shirt-shade" d="M 332,428 C 368,452 408,464 446,466 L 448,478 C 412,484 374,476 344,458 Z"/>
+    <path class="ink-thin" fill="none" d="M 346,386 C 374,394 404,394 432,386"/>
+    <path class="ink-thin" fill="none" d="M 342,414 C 372,424 406,426 436,418"/>
+    <path class="ink-thin" fill="none" d="M 352,438 C 382,450 412,452 440,446"/>
+
+    <!-- Wrist Wrap -->
+    <path class="leather-dark ink" d="M 426,368 C 436,374 440,386 436,396 L 430,394 C 433,385 430,376 422,372 Z"/>
+
+    <!-- Expressive Hand & Rings -->
+    <path class="skin ink" d="M 434,370
+      C 444,358 456,348 468,342
+      C 474,340 478,344 474,348
+      C 468,352 464,356 462,358
+      C 472,354 484,352 490,356
+      C 493,358 490,362 484,362
+      C 476,362 468,364 464,366
+      C 474,364 484,366 488,370
+      C 490,373 486,376 480,374
+      C 472,372 464,372 458,374
+      C 464,376 470,380 468,384
+      C 466,386 458,384 452,380
+      C 446,384 440,390 436,394
+      Z"/>
+    <!-- Rings -->
+    <rect x="454" y="357" width="5" height="7" rx="1" transform="rotate(-25 456 360)" class="silver ink-thin"/>
+    <rect x="462" y="365" width="4.5" height="6" rx="1" transform="rotate(-10 464 368)" class="gold ink-thin"/>
+  </g>
+
+  <!-- TORSO: SHIRT, PURPLE VEST, SASH, BELTS & FLINTLOCK -->
+  <g id="torso">
+    <!-- White Shirt Base & Collar -->
+    <path class="shirt ink" d="M 178,312 L 274,334 L 296,474 L 182,474 Z"/>
+    <path class="shirt-shade" d="M 192,316 L 234,398 L 266,334 L 244,328 L 232,366 L 204,318 Z"/>
+    <!-- Shirt Laces -->
+    <path class="ink-thin" fill="none" d="M 226,348 L 238,354 M 238,348 L 226,354 M 228,362 L 238,368 M 238,362 L 228,368"/>
+
+    <!-- Purple Doublet / Vest -->
+    <path class="vest ink" d="M 176,314
+      L 202,320
+      L 234,392
+      L 268,332
+      L 318,346
+      L 314,468
+      L 296,558
+      C 264,562 222,554 182,534
+      L 214,474
+      L 174,458
+      Z"/>
+    <!-- Vest Shading & Lapel Folds -->
+    <path class="vest-shade" d="M 268,332 L 318,346 L 314,468 L 296,558 L 266,556 L 278,464 L 254,396 Z"/>
+    <path class="vest-light" d="M 184,328 L 224,398 L 214,432 L 180,378 Z"/>
+    <!-- Vest Buttons -->
+    <circle cx="204" cy="496" r="3.5" class="silver ink-thin"/>
+    <circle cx="218" cy="512" r="3.5" class="silver ink-thin"/>
+    <circle cx="234" cy="526" r="3.5" class="silver ink-thin"/>
+    <circle cx="252" cy="538" r="3.5" class="silver ink-thin"/>
+
+    <!-- Baldric / Cross-Chest Leather Strap & Buckle -->
+    <path class="leather ink" d="M 186,324 L 306,456 L 296,468 L 178,338 Z"/>
+    <g transform="translate(254, 404) rotate(42)">
+      <rect x="-14" y="-12" width="28" height="24" rx="4" fill="none" stroke="#8C969E" stroke-width="5"/>
+      <rect x="-14" y="-12" width="28" height="24" rx="4" fill="none" stroke="#1A1310" stroke-width="1.8"/>
+      <line x1="-14" y1="0" x2="14" y2="0" stroke="#1A1310" stroke-width="2.5"/>
+    </g>
+
+    <!-- Striped Waist Sash -->
+    <g id="waist-sash">
+      <path class="sash ink" d="M 218,452
+        C 254,464 294,464 326,452
+        L 334,476
+        C 298,492 252,492 214,478 Z"/>
+      <path class="sash-stripe" d="M 218,460 C 254,472 294,472 328,460"/>
+      <path class="sash-stripe" d="M 216,468 C 254,480 296,480 330,468"/>
+
+      <!-- Hanging Sash Tails (Viewer's Right) -->
+      <path class="sash ink" d="M 314,466
+        C 342,516 368,572 396,626
+        L 354,642
+        C 332,586 314,532 300,482 Z"/>
+      <path class="sash-stripe" d="M 308,472 C 334,524 358,578 384,630"/>
+      <path class="sash-stripe" d="M 304,478 C 328,530 350,584 372,634"/>
+      <!-- Sash Fringe -->
+      <path class="ink-thin" fill="none" d="M 354,642 L 350,664 M 362,639 L 360,662 M 370,636 L 370,660 M 378,633 L 380,656 M 386,630 L 390,652 M 394,627 L 400,648"/>
+    </g>
+
+    <!-- Cutlass Hilt & Compass -->
+    <g id="hip-gear">
+      <!-- Cutlass Guard & Grip -->
+      <path class="leather-dark ink" d="M 326,472 L 356,442 L 364,448 L 334,480 Z"/>
+      <path class="silver ink" d="M 324,468 C 338,452 356,440 366,446 C 372,450 360,468 342,482 Z"/>
+      <!-- Compass Case -->
+      <circle cx="324" cy="494" r="14" class="leather-dark ink"/>
+      <circle cx="324" cy="494" r="8" class="silver ink-thin"/>
+    </g>
+
+    <!-- Wide Leather Waist Belt & Large Buckle -->
+    <g id="waist-belt">
+      <path class="leather ink" d="M 218,468
+        C 254,482 292,480 322,468
+        L 322,492
+        C 292,504 254,506 218,492 Z"/>
+      <rect x="262" y="472" width="24" height="24" rx="3" fill="none" stroke="#8C969E" stroke-width="5"/>
+      <rect x="262" y="472" width="24" height="24" rx="3" fill="none" stroke="#1A1310" stroke-width="1.8"/>
+    </g>
+
+    <!-- Flintlock Pistol Tucked in Belt & Chicken Foot / Fur Charm -->
+    <g id="flintlock">
+      <!-- Pistol Butt -->
+      <path class="leather ink" d="M 232,442
+        C 220,444 214,454 218,464
+        L 246,478
+        L 254,464
+        C 246,454 242,442 232,442 Z"/>
+      <circle cx="226" cy="454" r="6" class="gold ink-thin"/>
+      <!-- Pistol Barrel -->
+      <path class="silver ink" d="M 250,468 L 296,496 L 292,504 L 246,476 Z"/>
+      <!-- Hanging Fur/Feather Charm -->
+      <path class="shirt ink" d="M 224,474
+        C 214,494 216,522 228,542
+        C 238,526 244,502 238,476 Z"/>
+      <path class="shirt-shade" d="M 232,476 C 238,498 236,520 228,542 C 238,526 244,502 238,476 Z"/>
+    </g>
+  </g>
+
+  <!-- RIGHT ARM (VIEWER'S LEFT - HOLDING RUM GLASS) -->
+  <g id="arm-left">
+    <!-- Billowing White Sleeve -->
+    <path class="shirt ink" d="M 176,326
+      C 138,342 104,358 76,374
+      C 62,418 62,474 78,518
+      C 102,534 128,544 148,542
+      C 158,504 162,462 158,424
+      L 178,382 Z"/>
+    <!-- Sleeve Folds & Shading -->
+    <path class="shirt-shade" d="M 76,374 C 94,418 112,474 124,536 C 106,534 90,526 78,518 C 62,474 62,418 76,374 Z"/>
+    <path class="ink-thin" fill="none" d="M 94,382 C 114,418 130,466 138,524"/>
+    <path class="ink-thin" fill="none" d="M 114,368 C 132,402 146,448 150,504"/>
+
+    <!-- Forearm & Swallow Tattoo -->
+    <path class="skin ink" d="M 76,376 L 104,364 L 122,424 L 96,436 Z"/>
+    <path class="skin-shade" d="M 76,376 L 88,372 L 106,430 L 96,436 Z"/>
+    <!-- Small Swallow Tattoo -->
+    <path fill="#2C3E50" d="M 104,394 C 108,390 114,390 116,394 C 112,394 110,398 112,402 C 108,398 104,398 100,400 C 102,396 102,394 104,394 Z"/>
+
+    <!-- Black Fabric Wrist Wrap -->
+    <path class="hair-dark ink" d="M 52,334
+      C 68,332 86,338 96,348
+      L 100,378
+      C 86,392 66,392 54,378
+      Z"/>
+    <path class="ink-thin" fill="none" d="M 56,348 C 72,350 86,356 96,364"/>
+    <path class="ink-thin" fill="none" d="M 56,362 C 72,366 86,372 96,378"/>
+
+    <!-- Hand Holding Rum Glass -->
+    <path class="skin ink" d="M 56,346
+      C 42,340 26,332 14,322
+      C 8,318 12,314 18,316
+      C 28,320 38,324 44,326
+      C 38,318 36,308 42,304
+      C 46,302 52,306 54,312
+      C 46,304 44,294 50,290
+      C 54,288 60,292 62,298
+      C 56,290 56,282 62,280
+      C 66,278 72,284 74,292
+      L 88,338
+      Z"/>
+
+    <!-- Glass of Rum -->
+    <g id="rum-glass" transform="translate(46, 266)">
+      <!-- Glass Body -->
+      <path d="M 2,4 L 46,4 L 44,54 L 4,54 Z" fill="url(#rumGrad)" stroke="#1A1310" stroke-width="2"/>
+      <!-- Ice Cubes & Rim Highlights -->
+      <rect x="8" y="10" width="14" height="12" rx="2" fill="#FFF9E6" fill-opacity="0.7" stroke="#D4AF37" stroke-width="1"/>
+      <rect x="24" y="14" width="13" height="11" rx="2" fill="#FFF9E6" fill-opacity="0.6" stroke="#D4AF37" stroke-width="1"/>
+      <ellipse cx="24" cy="4" rx="22" ry="3.5" fill="#FFFFFF" fill-opacity="0.65" stroke="#1A1310" stroke-width="1.5"/>
+      <!-- Splashing Droplets -->
+      <circle cx="-4" cy="-4" r="2" fill="#FFF5D6" stroke="#1A1310" stroke-width="1"/>
+      <circle cx="8" cy="-8" r="1.8" fill="#FFF5D6" stroke="#1A1310" stroke-width="1"/>
+      <path d="M 42,-2 C 46,-8 52,-8 54,-4" fill="none" stroke="#1A1310" stroke-width="1.2"/>
+    </g>
+
+    <!-- Thumb & Fingers Overlapping Glass -->
+    <path class="skin ink" d="M 44,312 C 50,308 60,310 62,316 C 63,320 56,322 48,320 Z"/>
+    <path class="skin ink" d="M 42,324 C 48,320 58,322 60,328 C 61,332 54,334 46,332 Z"/>
+    <path class="skin ink" d="M 86,322 C 80,314 72,312 68,318 C 66,322 72,328 80,334 Z"/>
+  </g>
+
+  <!-- NECK & CARICATURE HEAD -->
+  <g id="head">
+    <!-- Neck -->
+    <path class="skin ink" d="M 186,258 L 194,324 L 234,358 L 266,324 L 262,272 Z"/>
+    <path class="skin-shade" d="M 192,268 C 212,286 238,294 262,288 L 264,316 C 240,322 214,312 194,292 Z"/>
+    <path class="ink-thin" fill="none" d="M 218,298 L 228,334"/>
+    <path class="ink-thin" fill="none" d="M 244,296 L 248,328"/>
+
+    <!-- Main Caricature Face Contour -->
+    <path fill="url(#faceGrad)" class="ink" d="M 162,148
+      C 158,176 160,206 168,234
+      C 176,258 198,278 228,288
+      C 246,294 264,292 276,278
+      C 292,258 302,226 302,192
+      C 302,172 296,154 288,142
+      Z"/>
+
+    <!-- Cheekbone & Jaw Shading -->
+    <path class="skin-shade" d="M 168,218 C 178,244 202,268 232,278 C 212,266 192,246 184,222 Z"/>
+    <path class="skin-shade" d="M 288,198 C 288,228 280,256 266,276 C 282,258 294,232 296,202 Z"/>
+    <!-- Cheek Scar -->
+    <path class="ink-thin" fill="none" d="M 172,188 L 178,194"/>
+
+    <!-- Eyebrows -->
+    <path class="hair-dark" d="M 176,164 C 190,156 210,156 224,164 C 210,162 192,162 176,164 Z"/>
+    <path class="hair-dark" d="M 248,162 C 262,154 280,154 292,160 C 278,158 262,158 248,162 Z"/>
+
+    <!-- Kohl-Rimmed Expressive Eyes -->
+    <!-- Viewer's Left Eye -->
+    <g id="eye-left">
+      <ellipse cx="202" cy="176" rx="18" ry="11" fill="#181210"/>
+      <ellipse cx="202" cy="176" rx="14" ry="8" fill="#F7F4EE"/>
+      <circle cx="204" cy="175" r="6.5" fill="#2B1B12"/>
+      <circle cx="204" cy="175" r="3" fill="#0A0807"/>
+      <circle cx="201" cy="172" r="2.2" fill="#FFFFFF"/>
+      <path class="ink-thin" fill="none" d="M 184,174 C 194,166 210,166 220,174"/>
+    </g>
+
+    <!-- Viewer's Right Eye -->
+    <g id="eye-right">
+      <ellipse cx="268" cy="172" rx="16" ry="10.5" fill="#181210"/>
+      <ellipse cx="268" cy="172" rx="12.5" ry="7.5" fill="#F7F4EE"/>
+      <circle cx="268" cy="171" r="6" fill="#2B1B12"/>
+      <circle cx="268" cy="171" r="2.8" fill="#0A0807"/>
+      <circle cx="265" cy="168" r="2" fill="#FFFFFF"/>
+      <path class="ink-thin" fill="none" d="M 252,170 C 260,163 276,163 284,170"/>
+    </g>
+
+    <!-- Caricature Nose -->
+    <path class="skin-shade" d="M 234,172 L 244,206 L 260,214 L 246,226 L 222,222 L 218,210 Z"/>
+    <path class="skin-light" d="M 232,174 C 236,188 240,202 242,212 C 236,214 230,212 228,206 C 230,196 230,184 232,174 Z"/>
+    <path class="ink" fill="none" d="M 242,178 C 246,192 252,204 258,210 C 262,214 258,220 250,222 C 242,224 234,224 226,220 C 220,218 218,212 224,208"/>
+    <!-- Nasolabial Smile Lines -->
+    <path class="ink-thin" fill="none" d="M 206,212 C 194,222 188,234 190,246"/>
+    <path class="ink-thin" fill="none" d="M 272,208 C 282,218 286,230 284,242"/>
+
+    <!-- Mustache, Smile & Goatee -->
+    <g id="facial-hair">
+      <!-- Smirking Mouth & Teeth -->
+      <path fill="#8C3B3E" class="ink-thin" d="M 208,236 C 228,242 254,240 272,234 C 264,250 246,256 230,254 C 218,252 212,244 208,236 Z"/>
+      <!-- Teeth -->
+      <path fill="#F4EFE6" stroke="#1A1310" stroke-width="1" d="M 214,238 C 230,242 250,241 266,236 C 260,244 246,247 232,246 C 222,245 216,242 214,238 Z"/>
+      <!-- Lower Lip -->
+      <path fill="#C9736D" class="ink-thin" d="M 222,254 C 234,260 250,258 260,252 C 250,255 234,256 222,254 Z"/>
+
+      <!-- Mustache -->
+      <path class="hair-dark ink" d="M 238,226
+        C 226,226 212,232 202,232
+        C 196,232 194,238 200,244
+        C 202,238 212,238 224,236
+        C 232,234 236,232 238,230
+        C 242,232 248,234 258,236
+        C 268,238 274,242 272,248
+        C 280,244 282,236 274,230
+        C 264,226 250,224 238,226 Z"/>
+
+      <!-- Soul Patch & Chin Beard -->
+      <path class="hair-dark ink-thin" d="M 236,260 L 246,260 L 242,272 Z"/>
+      <path class="hair-dark ink" d="M 206,268
+        C 222,282 254,282 274,264
+        C 272,282 264,296 254,304
+        C 246,298 238,298 230,304
+        C 218,296 208,284 206,268 Z"/>
+
+      <!-- Twin Braided Beard Plaits & Beads -->
+      <path class="hair-dark ink" d="M 224,294 L 234,296 L 234,348 L 226,348 Z"/>
+      <rect x="224" y="314" width="11" height="7" rx="2" class="silver ink-thin"/>
+      <rect x="225" y="336" width="10" height="8" rx="2" class="gold ink-thin"/>
+
+      <path class="hair-dark ink" d="M 252,294 L 262,294 L 264,344 L 256,344 Z"/>
+      <rect x="252" y="318" width="11" height="7" rx="2" class="gold ink-thin"/>
+      <rect x="254" y="336" width="10" height="8" rx="2" class="silver ink-thin"/>
+    </g>
+
+    <!-- RED BANDANA, BONE CORD & BEADED DREADLOCKS -->
+    <g id="bandana-and-beads">
+      <!-- Main Red Bandana -->
+      <path class="bandana ink" d="M 152,58
+        C 188,44 248,44 294,64
+        C 314,92 324,124 322,148
+        C 268,162 204,164 146,158
+        C 148,124 148,88 152,58 Z"/>
+      <!-- Bandana Folds & Shading -->
+      <path class="bandana-shade" d="M 148,136 C 204,144 268,142 322,132 L 322,148 C 268,162 204,164 146,158 Z"/>
+      <path class="bandana-light" d="M 164,66 C 198,56 238,58 268,68 C 242,78 202,80 166,76 Z"/>
+      <path class="ink-thin" fill="none" d="M 156,112 C 206,118 262,116 312,106"/>
+      <path class="ink-thin" fill="none" d="M 248,54 C 268,82 284,114 294,146"/>
+
+      <!-- Diagonal Leather Cord Across Bandana -->
+      <path class="shirt ink" d="M 176,34
+        C 184,32 186,40 180,48
+        C 148,92 118,136 92,178
+        C 88,176 92,166 102,150
+        C 126,112 152,72 176,34 Z"/>
+
+      <!-- Forehead Trinket / Bone & Coins Hanging from Bandana -->
+      <g id="forehead-trinket" transform="translate(242, 46) rotate(-8)">
+        <!-- Bone Piece -->
+        <path class="shirt ink" d="M -6,-2 C -10,-6 -2,-10 2,-4 L 6,16 C 10,20 2,24 -2,18 Z"/>
+        <!-- Red & Silver Beads -->
+        <circle cx="3" cy="26" r="5" class="bandana ink-thin"/>
+        <rect x="-2" y="32" width="10" height="8" rx="1" class="silver ink-thin"/>
+        <circle cx="3" cy="45" r="4.5" class="bandana-shade ink-thin"/>
+        <rect x="-1" y="51" width="8" height="10" rx="1" class="gold ink-thin"/>
+        <!-- Pointed Tooth / Charm Tip -->
+        <polygon class="shirt ink-thin" points="-1,62 7,62 3,78"/>
+      </g>
+
+      <!-- Foreground Beaded Dreadlocks (Left & Right Framing Face) -->
+      <!-- Viewer's Left Side Lock & Feather -->
+      <path class="hair-dark ink" d="M 148,158 C 142,216 146,282 168,354 L 180,350 C 160,280 156,216 162,158 Z"/>
+      <!-- Hanging Feather / Bone Ornament -->
+      <path class="skin-light ink" d="M 156,218 C 146,244 148,274 160,298 C 166,274 166,244 156,218 Z"/>
+      <rect x="158" y="294" width="12" height="9" rx="2" class="silver ink-thin"/>
+      <circle cx="166" cy="310" r="5" class="bandana ink-thin"/>
+
+      <!-- Viewer's Right Side Beaded Braid -->
+      <path class="hair-dark ink" d="M 296,154 C 306,216 306,282 296,348 L 308,348 C 318,282 318,216 308,154 Z"/>
+      <!-- Colorful Beads Along Right Lock -->
+      <rect x="296" y="212" width="12" height="10" rx="2" class="silver ink-thin"/>
+      <circle cx="302" cy="228" r="5.5" class="bandana ink-thin"/>
+      <rect x="296" y="236" width="12" height="8" rx="2" fill="#2A7B88" class="ink-thin"/>
+      <rect x="296" y="266" width="12" height="12" rx="2" class="shirt ink-thin"/>
+      <circle cx="302" cy="285" r="5" class="gold ink-thin"/>
+      <circle cx="298" cy="316" r="5" class="silver ink-thin"/>
+      <circle cx="308" cy="322" r="4.5" class="bandana ink-thin"/>
+    </g>
+  </g>
+</svg>

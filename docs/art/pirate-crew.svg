@@ -1,0 +1,455 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 840" width="600" height="840">
+  <defs>
+    <style>
+      .ink {
+        stroke: #1A1614;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ink-thin {
+        stroke: #1A1614;
+        stroke-width: 1.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      /* Tall Pirate (Ragetti) Palette */
+      .rag-skin { fill: #E2AD7B; }
+      .rag-skin-shade { fill: #BD8352; }
+      .rag-hair { fill: #5E563B; }
+      .rag-hair-dark { fill: #3B3624; }
+      .rag-jacket { fill: #6B6B5C; }
+      .rag-jacket-shade { fill: #4E4E42; }
+      .rag-vest { fill: #8E472D; }
+      .rag-shirt { fill: #DDD6C5; }
+      .rag-pants { fill: #5E5E5C; }
+      .rag-pants-shade { fill: #444442; }
+      .rag-shoe { fill: #78735E; }
+      .rag-sash { fill: #8C2A24; }
+
+      /* Stocky Pirate (Pintel) Palette */
+      .pin-skin { fill: #C98B5B; }
+      .pin-skin-shade { fill: #9A5E35; }
+      .pin-skin-dark { fill: #6E3E20; }
+      .pin-coat { fill: #2E2B28; }
+      .pin-coat-shade { fill: #1D1B19; }
+      .pin-shirt { fill: #E2DAC6; }
+      .pin-shirt-shade { fill: #BDB39C; }
+      .pin-pants { fill: #5A352C; }
+      .pin-pants-shade { fill: #3E221B; }
+      .pin-shoe { fill: #38322C; }
+
+      /* Shared Leather & Metal */
+      .leather { fill: #4F311D; }
+      .leather-dark { fill: #2E1B0F; }
+      .brass { fill: #8E7D64; }
+    </style>
+
+    <radialGradient id="ragFaceGrad" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#F0BF8E"/>
+      <stop offset="65%" stop-color="#D99F6B"/>
+      <stop offset="100%" stop-color="#AD7142"/>
+    </radialGradient>
+
+    <radialGradient id="pinFaceGrad" cx="45%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#DC9E6C"/>
+      <stop offset="65%" stop-color="#BA7A4B"/>
+      <stop offset="100%" stop-color="#874D28"/>
+    </radialGradient>
+  </defs>
+
+  <!-- GROUND SHADOWS -->
+  <ellipse cx="185" cy="775" rx="115" ry="12" fill="#1A1614" fill-opacity="0.22"/>
+  <ellipse cx="385" cy="770" rx="115" ry="12" fill="#1A1614" fill-opacity="0.24"/>
+
+  <!-- ========================================================= -->
+  <!-- CHARACTER 1: TALL PIRATE (LEFT)                           -->
+  <!-- ========================================================= -->
+  <g id="tall-pirate">
+    <!-- SCABBARD & CUTLASS -->
+    <g id="cutlass">
+      <!-- Scabbard extending down-left -->
+      <polygon class="leather-dark ink" points="168,412 178,420 22,588 16,584"/>
+      <polygon class="brass ink-thin" points="28,572 34,578 22,588 16,584"/>
+      <!-- Sword Hilt & Guard -->
+      <path class="leather-dark ink" d="M 168,402 L 188,376 L 198,382 L 178,410 Z"/>
+      <path class="brass ink-thin" d="M 164,398 C 176,386 190,376 202,380 C 206,384 196,398 180,412 Z"/>
+    </g>
+
+    <!-- LEGS & SHOES -->
+    <g id="rag-legs">
+      <!-- Far Leg (Viewer's Right) -->
+      <path class="rag-skin-shade ink" d="M 162,644 L 186,644 L 194,738 L 166,742 Z"/>
+      <!-- Far Shoe -->
+      <path class="rag-shoe ink" d="M 152,740
+        C 166,734 184,734 198,738
+        C 224,744 256,752 272,760
+        C 276,764 274,770 264,772
+        C 234,775 186,773 148,768
+        C 144,762 146,748 152,740 Z"/>
+      <path class="ink-thin" fill="none" d="M 148,762 C 186,766 232,768 270,762"/>
+      <path class="ink-thin" fill="none" d="M 196,736 L 204,728 L 210,738"/>
+
+      <!-- Near Leg (Viewer's Left) -->
+      <path class="rag-skin ink" d="M 104,644 L 132,644 L 128,744 L 100,746 Z"/>
+      <path class="rag-skin-shade" d="M 118,644 L 132,644 L 128,744 L 118,744 Z"/>
+      <!-- Near Shoe -->
+      <path class="rag-shoe ink" d="M 92,746
+        C 104,738 122,738 134,744
+        C 146,752 158,762 162,772
+        C 162,778 152,784 134,785
+        C 112,786 88,782 78,774
+        C 76,766 82,754 92,746 Z"/>
+      <path class="ink-thin" fill="none" d="M 80,768 C 102,776 132,778 160,770"/>
+      <path class="ink-thin" fill="none" d="M 104,742 L 116,754 L 128,742"/>
+    </g>
+
+    <!-- CROPPED BREECHES -->
+    <g id="rag-pants">
+      <!-- Far Pant Leg -->
+      <path class="rag-pants-shade ink" d="M 148,402 L 218,398 L 204,648 L 154,646 Z"/>
+      <!-- Near Pant Leg -->
+      <path class="rag-pants ink" d="M 134,404
+        L 184,402
+        L 164,538
+        L 142,648
+        L 88,642
+        C 104,578 122,494 134,404 Z"/>
+      <path class="rag-pants-shade" d="M 164,402 L 184,402 L 164,538 L 142,648 L 128,646 L 148,536 Z"/>
+      <path class="ink-thin" fill="none" d="M 138,448 C 146,498 144,562 132,638"/>
+    </g>
+
+    <!-- TORSO, SHIRT, VEST, SASH & BELT -->
+    <g id="rag-torso">
+      <!-- Inner Cream Shirt -->
+      <path class="rag-shirt ink" d="M 168,214 L 246,246 L 266,434 L 142,418 Z"/>
+      <path class="rag-shirt-shade" d="M 224,238 L 246,246 L 266,434 L 244,430 Z"/>
+
+      <!-- Rust/Terracotta Inner Vest -->
+      <path class="rag-vest ink" d="M 176,204
+        L 228,236
+        L 246,386
+        L 166,386
+        Z"/>
+      <path class="ink-thin" fill="none" d="M 206,282 C 216,314 218,348 212,382"/>
+
+      <!-- Hanging Red Waist Sash -->
+      <path class="rag-sash ink" d="M 188,396
+        L 208,398
+        C 208,452 202,512 188,562
+        L 178,548
+        C 184,498 188,446 188,396 Z"/>
+
+      <!-- Leather Waist Belt & Brass Buckle -->
+      <path class="leather ink" d="M 142,382 L 244,382 L 244,408 L 142,408 Z"/>
+      <rect x="206" y="380" width="24" height="28" rx="2" fill="none" stroke="#8E7D64" stroke-width="5"/>
+      <rect x="206" y="380" width="24" height="28" rx="2" fill="none" stroke="#1A1614" stroke-width="1.6"/>
+
+      <!-- Leather Satchel & Cross-Body Baldric Strap -->
+      <path class="leather ink" d="M 110,418 L 166,406 L 168,444 L 114,458 Z"/>
+      <path class="leather ink" d="M 234,234
+        C 214,278 184,328 148,374
+        L 166,392
+        C 202,344 232,292 250,246 Z"/>
+      <path class="leather-dark" opacity="0.45" d="M 242,240 L 250,246 C 232,292 202,344 166,392 L 158,384 Z"/>
+
+      <!-- Cropped Olive-Grey Pirate Jacket -->
+      <!-- Right Jacket Front -->
+      <path class="rag-jacket ink" d="M 244,242 L 266,262 L 268,424 L 254,422 Z"/>
+      <!-- Left Jacket Body & Lapel -->
+      <path class="rag-jacket ink" d="M 184,202
+        L 124,234
+        L 128,374
+        L 164,386
+        L 186,342
+        L 184,262
+        Z"/>
+      <path class="rag-jacket-shade" d="M 124,234 L 152,246 L 154,382 L 128,374 Z"/>
+      <!-- Jacket Buttons & Stitching -->
+      <circle cx="176" cy="264" r="3" class="brass ink-thin"/>
+      <circle cx="176" cy="284" r="3" class="brass ink-thin"/>
+      <circle cx="176" cy="304" r="3" class="brass ink-thin"/>
+    </g>
+
+    <!-- RIGHT ARM & HAND RESTING ON HILT -->
+    <g id="rag-arm">
+      <!-- Jacket Sleeve -->
+      <path class="rag-jacket ink" d="M 124,234
+        L 74,344
+        L 116,426
+        L 146,412
+        L 114,344
+        L 148,274
+        Z"/>
+      <path class="rag-jacket-shade" d="M 74,344 L 92,346 L 128,420 L 116,426 Z"/>
+      <!-- Cuff Buttons -->
+      <circle cx="122" cy="402" r="2.8" class="brass ink-thin"/>
+      <circle cx="132" cy="398" r="2.8" class="brass ink-thin"/>
+
+      <!-- Hand Grasping Sword / Gesture -->
+      <path class="rag-skin ink" d="M 134,418
+        L 156,406
+        C 164,404 172,412 178,422
+        L 196,436
+        C 200,440 198,444 192,442
+        L 174,432
+        C 178,442 178,452 174,454
+        C 170,456 166,448 164,442
+        C 164,452 162,460 158,460
+        C 154,460 152,450 152,442
+        C 148,450 144,454 140,452
+        C 136,450 138,438 140,428
+        Z"/>
+    </g>
+
+    <!-- LONG NECK & HEAD -->
+    <g id="rag-head">
+      <!-- Angled Neck -->
+      <path class="rag-skin ink" d="M 228,176 L 188,212 L 222,256 L 252,202 Z"/>
+      <path class="rag-skin-shade" d="M 218,186 L 234,202 L 222,256 L 204,232 Z"/>
+
+      <!-- Back Ponytail Wisps -->
+      <path class="rag-hair-dark ink" d="M 224,174 C 214,182 206,192 204,200 C 212,196 218,192 224,186 C 218,194 214,202 214,208 C 222,202 228,194 232,184 Z"/>
+
+      <!-- Ear & Gold Hoop Earring -->
+      <path class="rag-skin ink" d="M 232,152 C 220,148 214,158 220,170 C 224,176 230,176 234,172"/>
+      <circle cx="232" cy="178" r="4.5" fill="none" stroke="#C9A236" stroke-width="2"/>
+
+      <!-- Face Contour -->
+      <path fill="url(#ragFaceGrad)" class="ink" d="M 234,122
+        C 230,142 232,164 238,184
+        C 244,200 256,216 270,224
+        C 280,228 290,224 294,212
+        C 304,194 312,168 312,142
+        C 312,126 306,114 296,108
+        Z"/>
+
+      <!-- Hollow Cheek Shading -->
+      <path class="rag-skin-shade" d="M 244,172 C 252,188 264,202 278,210 C 266,198 258,184 254,168 Z"/>
+
+      <!-- Eyes (Wooden Eye on Viewer's Right!) -->
+      <!-- Viewer's Left Eye -->
+      <ellipse cx="268" cy="152" rx="9" ry="6" fill="#F2EDE2" stroke="#1A1614" stroke-width="1.5"/>
+      <circle cx="269" cy="152" r="3.5" fill="#3B2B1E"/>
+      <path class="ink-thin" fill="none" d="M 258,144 C 264,140 272,140 278,144"/>
+
+      <!-- Viewer's Right Wooden Eye -->
+      <ellipse cx="298" cy="154" rx="8.5" ry="6.5" fill="#9E6B43" stroke="#1A1614" stroke-width="1.8"/>
+      <circle cx="299" cy="154" r="3" fill="#4A2E1B"/>
+      <path class="ink-thin" fill="none" d="M 290,144 C 296,140 304,142 308,146"/>
+
+      <!-- Nose, Mustache & Goatee -->
+      <path class="ink" fill="none" d="M 286,154 C 290,164 294,174 292,180 C 290,184 282,184 278,180"/>
+      <path class="rag-hair-dark" d="M 272,190 C 280,186 290,188 296,192 C 290,192 280,192 272,190 Z"/>
+      <path fill="#7A3E3A" class="ink-thin" d="M 274,194 C 282,196 290,196 294,194 C 290,200 280,200 274,194 Z"/>
+      <path class="rag-hair-dark" d="M 276,204 L 290,204 L 284,218 Z"/>
+
+      <!-- Messy Straggly Hair & Bangs -->
+      <path class="rag-hair ink" d="M 230,144
+        C 226,120 242,98 272,96
+        C 302,94 322,112 322,136
+        C 318,128 314,122 310,120
+        C 312,130 310,142 306,150
+        C 306,138 304,128 300,122
+        C 298,134 294,144 290,150
+        C 290,138 288,128 284,122
+        C 280,134 276,142 272,146
+        C 272,134 270,124 266,120
+        C 260,130 254,142 248,150
+        C 244,142 238,140 230,144 Z"/>
+    </g>
+  </g>
+
+  <!-- ========================================================= -->
+  <!-- CHARACTER 2: STOCKY PIRATE (RIGHT)                        -->
+  <!-- ========================================================= -->
+  <g id="stocky-pirate">
+    <!-- LEGS & BUCKLED SHOES -->
+    <g id="pin-legs">
+      <!-- Viewer's Left Leg -->
+      <path class="pin-skin ink" d="M 332,626 L 374,626 L 368,722 L 336,722 Z"/>
+      <path class="pin-skin-shade" d="M 356,626 L 374,626 L 368,722 L 354,722 Z"/>
+      <!-- Viewer's Left Shoe (Side Profile with Heel) -->
+      <path class="pin-shoe ink" d="M 334,716
+        L 342,704
+        L 346,718
+        L 372,714
+        L 382,708
+        C 386,718 388,732 388,744
+        L 372,744
+        L 372,736
+        C 356,742 332,746 296,744
+        C 278,743 272,738 274,732
+        C 286,728 312,724 334,716 Z"/>
+
+      <!-- Viewer's Right Leg -->
+      <path class="pin-skin ink" d="M 418,622 L 464,622 L 456,714 L 420,714 Z"/>
+      <path class="pin-skin-shade" d="M 444,622 L 464,622 L 456,714 L 442,714 Z"/>
+      <!-- Viewer's Right Shoe (Front-Angled with Brass Buckle) -->
+      <path class="pin-shoe ink" d="M 420,708
+        L 458,712
+        L 462,732
+        C 468,738 470,746 468,754
+        C 454,766 426,770 398,764
+        C 392,760 392,750 398,744
+        L 414,732
+        Z"/>
+      <path class="ink-thin" fill="none" d="M 396,754 C 422,760 448,758 468,748"/>
+      <!-- Brass Shoe Buckle -->
+      <rect x="418" y="732" width="18" height="14" rx="2" fill="none" stroke="#8E7D64" stroke-width="4"/>
+      <rect x="418" y="732" width="18" height="14" rx="2" fill="none" stroke="#1A1614" stroke-width="1.5"/>
+    </g>
+
+    <!-- BAGGY MAROON BREECHES -->
+    <g id="pin-pants">
+      <path class="pin-pants ink" d="M 284,514
+        L 486,514
+        C 492,554 490,594 482,626
+        C 456,632 426,632 402,624
+        L 394,586
+        L 386,626
+        C 358,632 328,632 306,624
+        C 294,592 286,554 284,514 Z"/>
+      <path class="pin-pants-shade" d="M 442,514 L 486,514 C 492,554 490,594 482,626 L 452,628 C 458,592 454,554 442,514 Z"/>
+      <path class="ink-thin" fill="none" d="M 332,576 C 356,584 378,584 394,578"/>
+      <path class="ink-thin" fill="none" d="M 412,576 C 436,584 462,584 482,576"/>
+    </g>
+
+    <!-- TORSO: BARE CHEST, OPEN SHIRT, COAT, BELT & BALDRIC -->
+    <g id="pin-torso">
+      <!-- Dark Coat Back & Left Flap -->
+      <path class="pin-coat-shade ink" d="M 272,332 L 488,284 L 516,522 L 264,518 Z"/>
+
+      <!-- Bare Chest & Belly -->
+      <path class="pin-skin ink" d="M 288,322
+        L 396,312
+        L 404,492
+        L 296,492
+        Z"/>
+      <path class="pin-skin-shade" d="M 288,322 L 328,322 C 318,382 324,442 338,488 L 296,492 Z"/>
+      <!-- Pectoral Line -->
+      <path class="ink-thin" fill="none" d="M 318,398 C 338,404 358,402 374,394"/>
+
+      <!-- Open Cream Shirt (Viewer's Right Side) -->
+      <path class="pin-shirt ink" d="M 366,304
+        L 434,282
+        L 442,534
+        L 392,538
+        C 386,464 378,384 366,304 Z"/>
+      <path class="pin-shirt-shade" d="M 412,288 L 434,282 L 442,534 L 420,536 Z"/>
+
+      <!-- Ornate Cross-Body Leather Baldric Strap -->
+      <path class="leather ink" d="M 304,316
+        C 342,368 394,412 456,448
+        L 442,468
+        C 382,432 332,388 294,336 Z"/>
+      <!-- Embossed Gold Scrollwork Pattern on Baldric -->
+      <path stroke="#A88E68" stroke-width="2" fill="none" d="M 314,338 C 324,334 330,348 322,354 C 334,352 342,366 334,372 C 346,370 356,384 348,390 C 362,388 372,402 364,408 C 378,406 388,420 380,426 C 396,424 406,438 398,444 C 414,442 426,452 436,456"/>
+
+      <!-- Rope / Cord Tied Around Neck & Shoulder -->
+      <path stroke="#DDD4C0" stroke-width="5" fill="none" stroke-linecap="round" d="M 316,314 C 296,336 276,356 272,368 C 270,376 286,376 312,368 C 338,360 364,348 386,336"/>
+      <path class="ink-thin" fill="none" d="M 316,314 C 296,336 276,356 272,368 C 270,376 286,376 312,368 C 338,360 364,348 386,336"/>
+
+      <!-- Wide Leather Belt & Oversized Rectangular Brass Buckle -->
+      <path class="leather ink" d="M 272,466
+        C 314,480 356,480 392,468
+        L 392,502
+        C 356,514 314,514 272,500 Z"/>
+      <g transform="translate(322, 488) rotate(-4)">
+        <rect x="-26" y="-32" width="52" height="64" rx="4" fill="none" stroke="#8E7D64" stroke-width="11"/>
+        <rect x="-26" y="-32" width="52" height="64" rx="4" fill="none" stroke="#1A1614" stroke-width="2.2"/>
+        <rect x="-14" y="-20" width="28" height="40" rx="2" fill="none" stroke="#1A1614" stroke-width="1.8"/>
+      </g>
+
+      <!-- Dark Pirate Coat (Right Side & Sleeve) -->
+      <path class="pin-coat ink" d="M 412,284
+        L 446,274
+        L 504,294
+        C 522,344 532,402 532,462
+        L 492,468
+        L 486,432
+        L 474,522
+        L 416,522
+        C 424,442 424,362 412,284 Z"/>
+      <path class="pin-coat-shade" d="M 476,284 L 504,294 C 522,344 532,402 532,462 L 492,468 L 486,432 L 474,522 L 456,522 Z"/>
+      <!-- Coat Collar Lapel -->
+      <path class="pin-shirt ink" d="M 398,274 L 446,274 L 414,294 Z"/>
+    </g>
+
+    <!-- STOCKY PIRATE'S HAND (VIEWER'S RIGHT) -->
+    <g id="pin-hand">
+      <path class="pin-skin ink" d="M 488,464
+        L 524,462
+        C 528,476 528,492 524,506
+        C 522,510 518,510 516,504
+        C 514,512 510,516 506,514
+        C 502,512 502,504 502,498
+        C 498,506 494,512 490,510
+        C 486,508 486,498 488,490
+        C 484,496 478,498 476,494
+        C 474,490 480,478 488,464 Z"/>
+    </g>
+
+    <!-- BALDING HEAD, SCRAGGLY HAIR & SCOWLING FACE -->
+    <g id="pin-head">
+      <!-- Straggly Side Hair Locks -->
+      <path class="pin-coat-shade ink-thin" fill="none" d="M 316,246 C 306,264 300,284 302,306"/>
+      <path class="pin-coat-shade ink-thin" fill="none" d="M 320,254 C 312,272 308,292 312,312"/>
+      <path class="pin-coat-shade ink-thin" fill="none" d="M 324,264 C 318,280 316,298 320,316"/>
+      <path class="pin-coat-shade ink-thin" fill="none" d="M 404,244 C 412,258 416,272 414,286"/>
+
+      <!-- Ears -->
+      <path class="pin-skin ink" d="M 318,236 C 310,234 308,246 314,254 C 318,256 320,254 322,250"/>
+      <path class="pin-skin ink" d="M 404,234 C 412,232 414,244 408,252 C 404,254 402,252 400,248"/>
+
+      <!-- Main Round / Heavy-Jawed Head -->
+      <path fill="url(#pinFaceGrad)" class="ink" d="M 324,218
+        C 326,194 342,182 362,182
+        C 382,182 398,194 400,218
+        C 404,236 406,256 402,274
+        C 396,296 380,308 360,308
+        C 340,308 324,296 320,274
+        C 318,256 320,236 324,218 Z"/>
+
+      <!-- Heavy Five-O'Clock Shadow / Beard Stubble -->
+      <path class="pin-skin-dark" opacity="0.65" d="M 320,258
+        C 332,254 346,252 360,252
+        C 374,252 388,254 402,258
+        C 400,288 384,308 360,308
+        C 336,308 322,288 320,258 Z"/>
+
+      <!-- Furrowed Brow & Scowling Eyebrows -->
+      <path class="pin-coat ink" d="M 324,226 C 334,228 346,232 354,238 C 344,236 332,234 324,226 Z"/>
+      <path class="pin-coat ink" d="M 396,220 C 384,224 374,230 366,238 C 376,234 388,230 396,220 Z"/>
+      <path class="ink-thin" fill="none" d="M 358,224 L 358,236 M 364,224 L 364,236"/>
+
+      <!-- Glaring Eyes -->
+      <g id="pin-eyes">
+        <!-- Viewer's Left Eye -->
+        <ellipse cx="340" cy="240" rx="10" ry="6.5" fill="#F2EDE2" stroke="#1A1614" stroke-width="1.6"/>
+        <circle cx="341" cy="240" r="4" fill="#3B2B1E"/>
+        <circle cx="341" cy="240" r="1.8" fill="#0D0B0A"/>
+
+        <!-- Viewer's Right Eye -->
+        <ellipse cx="380" cy="238" rx="10" ry="6.5" fill="#F2EDE2" stroke="#1A1614" stroke-width="1.6"/>
+        <circle cx="379" cy="238" r="4" fill="#3B2B1E"/>
+        <circle cx="379" cy="238" r="1.8" fill="#0D0B0A"/>
+      </g>
+
+      <!-- Broad Nose -->
+      <path class="ink" fill="none" d="M 352,244 C 346,252 344,258 350,262 C 356,264 364,264 370,262 C 374,258 372,252 366,244"/>
+
+      <!-- Open Snarling Mouth & Teeth -->
+      <g id="pin-mouth">
+        <path fill="#4A2220" class="ink" d="M 336,278
+          C 348,270 372,270 384,278
+          C 382,288 372,292 360,292
+          C 348,292 338,288 336,278 Z"/>
+        <!-- Upper Teeth -->
+        <path fill="#E8E2D4" stroke="#1A1614" stroke-width="1" d="M 340,278 C 350,273 370,273 380,278 L 378,283 C 368,281 352,281 342,283 Z"/>
+        <!-- Lower Lip -->
+        <path fill="#9E6254" class="ink-thin" d="M 344,292 C 354,296 366,296 376,292"/>
+      </g>
+    </g>
+  </g>
+</svg>

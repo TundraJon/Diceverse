@@ -27,7 +27,7 @@ The user: the banners go by too quickly; every banner on this game should stay a
 
 ### Queue 46: Ship, Captain & Crew second skin: the black galleon (Not yet authorized to build.)
 
-The user's black galleon (SVG made with Gemini, 800 x 680) and a new pirate captain (500 x 840) as a second skin. Needs before building: the galleon and captain SVGs saved verbatim to `docs/art/` (the user pasted them in the chat; I will transcribe them), a new crew drawing (question to the user: new crew coming, or reuse the existing crew?), and a mock-up approved by the user.
+The user's black galleon (SVG made with Gemini, 800 x 680) and a new pirate captain (500 x 840) as a second skin. Art saved verbatim in `docs/art/`: `galleon.svg`, `pirate-captain.svg`, `pirate-crew.svg` (two pirates in one drawing). Decided with the user: the crew shows BOTH pirates, from the waist up, standing behind the bow at the forecastle. Still needed before building: the user approves the mock-up (mock-up 1 shown 2026-11-13).
 
 - [ ] House rule `skin` on the game (`src/games/ship.js` `meta.houseRules`): "Ship look": Freighter (default) / Galleon. Cosmetic only: not in the Solo records key and no effect on the rules or the bot. Shown on the house rule screen like the others, and in `summary`. *(The rule's name and wording are mine. Change before authorizing if wanted.)*
 - [ ] `src/ui/galleon-art.js` (new): the galleon and captain embedded inline with prefixed class names (`gl-`, `gc-`), same method as `freighter-art.js`; `ship-view.js` picks the freighter or the galleon from `options.skin`.
