@@ -1,10 +1,10 @@
 // Ship, Captain & Crew view: the freighter (the ship die 6 in the wheelhouse, the captain 5 at the helm, the crew 4 in the crow's nest, the cargo dice in
 // the three containers), the sea with the dice still in play, the round table. All theme words live in THEME. The art is src/ui/freighter-art.js.
-import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
+import { renderDie, REVEAL_MS, SETTLE_MS, ROLL_MS, throwAge } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
 import { SLOTS, SLOT_VALUE, VOYAGES, REQUIRED, cargoSize } from '../../games/ship.js';
-import { freighterSvg, VB, WHEELHOUSE, CONTAINERS } from '../freighter-art.js';
+import { freighterSvg, flatDieSvg, VB, WHEELHOUSE, CONTAINERS } from '../freighter-art.js';
 
 const THEME = {
   title: 'SHIP, CAPTAIN & CREW',
@@ -19,6 +19,24 @@ const el = (tag, cls, text) => {
   if (text != null) e.textContent = text;
   return e;
 };
+
+// A flat die for the ship. When it is thrown it spins down to rest (the same length as a 3D throw) and carries on from where it was after a re-render.
+function flatDie(value, tumble) {
+  const d = el('div', 'fdie');
+  d.innerHTML = flatDieSvg(value);
+  const age = throwAge();
+  const fast = document.body.classList.contains('fast');
+  if (tumble && !fast && age < ROLL_MS && d.animate) {
+    const a = d.animate([
+      { transform: 'rotate(-540deg) scale(1.12) translate(6%, -10%)' },
+      { offset: 0.4, transform: 'rotate(-230deg) scale(1.06) translate(-4%, 4%)' },
+      { offset: 0.75, transform: 'rotate(-40deg) scale(1.03) translate(2%, -2%)' },
+      { transform: 'rotate(0deg) scale(1) translate(0, 0)' },
+    ], { duration: ROLL_MS, easing: 'ease-out', fill: 'both' });
+    a.currentTime = Math.max(0, age);
+  }
+  return d;
+}
 
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, wins: s.wins, turns: s.turns }));
 
@@ -148,13 +166,13 @@ export const shipView = {
       ui.deck.appendChild(e);
       return e;
     };
-    if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, WHEELHOUSE).appendChild(renderDie(SLOT_VALUE.ship, { danger: false }));
+    if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, WHEELHOUSE).appendChild(flatDie(SLOT_VALUE.ship, false));
     const n = cargoSize(view.crew);
     const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep
     for (let k = 0; k < n; k++) {
       const box = place('scsq', CONTAINERS[k]);
       if (!view.cargo) continue; // an empty container
-      const die = renderDie(view.cargo[k], { tumble: ctx.tumble && !ctx.reduced && view.rolling && view.tumbling.includes(k), danger: false });
+      const die = flatDie(view.cargo[k], ctx.tumble && !ctx.reduced && view.rolling && view.tumbling.includes(k));
       if (pick) {
         const wrap = el('div', 'schw');
         const btn = el('button', 'dieBtn' + (view.held[k] ? ' held' : ''));

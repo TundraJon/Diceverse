@@ -26,16 +26,22 @@ export function freighterSvg(st) {
   const fig = (k) => `fig ${has(k) ? 'in' : skip(k) ? 'skip' : 'out'}${st.fresh.includes(k) ? ' pop' : ''}`;
   return '<svg viewBox="0 -15 600 415" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
     + `<path d="${WAVE} L570,316 L570,350 L30,350 Z" fill="#25D5DF"/>`
+    + `<g class="${has('ship') ? (st.fresh.includes('ship') ? 'unghost' : '') : 'ghost'}">` // before the 6 is set aside the whole ship is semi-transparent (not the water)
     + FREIGHTER
-    + (has('ship') ? '' : '<text x="146" y="134" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="46" fill="#8EA9BD" opacity="0.6">6</text>')
     + `<g transform="${CREW_T}"><g class="${fig('crew')}"><clipPath id="frcrewclip"><rect x="0" y="0" width="280" height="285"/></clipPath><g clip-path="url(#frcrewclip)">${CREW}</g></g></g>`
     + '<path d="M125,28 L165,28 L160,44 L130,44 Z" fill="#B9824A" stroke="#000" stroke-width="6" stroke-linejoin="round"/><path d="M137,30 L138,42 M145,30 L145,42 M153,30 L152,42" stroke="#000" stroke-width="3" fill="none"/>'
     + `<g transform="${CAP}"><g class="${fig('captain')}">${CAPTAIN}</g></g>`
     + (skip('captain') ? '<text x="126.6" y="209" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="11" fill="#000">NOT NEEDED</text>' : '')
     + (skip('crew') ? '<text x="198" y="42" font-family="Arial,sans-serif" font-weight="bold" font-size="11" fill="#fff">NOT NEEDED</text>' : '')
     + `<text x="285" y="282" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="30" fill="#fff" stroke="#000" stroke-width="1.5">${st.total === null ? 'CARGO' : 'CARGO = ' + st.total}</text>`
-    + `<g><path d="${WAVE}" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/><path d="${WAVE}" fill="none" stroke="#9FF3F8" stroke-width="3.5" stroke-linecap="round"/></g>`
     + badge(182, 38, 4, 'bdg' + (skip('crew') ? ' skip' : ''))
     + badge(180, 224, 5, 'bdg' + (skip('captain') ? ' skip' : ''))
+    + '</g>'
+    + `<g><path d="${WAVE}" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/><path d="${WAVE}" fill="none" stroke="#9FF3F8" stroke-width="3.5" stroke-linecap="round"/></g>`
     + '</svg>';
 }
+
+// A flat die for the squares of the ship (the 3D cubes look odd on the flat drawing): cream, black outline, dark pips, filling its 68-unit square.
+const FLAT_PIPS = { 1: [[34, 34]], 2: [[19, 19], [49, 49]], 3: [[19, 19], [34, 34], [49, 49]], 4: [[19, 19], [49, 19], [19, 49], [49, 49]], 5: [[19, 19], [49, 19], [34, 34], [19, 49], [49, 49]], 6: [[19, 17], [49, 17], [19, 34], [49, 34], [19, 51], [49, 51]] };
+export const flatDieSvg = (v) => '<svg viewBox="0 0 68 68" aria-hidden="true"><rect x="2.5" y="2.5" width="63" height="63" rx="9" fill="#FFF8E8" stroke="#000" stroke-width="5"/>'
+  + (FLAT_PIPS[v] || []).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.2" fill="#12151C"/>`).join('') + '</svg>';

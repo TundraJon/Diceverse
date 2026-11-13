@@ -571,14 +571,17 @@ body.fast .cover { transition: none; }
 /* Ship, Captain & Crew, version 3: the freighter. The real dice are laid over the squares of the picture (wheelhouse and the three containers) */
 .scdeck { container-type: inline-size; }
 .scsq { position: absolute; width: 11.333%; aspect-ratio: 1; display: grid; place-items: center; }
-.scsq .die { --s: 9cqw; } /* the cube is drawn tilted, so its outline is about 1.2 times its side: this makes it fill the 68-unit square */
 .scsq.pop { animation: scpop 0.35s ease-out; }
+.scsq svg, .scsq .fdie { display: block; width: 100%; height: 100%; }
+.scdeck .ghost { opacity: 0.35; }
+.scdeck .unghost { animation: scunghost 0.35s ease-out; }
 .scdeck .fig { transform-box: fill-box; transform-origin: 50% 100%; }
 .scdeck .fig.out { opacity: 0.28; }
 .scdeck .fig.skip { opacity: 0.2; }
 .scdeck .fig.pop { animation: scpop 0.35s ease-out; }
 .scdeck .bdg.skip { opacity: 0.3; }
-@media (prefers-reduced-motion: reduce) { .scsq.pop, .scdeck .fig.pop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .scsq.pop, .scdeck .fig.pop, .scdeck .unghost { animation: none; } }
+@keyframes scunghost { from { opacity: 0.35; } to { opacity: 1; } }
 @keyframes scpop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
 .schw { display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; height: 100%; }
 .schw .dieBtn { min-width: 0; min-height: 0; padding: 0; width: 100%; height: 100%; display: grid; place-items: center; border-radius: 8px; }

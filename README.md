@@ -21,6 +21,9 @@ _Empty — nothing queued right now._
 
 ## Build Planner
 
+### Planner 23: comments and end reasons go by too quickly
+The user said (while approving Build 62) "I need to be able to read the comments and end reason clearly, goes by too quick." Not yet clear which: the bot talk bubbles, the round/game-over banners ("X wins the round", "no cargo"), the Solo "The voyages are over!" banner, or all games. Open questions: which screens, and how long they should stay (a recommendation: tie the display time to the length of the text, at least 2.5 s, and let a tap dismiss it).
+
 Resolved, built, dropped, or superseded items are deleted from here. History lives in the Build Log.
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
@@ -801,3 +804,15 @@ Ship, Captain & Crew becomes a freighter (was Queue 44). The art is the user's: 
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright, 12 checks, 0 failures, 0 JS errors: figures, dice and sign for Full crew, Mutiny and Skeleton at 390x844; 5 layouts (390x844, 411x768, 360x740, 320x640, 768x1024) with the dice all square and sized to the picture, at most 1 px of vertical scroll (as before); no tell at real speed (nothing in the picture, labels or buttons changes in the first 1.2 s of any roll; no new cargo total during a re-roll); pops seen; Either die (two buttons, RE-ROLL 2, tap keeps, KEPT tag, RE-ROLL 1, ALL KEPT, un-keep and re-roll); NOT NEEDED labels. Screenshots looked at (Full crew, Mutiny, kept die, 320 wide). The full-game run for the Ship rules is the earlier one.
 Needs a real-device check: tapping the cargo dice (41 px at 390 wide), how small the captain and crew look on the phone, and the cube dice against the flat art. Old saves are not affected (no state change).
+
+## Build Log 62 (completed)
+
+Ship, Captain & Crew: the ship is a ghost until the 6 is set aside, and flat dice on the ship (user request after Build 61).
+
+- [x] `src/ui/freighter-art.js`: until the ship die (6) is set aside everything but the water and the wave (hull, wheelhouse, containers, figures, badges, CARGO sign) sits in a `<g class="ghost">` at 35% opacity (`.scdeck .ghost` in `theme.css`); when the 6 is set aside it turns solid with a 0.35 s fade (`.unghost`, `scunghost`; none with reduced motion). The faint "6" numeral in the wheelhouse is removed. New `flatDieSvg(v)`: a flat cream die with a black outline and dark pips that fills its 68-unit square.
+- [x] `src/ui/views/ship-view.js`: the ship die and the cargo dice are flat (`flatDie`), not the 3D cubes (the dice in the sea stay 3D). A thrown cargo die spins down to rest over `ROLL_MS` (rotate, scale and shake, ease-out) and carries on from where it was after a re-render (`throwAge`, new in `src/ui/dice.js`; off with `?speed=0` fast mode). Either die: the gold held ring and the KEPT tag are unchanged.
+- [x] `src/ui/theme.css`: `.scsq .die` removed (obsolete), `.scsq svg, .scsq .fdie` fill the square.
+- [x] No change to the rules, the bot or the no-tell timing (the ship turns solid only after `SETTLE_MS`).
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright, 18 checks, 0 failures, 0 JS errors: ship ghost (35%) at the start of a voyage and solid once the 6 is set aside; no 3D cube inside the ship (3 flat dice with 2 cargo dice); flat dice are animated during a re-roll; no tell at real speed (nothing in the picture, labels or buttons changes in the first 1.2 s of a roll; no new cargo total during a re-roll); Either die (two buttons, RE-ROLL 2, KEPT, RE-ROLL 1, ALL KEPT); Mutiny, Skeleton, NOT NEEDED; 5 layouts (at most 1 px of vertical scroll, as before). Screenshots looked at (ghost, solid). Needs a real-device check: how the spin looks on the phone, and tapping the 41 px cargo dice. Old saves are not affected.
+

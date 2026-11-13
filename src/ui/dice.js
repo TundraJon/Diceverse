@@ -37,6 +37,7 @@ let seq = 0; // the position of the next die in this render pass
 
 // `dir` is the travel direction: [0, -1] from the bottom (up), [-0.7, 0.7] from the top right, [1, 0] from the left, [-1, 0] from the right.
 export function startThrow(at, dir) { throwAt = at; throwNo += 1; if (dir) throwDir = dir; }
+export const throwAge = () => (typeof performance !== 'undefined' ? performance.now() - throwAt : ROLL_MS); // how long ago the last throw started (ms)
 export function beginDice() { seq = 0; }
 
 const num = (v, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
