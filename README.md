@@ -17,25 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 45: Ship, Captain & Crew: every banner stays at least 2.5 seconds (Not yet authorized to build.)
-
-The user: the banners go by too quickly; every banner on this game should stay at least 2.5 seconds ("it's just easier to code it once"). Today `reduce` in `src/ui/views/ship-view.js` waits `GAME_OVER` 600 ms (200 with reduced motion), `ROUND_ENDED` 1300, `TIEBREAK` 1300 and `NO_CARGO` 900, and the shell opens the results sheet (`showGameOver`, `src/shell/main.js`) right after the game-over delay, which covers the banner.
-
-- [ ] One constant `BANNER_MS = 2500` at the top of `ship-view.js`, used as the delay of the four banner events: `NO_CARGO`, `TIEBREAK`, `ROUND_ENDED`, `GAME_OVER`. Also with reduced motion (reading time does not depend on motion). *(Added by Claude. Change before authorizing if wanted.)*
-- [ ] Only Ship, Captain & Crew changes; the other games keep their timing. `?speed=0` stays instant (the shell already scales delays).
-- [ ] Verification: real-speed run through a no-cargo turn, a round end, a tie and the game end; each banner is on screen at least 2.5 s (measured) before the next thing happens, and the results sheet opens only after the game-over banner has been up for 2.5 s; `?speed=0` unaffected.
-
-### Queue 46: Ship, Captain & Crew second skin: the black galleon (Not yet authorized to build.)
-
-The user's black galleon (SVG made with Gemini, 800 x 680) and a new pirate captain (500 x 840) as a second skin. Art saved verbatim in `docs/art/`: `galleon.svg`, `pirate-captain.svg`, `pirate-crew.svg` (two pirates in one drawing). Decided with the user: the crew shows BOTH pirates, from the waist up, standing behind the bow at the forecastle. Still needed before building: the user approves the mock-up (mock-up 1 shown 2026-11-13).
-
-- [ ] House rule `skin` on the game (`src/games/ship.js` `meta.houseRules`): "Ship look": Freighter (default) / Galleon. Cosmetic only: not in the Solo records key and no effect on the rules or the bot. Shown on the house rule screen like the others, and in `summary`. *(The rule's name and wording are mine. Change before authorizing if wanted.)*
-- [ ] `src/ui/galleon-art.js` (new): the galleon and captain embedded inline with prefixed class names (`gl-`, `gc-`), same method as `freighter-art.js`; `ship-view.js` picks the freighter or the galleon from `options.skin`.
-- [ ] Placement (the user's choices): the crew (4) at the front of the ship near the figurehead; the captain (5) on the quarterdeck at the back; the ship die (6) in the captain's quarters at the very back, where the stern windows are now; the three cargo dice in the waist on top of the deck (between the main mast and the fore mast), the same cargo rules as today (2 dice in Full crew, 3 in Mutiny and Skeleton). Flat dice, same as the freighter.
-- [ ] Ghost rule as on the freighter: the whole ship (not the water) is semi-transparent (35%) until the 6 is set aside, then fades to solid (0.35 s).
-- [ ] Badges 4 and 5 beside the figures; "CARGO = n" sign on the hull; NOT NEEDED labels and dimming for a skipped role; pop-in when a figure is set aside; Either-die tap-to-keep with KEPT tag. All as on the freighter. *(Added by Claude. Change before authorizing if wanted.)*
-- [ ] Sizes (mine): the picture is 800 x 680 so it is taller than the freighter (about 304 px at 358 wide); the deck is capped by the free height so nothing scrolls at 390x844, 411x768, 360x740, 320x640 and 768x1024. The dice are about 50 units (room in the waist is about 170 x 50). The captain about 85 units tall. Exact sizes and the sign position are decided on the mock-up.
-- [ ] No-tell timing unchanged; the rules and bot untouched. Needs a real-device check (small figures, tapping the dice).
+_Empty — nothing queued right now._
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
@@ -826,4 +808,23 @@ Ship, Captain & Crew: the ship is a ghost until the 6 is set aside, and flat dic
 - [x] No change to the rules, the bot or the no-tell timing (the ship turns solid only after `SETTLE_MS`).
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright, 18 checks, 0 failures, 0 JS errors: ship ghost (35%) at the start of a voyage and solid once the 6 is set aside; no 3D cube inside the ship (3 flat dice with 2 cargo dice); flat dice are animated during a re-roll; no tell at real speed (nothing in the picture, labels or buttons changes in the first 1.2 s of a roll; no new cargo total during a re-roll); Either die (two buttons, RE-ROLL 2, KEPT, RE-ROLL 1, ALL KEPT); Mutiny, Skeleton, NOT NEEDED; 5 layouts (at most 1 px of vertical scroll, as before). Screenshots looked at (ghost, solid). Needs a real-device check: how the spin looks on the phone, and tapping the 41 px cargo dice. Old saves are not affected.
+
+## Build Log 63 (completed)
+
+Ship, Captain & Crew: every banner stays at least 2.5 seconds (was Queue 45). Built in the same commit as Build 64 (the two touch the same file).
+
+- [x] `src/ui/views/ship-view.js`: one constant `BANNER_MS = 2500`, the delay of `NO_CARGO` (was 900 ms), `TIEBREAK` (1300), `ROUND_ENDED` (1300) and `GAME_OVER` (600), also with reduced motion. The results sheet opens only after the game-over banner has had its 2.5 s. Other games unchanged.
+
+Verification (scratch script, none committed): a real-speed 2-player game against a bot to the end, timed inside the page with `requestAnimationFrame`: round banners 2666, 2685, 2665 and 2515 ms, no-cargo banners 3353, 3211, 3380 and 3361 ms (they include the next turn starting), the tie banner 2652 ms, and the game-over banner 2531 ms before the results sheet opened; every one at least 2.5 s. 0 JS errors. `?speed=0` games still finish at once (a 3-game run, 13 s).
+
+## Build Log 64 (completed)
+
+Ship, Captain & Crew: second skin, the black galleon (was Queue 46). The art is the user's: the galleon, the captain and the two pirates were designed by the user and generated with Gemini (originals in `docs/art/`: `galleon.svg`, `pirate-captain.svg`, `pirate-crew.svg`).
+
+- [x] `src/games/ship.js`: house rule `skin` ("Ship look": Freighter (default) / Galleon, with a hint). Cosmetic only: it is not in the Solo records key and changes nothing in the rules or the bot. Unknown values are rejected in `setup`.
+- [x] `src/ui/galleon-art.js` (new): the three drawings embedded inline with their class names prefixed `gl-`, `gc-`, `gw-` (the CSS is at the end of `theme.css`); the galleon is cut where the bow details (beakhead and figurehead) start so the two pirates (one drawing, one scale, full figures) stand behind them; the captain stands on the quarterdeck; badges 4 and 5; the "CARGO = n" sign on the hull; NOT NEEDED labels; ghost at 35% until the 6 is set aside and a fade to solid (the water is not ghosted); `GEOM` lists where the dice go (800 x 680 units): the ship die 52 units in the captain's quarters, three cargo dice 52 units in the waist (the first 2 units from the main mast, the third 2 units before the forecastle block). Captain and pirates share the scale 0.15.
+- [x] `src/ui/freighter-art.js`: exports `GEOM` in the same shape. `src/ui/views/ship-view.js`: a `SKINS` table picks the drawing and the geometry from `options.skin`; `place()` now sizes each square from the geometry (was fixed to the freighter's 68 units); the galleon gets a medium gray sky panel (`.scdeck.sky`, `#9AA1A8`) because the ship is black; `summary` says "galleon". `theme.css`: `.scsq` width is set by the view.
+- [x] Everything else (flat dice, spin, Either-die keep with KEPT tag, pop-in, ghost) works the same on both skins.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright, 40 + 8 + 4 + 8 checks, 0 failures, 0 JS errors: the galleon in Full crew, Mutiny and Skeleton with Both dice and Either die at 390x844, and Full crew at 411x768, 360x740, 320x640 and 768x1024 (at most 1 px of vertical scroll, as before; the controls stay on screen); sky panel; ghost at the start and solid after the 6; the right number of flat dice (ship die plus 2 or 3 cargo dice); no tell at real speed on both skins; Either die and pop-in on the galleon; the house rule screen shows Ship look with Freighter and Galleon and the summary says galleon; the freighter still passes its checks. Screenshots looked at (ghost, Full crew, house rule screen). Needs a real-device check: the galleon dice are small (23 px at 390 wide), so tapping them with Either die may be hard; how small the captain and pirates look; the black ship on the gray sky. Old saves are not affected by the rule (an old save has no `skin`; `setup` gives it the default).
 

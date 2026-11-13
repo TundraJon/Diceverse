@@ -12,6 +12,9 @@ export const SQ = 68;
 export const WHEELHOUSE = { x: 112, y: 85 };
 export const CONTAINERS = [{ x: 258, y: 167 }, { x: 326, y: 167 }, { x: 394, y: 167 }];
 
+// Where the dice go, for the view (the same shape as GEOM in galleon-art.js).
+export const GEOM = { vb: VB, die: { ...WHEELHOUSE, s: SQ }, cargo: CONTAINERS.map((c) => ({ ...c, s: SQ })) };
+
 const CAP_S = 56 / 480; // the captain, 56 units tall, fits inside the helm square under the deck line
 const CAP = `translate(${(126.6 - 168 * CAP_S).toFixed(2)},${(233 - 496 * CAP_S).toFixed(2)}) scale(${CAP_S.toFixed(4)})`;
 const CREW_T = `translate(${(154.6 - 130 * CAP_S).toFixed(2)},${(34 - 285 * CAP_S).toFixed(2)}) scale(${CAP_S.toFixed(4)})`; // same scale as the captain, cut at the waist

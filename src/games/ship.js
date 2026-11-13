@@ -42,6 +42,11 @@ export const meta = {
       options: [{ value: 'full', label: 'Full crew' }, { value: 'mutiny', label: 'Mutiny' }, { value: 'skeleton', label: 'Skeleton Crew' }], default: 'full',
       hint: () => 'Full crew: a 6, a 5 and a 4 (two cargo dice). Mutiny: only a 6 and a 4, the captain is skipped. Skeleton Crew: only a 6 and a 5. Mutiny and Skeleton Crew leave three cargo dice.',
     },
+    {
+      key: 'skin', label: 'Ship look',
+      options: [{ value: 'freighter', label: 'Freighter' }, { value: 'galleon', label: 'Galleon' }], default: 'freighter',
+      hint: () => 'How the ship looks. Only the picture changes, the rules are the same.',
+    },
   ],
 };
 
@@ -59,6 +64,7 @@ export function setup(options, rng) {
   if (!['both', 'either'].includes(opts.reroll)) throw new Error('Unknown cargo re-roll');
   if (!['strict', 'any'].includes(opts.order)) throw new Error('Unknown order rule');
   if (!REQUIRED[opts.crew]) throw new Error('Unknown crew rule');
+  if (!['freighter', 'galleon'].includes(opts.skin)) throw new Error('Unknown ship look');
   const seats = (opts.seats || [{ name: 'You', isBot: false }]).map((s) => ({ name: s.name, isBot: !!s.isBot, preset: s.preset || null, turns: 0, wins: 0 }));
   const n = seats.length;
   const starter = n === 1 ? 0 : rng.die(n) - 1; // the first round's starting player is chosen by the rng

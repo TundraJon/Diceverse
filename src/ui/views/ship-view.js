@@ -4,13 +4,20 @@ import { renderDie, REVEAL_MS, SETTLE_MS, ROLL_MS, throwAge } from '../dice.js';
 import { renderTurnBar } from '../panels.js';
 import { statusOverride } from '../avatars.js';
 import { SLOTS, SLOT_VALUE, VOYAGES, REQUIRED, cargoSize } from '../../games/ship.js';
-import { freighterSvg, flatDieSvg, VB, WHEELHOUSE, CONTAINERS } from '../freighter-art.js';
+import { freighterSvg, flatDieSvg, GEOM as FREIGHTER_GEOM } from '../freighter-art.js';
+import { galleonSvg, GEOM as GALLEON_GEOM } from '../galleon-art.js';
 
 const THEME = {
   title: 'SHIP, CAPTAIN & CREW',
   tagline: 'Find your ship, captain and crew, then count the cargo.',
   slot: { ship: 'SHIP 6', captain: 'CAPTAIN 5', crew: 'CREW 4' },
 };
+// The two looks: the drawing, where the dice go, and whether it needs a sky behind it.
+const SKINS = {
+  freighter: { svg: freighterSvg, geom: FREIGHTER_GEOM, sky: false },
+  galleon: { svg: galleonSvg, geom: GALLEON_GEOM, sky: true },
+};
+const BANNER_MS = 2500; // every banner stays at least this long (also with reduced motion: reading time does not depend on motion)
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
 const el = (tag, cls, text) => {
@@ -61,6 +68,7 @@ export const shipView = {
     const bits = [];
     if (h.rolls !== undefined && h.rolls !== 3) bits.push(`${h.rolls} rolls`);
     if (h.target !== undefined && h.target !== 5) bits.push(`first to ${h.target}`);
+    if (h.skin === 'galleon') bits.push('galleon');
     return bits.length ? bits.join(' · ') : 'Standard rules';
   },
 
@@ -86,6 +94,7 @@ export const shipView = {
       target: st.options.target,
       rolls: st.options.rolls,
       crew: st.options.crew,
+      skin: st.options.skin,
       reroll: st.options.reroll,
       held: [],
       tumbling: [],
@@ -156,21 +165,25 @@ export const shipView = {
     const fresh = ctx.reduced ? [] : SLOTS.filter((k) => view.locked[k] && !seen[k]);
     ui.seenLocked = { ...view.locked };
     const showTotal = view.cargoTotal !== null && !view.rolling;
-    ui.deck.innerHTML = freighterSvg({ locked: view.locked, need, fresh, total: showTotal ? view.cargoTotal : null });
+    const skin = SKINS[view.skin] || SKINS.freighter;
+    const { vb } = skin.geom;
+    ui.deck.classList.toggle('sky', skin.sky);
+    ui.deck.innerHTML = skin.svg({ locked: view.locked, need, fresh, total: showTotal ? view.cargoTotal : null });
     ui.deck.setAttribute('role', 'group');
     ui.deck.setAttribute('aria-label', SLOTS.map((k) => (need.includes(k) ? `${THEME.slot[k]} ${view.locked[k] ? 'in place' : 'empty'}` : `${THEME.slot[k]} not needed`)).join(', ') + (showTotal ? `, cargo ${view.cargoTotal}` : ''));
     const place = (cls, pos) => {
       const e = el('div', cls);
-      e.style.left = `${((pos.x - VB.x) / VB.w * 100).toFixed(3)}%`;
-      e.style.top = `${((pos.y - VB.y) / VB.h * 100).toFixed(3)}%`;
+      e.style.left = `${((pos.x - vb.x) / vb.w * 100).toFixed(3)}%`;
+      e.style.top = `${((pos.y - vb.y) / vb.h * 100).toFixed(3)}%`;
+      e.style.width = `${(pos.s / vb.w * 100).toFixed(3)}%`;
       ui.deck.appendChild(e);
       return e;
     };
-    if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, WHEELHOUSE).appendChild(flatDie(SLOT_VALUE.ship, false));
+    if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, skin.geom.die).appendChild(flatDie(SLOT_VALUE.ship, false));
     const n = cargoSize(view.crew);
     const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep
     for (let k = 0; k < n; k++) {
-      const box = place('scsq', CONTAINERS[k]);
+      const box = place('scsq', skin.geom.cargo[k]);
       if (!view.cargo) continue; // an empty container
       const die = flatDie(view.cargo[k], ctx.tumble && !ctx.reduced && view.rolling && view.tumbling.includes(k));
       if (pick) {
@@ -263,7 +276,7 @@ export const shipView = {
         view.banner = { text: `${name(ev.seat)}: no cargo`, good: false };
         ctx.log(`${name(ev.seat)} gets no cargo`);
         ctx.announce(`${name(ev.seat)} gets no cargo`);
-        delay = ctx.reduced ? 400 : 900;
+        delay = BANNER_MS;
         break;
       case 'TURN_ENDED':
         view.scores[ev.seat] = ev.score;
@@ -277,7 +290,7 @@ export const shipView = {
         view.order = ev.seats.slice();
         view.banner = { text: `${names.join(' and ')} tie: one more turn each`, good: false };
         ctx.announce(`${names.join(' and ')} tie. One more turn each`);
-        delay = ctx.reduced ? 500 : 1300;
+        delay = BANNER_MS;
         break;
       }
       case 'ROUND_ENDED':
@@ -286,7 +299,7 @@ export const shipView = {
         view.banner = { text: `${name(ev.winner)} wins the round with ${ev.scores[ev.winner]}`, good: true };
         ctx.log(`${name(ev.winner)} wins round ${view.round}`);
         ctx.announce(`${name(ev.winner)} wins the round`);
-        delay = ctx.reduced ? 500 : 1300;
+        delay = BANNER_MS;
         break;
       case 'TURN_STARTED':
         view.current = ev.seat;
@@ -302,7 +315,7 @@ export const shipView = {
         break;
       case 'GAME_OVER':
         view.banner = { text: view.seats.length === 1 ? 'The voyages are over!' : `${name(ev.winner)} wins the game!`, good: true };
-        delay = ctx.reduced ? 200 : 600;
+        delay = BANNER_MS;
         break;
       default:
         break;
