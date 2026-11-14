@@ -16,6 +16,8 @@ export const GEOM = {
   die: { x: 792, y: 32, s: 66 },
   cargo: CARGO,
   cargoFor: (n) => (n === 2 ? [CARGO[1], CARGO[2]] : CARGO),
+  // The words laid over the picture by the view as ordinary text (centre points in the same 1000 x 260 units). This look has no number badges.
+  labels: { sign: { x: 760, y: 232 }, badges: null, skips: { captain: { x: 711, y: 72 }, crew: { x: 606, y: 72 } } },
 };
 
 // The crew and the captain share one scale and one floor line (their feet at y = 103), inside the saucer; the crew's spot is the thinnest part of it.
@@ -25,7 +27,6 @@ const CREW_T = `translate(${(606 - 210 * S).toFixed(2)},${(103 - 940 * S).toFixe
 
 // A faint flat die drawn behind a figure to show what belongs there.
 const hint = (x, y, v) => flatDieSvg(v).replace('<svg viewBox="0 0 68 68" aria-hidden="true">', `<svg x="${x}" y="${y}" width="64" height="64" viewBox="0 0 68 68" opacity="0.1">`);
-const skipText = (x, y) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="11" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">NOT NEEDED</text>`;
 
 // st: { locked: {ship,captain,crew}, need: [roles the voyage needs], fresh: [roles that just arrived], total: number | null } (as for freighterSvg)
 export function starshipSvg(st) {
@@ -37,8 +38,5 @@ export function starshipSvg(st) {
     + `<g class="${g}">${SHIP}</g>`
     + hint(574, 36, 4) + hint(679, 36, 5)
     + `<g class="${g}"><g transform="${CREW_T}"><g class="${fig('crew')}">${CREW}</g></g><g transform="${CAP_T}"><g class="${fig('captain')}">${CAPTAIN}</g></g></g>`
-    + (skip('captain') ? skipText(711, 72) : '')
-    + (skip('crew') ? skipText(606, 72) : '')
-    + `<text x="760" y="232" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="26" fill="#fff" stroke="#000" stroke-width="1.2" paint-order="stroke">${st.total === null ? 'CARGO' : 'CARGO = ' + st.total}</text>`
     + '</svg>';
 }

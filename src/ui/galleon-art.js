@@ -14,14 +14,14 @@ export const GEOM = {
   vb: { x: 0, y: 0, w: 800, h: 680 },
   die: { x: 93.7, y: 511.7, s: 52 },
   cargo: [{ x: 328, y: 484, s: 52 }, { x: 386, y: 484, s: 52 }, { x: 444, y: 484, s: 52 }],
+  // The words and numbers laid over the picture by the view as ordinary text (centre points in the same 800 x 680 units).
+  labels: { sign: { x: 385, y: 603 }, badges: { crew: { x: 676, y: 452, n: 4 }, captain: { x: 262, y: 430, n: 5 } }, skips: { captain: { x: 198, y: 452 }, crew: { x: 630, y: 428 } } },
 };
 
 const S = 0.15; // the captain and the two pirates (one drawing) share this scale
 const CAP = `translate(${(198 - 255 * S).toFixed(2)},${(516 - 775 * S).toFixed(2)}) scale(${S})`;
 const CREW_T = `translate(${(630 - 274 * S).toFixed(2)},${(542.5 - 780 * S).toFixed(2)}) scale(${S})`;
 
-const badge = (x, y, n, cls) => `<g class="${cls}"><circle cx="${x}" cy="${y}" r="10" fill="#FFD23F" stroke="#000" stroke-width="3"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="14" fill="#000">${n}</text></g>`;
-const skipText = (x, y) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="10" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke">NOT NEEDED</text>`;
 
 // st: { locked: {ship,captain,crew}, need: [roles the voyage needs], fresh: [roles that just arrived], total: number | null } (as for freighterSvg)
 export function galleonSvg(st) {
@@ -34,11 +34,6 @@ export function galleonSvg(st) {
     + `<g transform="${CREW_T}"><g class="${fig('crew')}">${CREW}</g></g>`
     + SHIP_B
     + `<g transform="${CAP}"><g class="${fig('captain')}">${CAPTAIN}</g></g>`
-    + (skip('captain') ? skipText(198, 452) : '')
-    + (skip('crew') ? skipText(630, 428) : '')
-    + `<text x="385" y="603" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="28" fill="#fff" stroke="#000" stroke-width="1.2">${st.total === null ? 'CARGO' : 'CARGO = ' + st.total}</text>`
-    + badge(676, 452, 4, 'bdg' + (skip('crew') ? ' skip' : ''))
-    + badge(262, 430, 5, 'bdg' + (skip('captain') ? ' skip' : ''))
     + '</g>'
     + WATER
     + '</svg>';

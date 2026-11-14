@@ -27,11 +27,13 @@ const sched = createScheduler({ scale: speed });
 const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- settings (per-game house rules; migrates the old Pig-only layout) ---------- */
+const TEXT_SIZES = [['normal', 'Normal'], ['large', 'Large'], ['larger', 'Larger']];
 function loadAllSettings() {
-  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {}, name: 'You', avatar: DEFAULT_AVATAR, color: 'blue' }, loadSettings() || {});
+  const s = Object.assign({ game: 'pig', mode: 'bots', players: 3, preset: 'balanced', house: {}, name: 'You', avatar: DEFAULT_AVATAR, color: 'blue', textSize: 'normal' }, loadSettings() || {});
   s.name = cleanName(s.name); // empty means "You"
   s.avatar = cleanAvatar(s.avatar);
   s.color = cleanColor(s.color);
+  if (!TEXT_SIZES.some(([k]) => k === s.textSize)) s.textSize = 'normal';
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
   GAME_ORDER.forEach((id) => {
@@ -41,6 +43,8 @@ function loadAllSettings() {
   return s;
 }
 let settings = loadAllSettings();
+const applyTextSize = () => { document.documentElement.dataset.text = settings.textSize; }; // the CSS scales every rem size from this
+applyTextSize();
 const persistSettings = () => writeSettings(settings);
 
 let G = null; // active game: { id, mod, view }
@@ -413,6 +417,25 @@ function openSettings() {
     colRow.append(colLabel, row, colPanel);
     sheet.appendChild(colRow);
 
+    // Text size: Normal, Large or Larger (every size in the app that is written in rem follows it)
+    const tsRow = el('div', 'setrow tsrow');
+    const tsLabel = el('label', null, 'Text size:');
+    tsLabel.id = 'tslabel';
+    const tsSeg = el('div', 'avseg');
+    tsSeg.setAttribute('role', 'group');
+    tsSeg.setAttribute('aria-labelledby', 'tslabel');
+    const tsBtns = [];
+    TEXT_SIZES.forEach(([key, label]) => {
+      const b = el('button', 'avsegbtn', label);
+      b.type = 'button';
+      b.setAttribute('aria-label', `Text size: ${label}`);
+      b.addEventListener('click', () => { settings.textSize = key; persistSettings(); applyTextSize(); refresh(); });
+      tsBtns.push([b, key]);
+      tsSeg.appendChild(b);
+    });
+    tsRow.append(tsLabel, tsSeg);
+    sheet.appendChild(tsRow);
+
     const closePanels = () => {
       colPanel.hidden = true;
       colBtn.setAttribute('aria-expanded', 'false');
@@ -437,6 +460,7 @@ function openSettings() {
       toneBtns.forEach(([b, t]) => b.setAttribute('aria-pressed', String(chosen() && settings.avatar.tone === t)));
       swVal.style.background = COLORS.find((c) => c.key === settings.color).hex;
       colButtons.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.color === key)));
+      tsBtns.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.textSize === key)));
     };
     const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); };
     input.addEventListener('change', save);

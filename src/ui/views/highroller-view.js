@@ -151,7 +151,7 @@ export const highRollerView = {
 
     // the six casinos
     ui.grid.innerHTML = '';
-    ui.grid.style.setProperty('--rows', String(view.n + (view.plan.per || view.plan.spare ? 1 : 0)));
+    ui.grid.classList.toggle('five', view.n + (view.plan.per || view.plan.spare ? 1 : 0) > 4);
     const rolled = view.phase === 'place' && view.rolled && !view.rolling ? view.rolled : null;
     const litFace = human && rolled ? view.pick : null;
     for (let c = 0; c < CASINOS; c++) {

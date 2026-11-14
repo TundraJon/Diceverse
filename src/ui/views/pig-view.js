@@ -83,7 +83,7 @@ function drawTrail(ui, target) {
     const x = c.x + inward;
     const y = c.y + edge / 2 + 5;
     h += `<rect x="${f(x - 10)}" y="${f(y - 6)}" width="20" height="12" rx="2.5" fill="#5b3a1a" stroke="#d6b36a" stroke-width="1"/>`
-      + `<text x="${f(x)}" y="${f(y + 3)}" font-size="8.5" font-weight="700" text-anchor="middle" fill="#fde68a">${space * STEP}</text>`;
+      + `<text x="${f(x)}" y="${f(y + 3)}" font-size="12" font-weight="700" text-anchor="middle" fill="#fde68a">${space * STEP}</text>`;
   });
   // the gate of the pen: two posts, one leaf swung open
   const gx = g.gate.x;
@@ -93,7 +93,7 @@ function drawTrail(ui, target) {
   // the barn at the end: about 1.5 x its old size, the target on the left of the central door
   const b = g.cells[n - 1];
   h += `<g transform="translate(${f(b.x - 26)} ${f(b.y - 19)})"><path d="M0 16 L26 1 L52 16 V38 H0 Z" fill="#b4472f" stroke="#fde68a" stroke-width="1.6" stroke-linejoin="round"/>`
-    + `<rect x="21.5" y="22" width="9" height="16" fill="#fde68a"/><text x="10.5" y="32" font-size="9" font-weight="800" text-anchor="middle" fill="#fde68a">${target}</text></g>`;
+    + `<rect x="21.5" y="22" width="9" height="16" fill="#fde68a"/><text x="10.5" y="32" font-size="12" font-weight="800" text-anchor="middle" fill="#fde68a">${target}</text></g>`;
   ui.svg.setAttribute('viewBox', `0 0 ${f(g.tb.width)} ${f(g.tb.height)}`);
   ui.svg.setAttribute('width', f(g.tb.width));
   ui.svg.setAttribute('height', f(g.tb.height));

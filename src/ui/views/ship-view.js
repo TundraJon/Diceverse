@@ -185,6 +185,21 @@ export const shipView = {
       return e;
     };
     if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, skin.geom.die).appendChild(flatDie(SLOT_VALUE.ship, false));
+    // the words and numbers over the picture are ordinary text (so they stay readable at any screen size): the cargo sign, the number badges and NOT NEEDED
+    const lab = skin.geom.labels;
+    const ghostCls = view.locked.ship ? (fresh.includes('ship') ? ' unghost' : '') : ' ghost';
+    const putLabel = (cls, pos, text) => {
+      const e = el('div', `sclbl ${cls}${ghostCls}`, text);
+      e.style.left = `${((pos.x - vb.x) / vb.w * 100).toFixed(3)}%`;
+      e.style.top = `${((pos.y - vb.y) / vb.h * 100).toFixed(3)}%`;
+      ui.deck.appendChild(e);
+    };
+    putLabel('scsign', lab.sign, showTotal ? `CARGO = ${view.cargoTotal}` : 'CARGO');
+    ['crew', 'captain'].forEach((role) => {
+      const skipped = !need.includes(role);
+      if (lab.badges) putLabel(`scbadge${skipped ? ' skip' : ''}`, lab.badges[role], String(lab.badges[role].n));
+      if (skipped) putLabel('scskip', lab.skips[role], 'NOT NEEDED');
+    });
     const n = cargoSize(view.crew);
     const slots = skin.geom.cargoFor ? skin.geom.cargoFor(n) : skin.geom.cargo; // the starship uses the right two squares for two cargo dice
     const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep

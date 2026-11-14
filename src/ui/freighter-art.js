@@ -13,14 +13,17 @@ export const WHEELHOUSE = { x: 112, y: 85 };
 export const CONTAINERS = [{ x: 258, y: 167 }, { x: 326, y: 167 }, { x: 394, y: 167 }];
 
 // Where the dice go, for the view (the same shape as GEOM in galleon-art.js).
-export const GEOM = { vb: VB, die: { ...WHEELHOUSE, s: SQ }, cargo: CONTAINERS.map((c) => ({ ...c, s: SQ })) };
+export const GEOM = { vb: VB, die: { ...WHEELHOUSE, s: SQ }, cargo: CONTAINERS.map((c) => ({ ...c, s: SQ })),
+  // The words and numbers drawn over the picture, laid over it by the view as ordinary text (readable at any screen size): the cargo sign, the number
+  // badges and the NOT NEEDED labels, as centre points in the same 600 x 415 units.
+  labels: { sign: { x: 285, y: 282 }, badges: { crew: { x: 182, y: 38, n: 4 }, captain: { x: 180, y: 224, n: 5 } }, skips: { captain: { x: 126.6, y: 209 }, crew: { x: 233, y: 38 } } },
+};
 
 const CAP_S = 56 / 480; // the captain, 56 units tall, fits inside the helm square under the deck line
 const CAP = `translate(${(126.6 - 168 * CAP_S).toFixed(2)},${(233 - 496 * CAP_S).toFixed(2)}) scale(${CAP_S.toFixed(4)})`;
 const CREW_T = `translate(${(154.6 - 130 * CAP_S).toFixed(2)},${(34 - 285 * CAP_S).toFixed(2)}) scale(${CAP_S.toFixed(4)})`; // same scale as the captain, cut at the waist
 const WAVE = 'M30,316 ' + 'q15,-8 30,0 t30,0 '.repeat(9);
 
-const badge = (x, y, n, cls) => `<g class="${cls}"><circle cx="${x}" cy="${y}" r="11" fill="#FFD23F" stroke="#000" stroke-width="3.5"/><text x="${x}" y="${y + 5.5}" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="16" fill="#000">${n}</text></g>`;
 
 // st: { locked: {ship,captain,crew}, need: [roles the voyage needs], fresh: [roles that just arrived], total: number | null }
 export function freighterSvg(st) {
@@ -34,11 +37,6 @@ export function freighterSvg(st) {
     + `<g transform="${CREW_T}"><g class="${fig('crew')}"><clipPath id="frcrewclip"><rect x="0" y="0" width="280" height="285"/></clipPath><g clip-path="url(#frcrewclip)">${CREW}</g></g></g>`
     + '<path d="M125,28 L165,28 L160,44 L130,44 Z" fill="#B9824A" stroke="#000" stroke-width="6" stroke-linejoin="round"/><path d="M137,30 L138,42 M145,30 L145,42 M153,30 L152,42" stroke="#000" stroke-width="3" fill="none"/>'
     + `<g transform="${CAP}"><g class="${fig('captain')}">${CAPTAIN}</g></g>`
-    + (skip('captain') ? '<text x="126.6" y="209" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="11" fill="#000">NOT NEEDED</text>' : '')
-    + (skip('crew') ? '<text x="198" y="42" font-family="Arial,sans-serif" font-weight="bold" font-size="11" fill="#fff">NOT NEEDED</text>' : '')
-    + `<text x="285" y="282" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="30" fill="#fff" stroke="#000" stroke-width="1.5">${st.total === null ? 'CARGO' : 'CARGO = ' + st.total}</text>`
-    + badge(182, 38, 4, 'bdg' + (skip('crew') ? ' skip' : ''))
-    + badge(180, 224, 5, 'bdg' + (skip('captain') ? ' skip' : ''))
     + '</g>'
     + `<g><path d="${WAVE}" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/><path d="${WAVE}" fill="none" stroke="#9FF3F8" stroke-width="3.5" stroke-linecap="round"/></g>`
     + '</svg>';
