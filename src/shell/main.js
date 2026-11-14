@@ -172,6 +172,10 @@ function renderMenu() {
   GAME_ORDER.forEach((id) => {
     const b = el('button', null, GAMES[id].meta.name);
     b.setAttribute('aria-pressed', String(settings.game === id));
+    if (settings.mode === 'solo' && GAMES[id].meta.soloOK === false) { // in Solo a game with no Solo mode stays in its place, grayed out
+      b.disabled = true;
+      b.setAttribute('aria-label', `${GAMES[id].meta.name}, no Solo mode`);
+    }
     b.addEventListener('click', () => { settings.game = id; persistSettings(); renderMenu(); });
     gseg.appendChild(b);
   });
@@ -182,9 +186,13 @@ function renderMenu() {
   const modePanel = el('div', 'panel');
   modePanel.appendChild(el('h2', null, 'Mode'));
   const seg = el('div', 'seg');
-  [['bots', 'vs Bots'], ['pass', 'Pass & Play'], ['solo', 'Solo']].filter(([key]) => key !== 'solo' || GAMES[gameId].meta.soloOK !== false).forEach(([key, label]) => {
+  [['bots', 'vs Bots'], ['pass', 'Pass & Play'], ['solo', 'Solo']].forEach(([key, label]) => {
     const b = el('button', null, label);
     b.setAttribute('aria-pressed', String(settings.mode === key));
+    if (key === 'solo' && GAMES[gameId].meta.soloOK === false) { // the Solo button stays in its place, grayed out, for a game with no Solo mode
+      b.disabled = true;
+      b.setAttribute('aria-label', 'Solo, not available for this game');
+    }
     b.addEventListener('click', () => { settings.mode = key; persistSettings(); renderMenu(); });
     seg.appendChild(b);
   });
