@@ -19,6 +19,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 23: a "Reset Game Defaults" button in Settings (the user asked on 2026-11-14, not yet specced)
+The user: "Need a Reset Game Defaults button in settings." Today Settings (`openSettings` in `src/shell/main.js`) holds the name, avatar and colour; the house rules are saved per game in `settings.house[gameId]`. Open questions asked of the user: what resets (house rules of every game; or also the mode, number of players and bot level; name, avatar and colour stay), one button for all games or also one per game on the house rules screen, and a confirm step. Recommendation: house rules of every game only, with a confirm; nothing else (saves, personal bests, name, avatar, colour, mode, players, bot level) is touched.
+
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
