@@ -895,3 +895,11 @@ Settings: a bigger face preview and a title for the colour picker (the user's re
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright, 20 + 33 checks, 0 failures, 0 JS errors, at 390x844 and 320x640: the face is 70 px wide and fully inside the 84 px wide box, the label says "Favorite color:" and is tied to the button, the button is at least 44 px high, the Done button keeps its bottom padding at 320x640, the colour panel opens spanning the whole row, a colour can be chosen and the panel closes; the avatar picker checks from Build 70 still pass. Screenshot looked at (320 wide, panel open). Needs a real-device check: how the face and the label look on the phone.
 
+## Build Log 72 (completed)
+
+Settings: a wider face box and a bigger face (the user's numbers: a box about 100 px wide, the face 90 px wide).
+
+- [x] `theme.css` `.avprev`: the box is 100 px wide (was 84) and the face font 4.5rem (72 px; an emoji is about 1.25 times as wide as its font size), so the face is 90 px wide and 87 px high in the 128 px high box: gaps of 20 px above, 21 px below and 5 px on each side. The Age and Style buttons to the right give up the 16 px (at 320 wide an Age button is 43 px wide, at 360 wide 56 px, at 390 wide 66 px; all still 44 px high).
+
+Verification (scratch script, none committed): `preflight` clean. Playwright, 24 checks, 0 failures, 0 JS errors, at 390x844, 360x740 and 320x640: the face is 90 px wide, the box 100 x 128, the top and bottom gaps are at least 15 px (20 and 21), every Age and Style button's text fits (the widest, "Adult", is 36 px in a 43 px button at 320 wide), the buttons are at least 44 px high, nothing overflows sideways, and the Done button keeps its bottom padding; the avatar picker checks from Build 70 still pass (33 checks). The label checks from Build 71 expected the old 84 px box and 70 px face, so they now report those old numbers (the label, the panel and the colour choice themselves still work: 16 of 20 passed). Screenshot looked at (320 wide). Needs a real-device check: whether "Adult" feels cramped in its 43 px button on a 320 px wide phone.
+
