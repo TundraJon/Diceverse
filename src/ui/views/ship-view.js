@@ -6,16 +6,18 @@ import { statusOverride } from '../avatars.js';
 import { SLOTS, SLOT_VALUE, VOYAGES, REQUIRED, cargoSize } from '../../games/ship.js';
 import { freighterSvg, flatDieSvg, GEOM as FREIGHTER_GEOM } from '../freighter-art.js';
 import { galleonSvg, GEOM as GALLEON_GEOM } from '../galleon-art.js';
+import { starshipSvg, GEOM as STARSHIP_GEOM } from '../starship-art.js';
 
 const THEME = {
   title: 'SHIP, CAPTAIN & CREW',
   tagline: 'Find your ship, captain and crew, then count the cargo.',
   slot: { ship: 'SHIP 6', captain: 'CAPTAIN 5', crew: 'CREW 4' },
 };
-// The two looks: the drawing, where the dice go, and whether it needs a sky behind it.
+// The looks: the drawing, where the dice go, and the panel behind it (none, a gray sky or space).
 const SKINS = {
-  freighter: { svg: freighterSvg, geom: FREIGHTER_GEOM, sky: false },
-  galleon: { svg: galleonSvg, geom: GALLEON_GEOM, sky: true },
+  freighter: { svg: freighterSvg, geom: FREIGHTER_GEOM, bg: null },
+  galleon: { svg: galleonSvg, geom: GALLEON_GEOM, bg: 'sky' },
+  starship: { svg: starshipSvg, geom: STARSHIP_GEOM, bg: 'space' },
 };
 const BANNER_MS = 2500; // every banner stays at least this long (also with reduced motion: reading time does not depend on motion)
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
@@ -68,7 +70,7 @@ export const shipView = {
     const bits = [];
     if (h.rolls !== undefined && h.rolls !== 3) bits.push(`${h.rolls} rolls`);
     if (h.target !== undefined && h.target !== 5) bits.push(`first to ${h.target}`);
-    if (h.skin === 'galleon') bits.push('galleon');
+    if (h.skin !== undefined && h.skin !== 'freighter') bits.push(h.skin);
     return bits.length ? bits.join(' · ') : 'Standard rules';
   },
 
@@ -167,7 +169,8 @@ export const shipView = {
     const showTotal = view.cargoTotal !== null && !view.rolling;
     const skin = SKINS[view.skin] || SKINS.freighter;
     const { vb } = skin.geom;
-    ui.deck.classList.toggle('sky', skin.sky);
+    ui.deck.classList.toggle('sky', skin.bg === 'sky');
+    ui.deck.classList.toggle('space', skin.bg === 'space');
     ui.deck.innerHTML = skin.svg({ locked: view.locked, need, fresh, total: showTotal ? view.cargoTotal : null });
     ui.deck.setAttribute('role', 'group');
     ui.deck.setAttribute('aria-label', SLOTS.map((k) => (need.includes(k) ? `${THEME.slot[k]} ${view.locked[k] ? 'in place' : 'empty'}` : `${THEME.slot[k]} not needed`)).join(', ') + (showTotal ? `, cargo ${view.cargoTotal}` : ''));
@@ -181,9 +184,10 @@ export const shipView = {
     };
     if (view.locked.ship) place(`scsq${fresh.includes('ship') ? ' pop' : ''}`, skin.geom.die).appendChild(flatDie(SLOT_VALUE.ship, false));
     const n = cargoSize(view.crew);
+    const slots = skin.geom.cargoFor ? skin.geom.cargoFor(n) : skin.geom.cargo; // the starship uses the right two squares for two cargo dice
     const pick = human && st.turn.phase === 'cargo' && view.reroll === 'either' && !!view.cargo; // Either die: tap the cargo dice you want to keep
     for (let k = 0; k < n; k++) {
-      const box = place('scsq', skin.geom.cargo[k]);
+      const box = place('scsq', slots[k]);
       if (!view.cargo) continue; // an empty container
       const die = flatDie(view.cargo[k], ctx.tumble && !ctx.reduced && view.rolling && view.tumbling.includes(k));
       if (pick) {

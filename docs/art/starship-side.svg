@@ -92,13 +92,8 @@
       Z" />
 
     <!-- Saucer Rim Channel & Phaser Strip -->
-    <line class="detail-line" x1="464" y1="68" x2="988" y2="68" />
-    <line class="detail-line" x1="524" y1="78" x2="916" y2="78" />
-    <line class="detail-line" x1="544" y1="40" x2="906" y2="40" />
 
     <!-- Forward & Aft Rim RCS Thruster Accents -->
-    <rect class="gold-accent" x="562" y="64" width="14" height="8" rx="2" />
-    <rect class="gold-accent" x="872" y="64" width="14" height="8" rx="2" />
   </g>
 
   <!-- 4. STARBOARD WARP NACELLE (FOREGROUND LEFT) -->
