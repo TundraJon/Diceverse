@@ -671,3 +671,22 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .avtone { min-height: 44px; padding: 0; display: grid; place-items: center; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
 .avtone i { display: block; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.35); }
 .avtone[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+
+/* Pass & Play: the stored players under the Mode buttons */
+.avwrap { display: flex; flex-direction: column; gap: 8px; }
+.rost { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.rostrow { display: flex; align-items: center; gap: 6px; }
+.rostchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; }
+.rostchk input { width: 24px; height: 24px; accent-color: var(--gold); }
+.rostname { flex: 1; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 10px; text-align: left; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
+.rostrow.sel .rostname { border-color: var(--gold); }
+.rostface { font-size: 1.4rem; line-height: 1; flex: none; }
+.rostnm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.rostnm.ph { color: var(--muted); font-weight: 400; }
+.rostname .swatch { flex: none; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.25); }
+.rostdel { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 0; display: grid; place-items: center; font-size: 0; }
+.rostdel::before { content: "\2715"; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: #dc2626; color: #fff; font-size: 1.1rem; font-weight: 800; }
+.rostadd { min-height: 44px; align-self: flex-start; padding: 0 16px; }
+.rosted { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 12px; }
+.rostcolors { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.rostcolors .swbtn { min-height: 44px; }

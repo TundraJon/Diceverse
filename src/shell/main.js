@@ -8,7 +8,8 @@ import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, 
 import { createMoods } from './moods.js';
 import { ROLL_MS, startThrow, beginDice } from '../ui/dice.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
-import { AGES, STYLES, TONE_COLORS, COLORS, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
+import { MAX_ROSTER, MIN_PLAYERS, cleanRoster, cleanRosterName, listPlayers, displayName, playingCount, takenColors, enforceMax, fixColorClashes, firstFreeColor, seatsFor } from './roster.js';
+import { AGES, STYLES, TONE_COLORS, COLORS, DEFAULT_AVATAR, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
 const app = document.getElementById('app');
 const live = document.getElementById('live');
@@ -33,6 +34,8 @@ function loadAllSettings() {
   s.name = cleanName(s.name); // empty means "You"
   s.avatar = cleanAvatar(s.avatar);
   s.color = cleanColor(s.color);
+  s.roster = cleanRoster(s.roster, s.color); // the stored Pass & Play players besides you
+  s.youPlay = s.youPlay !== false; // whether you are one of the players in Pass & Play
   if (!TEXT_SIZES.some(([k]) => k === s.textSize)) s.textSize = 'normal';
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
@@ -120,14 +123,14 @@ function buildOptions() {
     seats = [{ ...you, me: true }];
     (mod.meta.soloHide || []).forEach((k) => { house[k] = false; });
   } else if (settings.mode === 'pass') {
-    // player 1 is the profile; players 2 to 4 keep the plain face. "Your turn" is only for a single human.
-    seats = Array.from({ length: settings.players }, (_, i) => (i === 0 ? { ...you, me: false } : { name: `Player ${i + 1}`, isBot: false, avatar: PLAIN_FACE, me: false }));
+    // the checked players of the stored roster, you first (each has their own name, face and colour); "Your turn" is only for a single human
+    seats = seatsFor(settings);
   } else {
     // vs Bots: opponents are drawn at random from the roster (cosmetic: names, faces and lines only)
     const ids = drawOpponents(settings.players - 1, [...newSeed(), ...newSeed()]);
     seats = [{ ...you, me: true }].concat(ids.map((id) => ({ name: AI_ROSTER[id].name, isBot: true, preset: settings.preset, botId: id, avatar: AI_ROSTER[id].defaultEmoji })));
   }
-  seatColors(seats.length, settings.color).forEach((hex, i) => { seats[i].color = hex; }); // yours first, the rest in palette order
+  if (settings.mode !== 'pass') seatColors(seats.length, settings.color).forEach((hex, i) => { seats[i].color = hex; }); // yours first, the rest in palette order (Pass & Play players have their own)
   return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats } : { ...house, seats };
 }
 
@@ -213,8 +216,10 @@ function renderMenu() {
     modePanel.appendChild(row);
   }
   screen.appendChild(modePanel);
-  // Players: a row inside the Mode panel; hidden in Solo.
-  if (settings.mode !== 'solo') {
+  // Pass & Play: the stored players (who plays, their name, avatar and colour) open up under the Mode buttons, where vs Bots has its Bot style line.
+  if (settings.mode === 'pass') renderRoster(modePanel);
+  // Players: a row inside the Mode panel (vs Bots only; Pass & Play counts the checked players).
+  if (settings.mode === 'bots') {
     const prow = el('div', 'row sub');
     prow.appendChild(el('span', null, 'Players'));
     const st = el('div', 'stepper');
@@ -244,6 +249,9 @@ function renderMenu() {
   const rules = el('button', 'secondary', 'How to play');
   rules.addEventListener('click', () => { useGame(gameId); openRules(settings.house[gameId]); });
   const start = el('button', 'primary', 'Start');
+  const tooFew = settings.mode === 'pass' && playingCount(settings) < MIN_PLAYERS; // Pass & Play needs at least two people
+  start.disabled = tooFew;
+  if (tooFew) summary.textContent = 'Pick at least 2 players';
   start.addEventListener('click', () => startNew());
   const btnrow = el('div', 'btnrow'); // House rules and How to play share a row
   btnrow.append(hr, rules);
@@ -251,12 +259,149 @@ function renderMenu() {
   app.appendChild(screen);
 }
 
-function openSheet(build) {
+// ---- the stored players of Pass & Play (the area under the Mode buttons) ----
+let rosterSel = null; // which row's editor is open (0 is you), not saved
+const colorHex = (key) => COLORS.find((c) => c.key === key).hex;
+
+function confirmDeletePlayer(name, onDelete) {
+  openSheet((sheet, close) => {
+    sheet.appendChild(el('h2', null, `Delete ${name}?`));
+    sheet.appendChild(el('p', null, 'This stored player will be removed. This can\'t be undone.'));
+    const row = el('div', 'confirmrow');
+    const keep = el('button', 'secondary', 'Cancel');
+    const del = el('button', 'danger', 'Delete');
+    keep.addEventListener('click', close);
+    del.addEventListener('click', () => { close(); onDelete(); });
+    row.append(keep, del);
+    sheet.appendChild(row);
+    sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  });
+}
+
+function renderRoster(panel) {
+  const max = GAMES[settings.game].meta.players.max;
+  if (enforceMax(settings, max)) persistSettings(); // a game with fewer seats unchecks players from the bottom
+  const players = listPlayers(settings);
+  if (rosterSel !== null && rosterSel >= players.length) rosterSel = null;
+  const count = playingCount(settings);
+  const box = el('div', 'rost');
+  box.setAttribute('role', 'group');
+  box.setAttribute('aria-label', 'Players');
+  let editor = null; // the open player's editor goes under the list
+  players.forEach((pl, k) => {
+    const row = el('div', 'rostrow' + (rosterSel === k ? ' sel' : ''));
+    const chkWrap = el('label', 'rostchk');
+    const chk = el('input');
+    chk.type = 'checkbox';
+    chk.checked = pl.playing;
+    chk.disabled = !pl.playing && count >= max; // the game's maximum is reached
+    chk.setAttribute('aria-label', `${displayName(pl)} plays`);
+    chk.addEventListener('change', () => {
+      if (pl.you) settings.youPlay = chk.checked; else settings.roster[pl.index].playing = chk.checked;
+      if (chk.checked) fixColorClashes(settings);
+      persistSettings();
+      renderMenu();
+    });
+    chkWrap.appendChild(chk);
+    const nameBtn = el('button', 'rostname');
+    nameBtn.type = 'button';
+    nameBtn.setAttribute('aria-expanded', String(rosterSel === k));
+    const face = el('span', 'rostface', personFace(pl.avatar));
+    const nm = el('span', 'rostnm' + (pl.you || pl.name ? '' : ' ph'), displayName(pl));
+    const sw = el('i', 'swatch');
+    sw.style.background = colorHex(pl.color);
+    nameBtn.append(face, nm, sw);
+    nameBtn.addEventListener('click', () => { rosterSel = rosterSel === k ? null : k; renderMenu(); });
+    row.append(chkWrap, nameBtn);
+    if (!pl.you) {
+      const del = el('button', 'rostdel', '\u2715');
+      del.type = 'button';
+      del.setAttribute('aria-label', `Delete ${displayName(pl)}`);
+      del.addEventListener('click', () => confirmDeletePlayer(displayName(pl), () => {
+        settings.roster.splice(pl.index, 1);
+        rosterSel = null;
+        persistSettings();
+        renderMenu();
+      }));
+      row.appendChild(del);
+    }
+    box.appendChild(row);
+    if (rosterSel === k) editor = rosterEditor(pl, { face, nm, sw });
+  });
+  const add = el('button', 'secondary rostadd', 'Add player');
+  add.type = 'button';
+  add.disabled = players.length >= MAX_ROSTER + 1;
+  add.addEventListener('click', () => {
+    const playing = count < max; // at the maximum the new player is stored but not checked
+    settings.roster.push({ name: '', avatar: { ...DEFAULT_AVATAR }, color: firstFreeColor(takenColors(settings, 99999)), playing });
+    rosterSel = settings.roster.length; // the new player's row (you are row 0)
+    persistSettings();
+    renderMenu();
+  });
+  box.appendChild(add);
+  if (editor) box.appendChild(editor);
+  panel.appendChild(box);
+}
+
+// The editor of one player: the same layout as the player information in Settings (name, avatar, colour). Edits save at once and update the row without redrawing the menu.
+function rosterEditor(pl, row) {
+  const ed = el('div', 'rosted');
+  const data = () => (pl.you ? settings : settings.roster[pl.index]);
+  const nameRow = el('div', 'setrow');
+  const label = el('label', null, 'Name:');
+  label.htmlFor = 'rostname';
+  const input = el('input', 'namefield');
+  input.id = 'rostname';
+  input.type = 'text';
+  input.maxLength = 12;
+  input.value = pl.you ? (settings.name === 'You' ? '' : settings.name) : settings.roster[pl.index].name;
+  input.placeholder = pl.you ? 'You' : `Player ${pl.n}`; // the greyed suggestion, gone as soon as a letter is typed
+  input.autocomplete = 'off';
+  input.setAttribute('autocapitalize', 'words');
+  input.addEventListener('input', () => {
+    if (pl.you) settings.name = cleanName(input.value); else settings.roster[pl.index].name = cleanRosterName(input.value);
+    persistSettings();
+    const shown = pl.you ? settings.name : settings.roster[pl.index].name;
+    row.nm.textContent = shown || `Player ${pl.n}`;
+    row.nm.classList.toggle('ph', !pl.you && !shown);
+  });
+  nameRow.append(label, input);
+  ed.appendChild(nameRow);
+  const av = buildAvatarPicker(() => data().avatar, (a) => { data().avatar = a; persistSettings(); row.face.textContent = personFace(a); });
+  ed.appendChild(av.node);
+  // the colour: eight swatches; a colour another player who is playing has is grayed out
+  const colLabel = el('div', 'avlab', 'Color');
+  const grid = el('div', 'rostcolors');
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-label', 'Color');
+  const taken = takenColors(settings, pl.index);
+  COLORS.forEach((c) => {
+    const b = el('button', 'swbtn');
+    b.type = 'button';
+    const dot = el('i');
+    dot.style.background = c.hex;
+    b.appendChild(dot);
+    b.setAttribute('aria-label', c.label);
+    b.setAttribute('aria-pressed', String(data().color === c.key));
+    b.disabled = taken.includes(c.key) && data().color !== c.key;
+    b.addEventListener('click', () => {
+      data().color = c.key;
+      persistSettings();
+      row.sw.style.background = c.hex;
+      grid.querySelectorAll('.swbtn').forEach((x, i) => x.setAttribute('aria-pressed', String(COLORS[i].key === c.key)));
+    });
+    grid.appendChild(b);
+  });
+  ed.append(colLabel, grid);
+  return ed;
+}
+
+function openSheet(build, onClose) {
   const back = el('div', 'sheet-back');
   const sheet = el('div', 'sheet');
   sheet.setAttribute('role', 'dialog');
   sheet.setAttribute('aria-modal', 'true');
-  const close = () => back.remove();
+  const close = () => { back.remove(); if (onClose) onClose(); };
   build(sheet, close);
   back.appendChild(sheet);
   back.addEventListener('click', (e) => { if (e.target === back) close(); });
@@ -327,6 +472,66 @@ function confirmResetDefaults(after) {
   });
 }
 
+// The avatar picker (Settings and the Pass & Play player editor): a live preview, AGE and STYLE rows beside it and a row of six skin tones.
+// Until something is chosen the preview shows the plain 👤 and nothing is selected; the first tap fills the missing choices as Adult and Male
+// (and the first tone). Every tap calls setAvatar(new avatar) and refreshes. Returns { node, refresh }.
+function buildAvatarPicker(getAvatar, setAvatar) {
+  const node = el('div', 'avwrap');
+  const pick = el('div', 'avpick');
+  const prev = el('div', 'avprev');
+  prev.setAttribute('aria-hidden', 'true');
+  const ctl = el('div', 'avctl');
+  const chosen = () => getAvatar().age !== 'none' && getAvatar().style !== 'none';
+  const refresh = () => {
+    prev.textContent = personFace(getAvatar());
+    segs.forEach(([b, key, val]) => b.setAttribute('aria-pressed', String(chosen() && getAvatar()[key] === val)));
+    toneBtns.forEach(([b, t]) => b.setAttribute('aria-pressed', String(chosen() && getAvatar().tone === t)));
+  };
+  const setPatch = (patch) => {
+    const a = getAvatar();
+    setAvatar(cleanAvatar({ age: chosen() ? a.age : 'adult', style: chosen() ? a.style : 'male', tone: a.tone, ...patch }));
+    refresh();
+  };
+  const segs = [];
+  const mkSeg = (title, key, items) => {
+    const box = el('div', 'avrow');
+    box.appendChild(el('span', 'avlab', title));
+    const grp = el('div', 'avseg');
+    grp.setAttribute('role', 'group');
+    grp.setAttribute('aria-label', title);
+    items.forEach((it) => {
+      const b = el('button', 'avsegbtn', it.label);
+      b.type = 'button';
+      b.setAttribute('aria-label', `${title}: ${it.label}`);
+      b.addEventListener('click', () => setPatch({ [key]: it.key }));
+      segs.push([b, key, it.key]);
+      grp.appendChild(b);
+    });
+    box.appendChild(grp);
+    return box;
+  };
+  ctl.append(mkSeg('Age', 'age', AGES), mkSeg('Style', 'style', STYLES));
+  pick.append(prev, ctl);
+  const toneRow = el('div', 'avtones');
+  toneRow.setAttribute('role', 'group');
+  toneRow.setAttribute('aria-label', 'Skin tone');
+  const toneBtns = [];
+  TONE_COLORS.forEach((hex, t) => {
+    const b = el('button', 'avtone');
+    b.type = 'button';
+    const dot = el('i');
+    dot.style.background = hex;
+    b.appendChild(dot);
+    b.setAttribute('aria-label', `Skin tone ${t + 1}`);
+    b.addEventListener('click', () => setPatch({ tone: t }));
+    toneBtns.push([b, t]);
+    toneRow.appendChild(b);
+  });
+  node.append(pick, toneRow);
+  refresh();
+  return { node, refresh };
+}
+
 // Settings: your name, your avatar (a preview with age, style and skin tone rows) and your color (a dropdown button that opens a
 // panel under it with every choice visible at once).
 function openSettings() {
@@ -348,56 +553,9 @@ function openSettings() {
     nameRow.append(label, input);
     sheet.appendChild(nameRow);
 
-    // the avatar: a live preview and three small rows (age, style, skin tone); every tap saves at once. Until something is chosen the preview shows the
-    // plain 👤 and nothing is selected; the first tap fills in the missing choices as Adult and Male (and the first tone).
-    const pick = el('div', 'avpick');
-    const prev = el('div', 'avprev');
-    prev.setAttribute('aria-hidden', 'true');
-    const ctl = el('div', 'avctl');
-    const chosen = () => settings.avatar.age !== 'none' && settings.avatar.style !== 'none';
-    const setAvatar = (patch) => {
-      const a = settings.avatar;
-      settings.avatar = cleanAvatar({ age: chosen() ? a.age : 'adult', style: chosen() ? a.style : 'male', tone: a.tone, ...patch });
-      persistSettings();
-      refresh();
-    };
-    const segs = [];
-    const mkSeg = (title, key, items) => {
-      const box = el('div', 'avrow');
-      box.appendChild(el('span', 'avlab', title));
-      const grp = el('div', 'avseg');
-      grp.setAttribute('role', 'group');
-      grp.setAttribute('aria-label', title);
-      items.forEach((it) => {
-        const b = el('button', 'avsegbtn', it.label);
-        b.type = 'button';
-        b.setAttribute('aria-label', `${title}: ${it.label}`);
-        b.addEventListener('click', () => setAvatar({ [key]: it.key }));
-        segs.push([b, key, it.key]);
-        grp.appendChild(b);
-      });
-      box.appendChild(grp);
-      return box;
-    };
-    ctl.append(mkSeg('Age', 'age', AGES), mkSeg('Style', 'style', STYLES));
-    pick.append(prev, ctl);
-    sheet.appendChild(pick);
-    const toneRow = el('div', 'avtones');
-    toneRow.setAttribute('role', 'group');
-    toneRow.setAttribute('aria-label', 'Skin tone');
-    const toneBtns = [];
-    TONE_COLORS.forEach((hex, t) => {
-      const b = el('button', 'avtone');
-      b.type = 'button';
-      const dot = el('i');
-      dot.style.background = hex;
-      b.appendChild(dot);
-      b.setAttribute('aria-label', `Skin tone ${t + 1}`);
-      b.addEventListener('click', () => setAvatar({ tone: t }));
-      toneBtns.push([b, t]);
-      toneRow.appendChild(b);
-    });
-    sheet.appendChild(toneRow);
+    // the avatar: a live preview and three small rows (age, style, skin tone); every tap saves at once
+    const avPicker = buildAvatarPicker(() => settings.avatar, (a) => { settings.avatar = a; persistSettings(); });
+    sheet.appendChild(avPicker.node);
 
     const colRow = el('div', 'setrow colorrow'); // a title to the left like "Name:"; the open panel spans the whole row
     const colLabel = el('label', null, 'Favorite color:');
@@ -463,9 +621,7 @@ function openSettings() {
     });
 
     const refresh = () => {
-      prev.textContent = personFace(settings.avatar);
-      segs.forEach(([b, key, val]) => b.setAttribute('aria-pressed', String(chosen() && settings.avatar[key] === val)));
-      toneBtns.forEach(([b, t]) => b.setAttribute('aria-pressed', String(chosen() && settings.avatar.tone === t)));
+      avPicker.refresh();
       swVal.style.background = COLORS.find((c) => c.key === settings.color).hex;
       colButtons.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.color === key)));
       tsBtns.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.textSize === key)));
@@ -489,7 +645,7 @@ function openSettings() {
     sheet.appendChild(ok);
     closePanels();
     refresh();
-  });
+  }, () => renderMenu()); // the Pass & Play list shows your profile: redraw the menu when Settings closes
 }
 
 function openHouseRules() {
