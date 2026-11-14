@@ -19,6 +19,7 @@ const SKINS = {
   galleon: { svg: galleonSvg, geom: GALLEON_GEOM, bg: 'sky' },
   starship: { svg: starshipSvg, geom: STARSHIP_GEOM, bg: 'space' },
 };
+const BOTS_TIEBREAK_MS = 1000; // banners during a tiebreak that only bots play (nobody human is in it) are short
 const BANNER_MS = 2500; // every banner stays at least this long (also with reduced motion: reading time does not depend on motion)
 const SEAT_COLORS = ['#3b82f6', '#22a55b', '#e5484d', '#f59e0b'];
 const colorOf = (view, i) => view.seats[i].color || SEAT_COLORS[i];
@@ -97,6 +98,7 @@ export const shipView = {
       rolls: st.options.rolls,
       crew: st.options.crew,
       skin: st.options.skin,
+      botsTiebreak: !!st.tiebreak && st.order.every((i) => st.seats[i].isBot),
       reroll: st.options.reroll,
       held: [],
       tumbling: [],
@@ -280,7 +282,7 @@ export const shipView = {
         view.banner = { text: `${name(ev.seat)}: no cargo`, good: false };
         ctx.log(`${name(ev.seat)} gets no cargo`);
         ctx.announce(`${name(ev.seat)} gets no cargo`);
-        delay = BANNER_MS;
+        delay = view.botsTiebreak ? BOTS_TIEBREAK_MS : BANNER_MS;
         break;
       case 'TURN_ENDED':
         view.scores[ev.seat] = ev.score;
@@ -295,10 +297,12 @@ export const shipView = {
         view.order = ev.seats.slice();
         view.banner = { text: `${names.join(' and ')} tie: one more turn each`, good: false };
         ctx.announce(`${names.join(' and ')} tie. One more turn each`);
-        delay = BANNER_MS;
+        view.botsTiebreak = ev.seats.every((i) => view.seats[i].isBot); // a tiebreak with no human in it: its banners are short
+        delay = view.botsTiebreak ? BOTS_TIEBREAK_MS : BANNER_MS;
         break;
       }
       case 'ROUND_VOID':
+        view.botsTiebreak = false;
         view.nextRound = true;
         view.banner = { text: 'Nobody scored: no point this round', good: false };
         ctx.log(`Round ${view.round}: nobody scored`);
@@ -306,6 +310,7 @@ export const shipView = {
         delay = BANNER_MS;
         break;
       case 'ROUND_ENDED':
+        view.botsTiebreak = false;
         view.seats[ev.winner].wins += 1;
         view.nextRound = true;
         view.banner = { text: `${name(ev.winner)} wins the round with ${ev.scores[ev.winner]}`, good: true };
@@ -326,6 +331,7 @@ export const shipView = {
         delay = 150;
         break;
       case 'GAME_OVER':
+        view.botsTiebreak = false;
         view.banner = { text: view.seats.length === 1 ? 'The voyages are over!' : `${name(ev.winner)} wins the game!`, good: true };
         delay = BANNER_MS;
         break;
