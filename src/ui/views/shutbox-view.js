@@ -92,7 +92,7 @@ export const shutboxView = {
     ui.controls.classList.add('sticky');
     ui.log.hidden = true; // this screen is full: the box, tiles and tray already show everything the log would
 
-    renderScoreStrip(ui.scores, view.seats.map((s) => ({ ...s, note: s.out ? 'OUT' : '' })), view.current, 0);
+    renderScoreStrip(ui.scores, view.seats.map((s) => ({ ...s, note: s.out ? 'OUT' : '' })), view.current, 0, undefined, { compact: true });
 
     // tiles
     const sets = flipping ? validSets(st.turn.open, st.turn.target, o.maxTiles) : [];

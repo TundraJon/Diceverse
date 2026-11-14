@@ -47,7 +47,11 @@ function geometry(ui) {
   const pen = ui.pen.getBoundingClientRect();
   const cells = ui.cells.map(c);
   const rh = cells.length > PER_ROW ? cells[PER_ROW].y - cells[0].y : ui.cells[0].getBoundingClientRect().height * 1.6;
-  return { tb, cells, rh, penC: c(ui.pen), gate: { x: cells[0].x, y: pen.bottom - tb.top } };
+  const edge = Math.min(40, Math.max(16, rh * 0.74)); // the lanes get wider as the rows get taller, up to a limit
+  const fill = Math.min(32, Math.max(12, rh * 0.6));
+  const room = Math.min(cells[0].x, tb.width - cells[Math.min(PER_ROW, cells.length) - 1].x); // from the end of a row to the edge of the track
+  const rx = Math.max(6, Math.min(rh / 2, room - edge / 2 - 2)); // a bend is half an ellipse: as tall as the rows are far apart, but never wider than the room at the end of a row
+  return { tb, cells, rh, rx, edge, fill, penC: c(ui.pen), gate: { x: cells[0].x, y: pen.bottom - tb.top } };
 }
 
 function drawTrail(ui, target) {
@@ -62,24 +66,23 @@ function drawTrail(ui, target) {
     const endI = Math.min(n, (r + 1) * PER_ROW) - 1;
     const e = g.cells[endI];
     d += ` L${f(e.x)} ${f(e.y)}`;
-    if (r < rows - 1) d += ` A${f(g.rh / 2)} ${f(g.rh / 2)} 0 0 ${r % 2 === 0 ? 1 : 0} ${f(e.x)} ${f(e.y + g.rh)}`;
+    if (r < rows - 1) d += ` A${f(g.rx)} ${f(g.rh / 2)} 0 0 ${r % 2 === 0 ? 1 : 0} ${f(e.x)} ${f(e.y + g.rh)}`;
   }
-  const edge = Math.max(16, g.rh * 0.74);
-  const fill = Math.max(12, g.rh * 0.6);
+  const { edge, fill } = g;
   let h = `<path d="${d}" fill="none" stroke="#5b4023" stroke-width="${f(edge)}" stroke-linecap="round" stroke-linejoin="round"/>`
     + `<path d="${d}" fill="none" stroke="#8a6a3f" stroke-width="${f(fill)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   g.cells.forEach((c, i) => { if (i < n - 1) h += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="2" fill="#4a3319"/>`; });
   // a stone at the middle of every bend (not a space: no pig stops on it)
   for (let r = 0; r < rows - 1; r++) {
     const e = g.cells[Math.min(n, (r + 1) * PER_ROW) - 1];
-    h += `<circle cx="${f(e.x + (r % 2 === 0 ? 1 : -1) * g.rh / 2)}" cy="${f(e.y + g.rh / 2)}" r="2" fill="#4a3319"/>`;
+    h += `<circle cx="${f(e.x + (r % 2 === 0 ? 1 : -1) * g.rx)}" cy="${f(e.y + g.rh / 2)}" r="2" fill="#4a3319"/>`;
   }
   // signposts at every 25 points, in the gap under their row (pulled in from the bends)
   g.cells.forEach((c, i) => {
     const space = i + 1;
     if (space >= n || (space * STEP) % 25 !== 0) return;
     const rowEnd = space % PER_ROW === 0;
-    const inward = rowEnd ? (Math.floor(i / PER_ROW) % 2 === 0 ? -1 : 1) * g.rh * 0.8 : 0;
+    const inward = rowEnd ? (Math.floor(i / PER_ROW) % 2 === 0 ? -1 : 1) * Math.min(g.rh, 40) * 0.8 : 0;
     const x = c.x + inward;
     const y = c.y + edge / 2 + 5;
     h += `<rect x="${f(x - 10)}" y="${f(y - 6)}" width="20" height="12" rx="2.5" fill="#5b3a1a" stroke="#d6b36a" stroke-width="1"/>`
@@ -111,7 +114,7 @@ function walkPoints(ui, from, to) {
       if (sp - 1 >= 1 && (sp - 1) % PER_ROW === 0) {
         const prev = g.cells[sp - 2];
         const dir = Math.floor((sp - 2) / PER_ROW) % 2 === 0 ? 1 : -1;
-        out.push({ x: prev.x + dir * g.rh / 2, y: prev.y + g.rh / 2, apex: true });
+        out.push({ x: prev.x + dir * g.rx, y: prev.y + g.rh / 2, apex: true });
       }
       out.push(g.cells[sp - 1]);
     }
@@ -327,7 +330,7 @@ export const pigView = {
     renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints, undefined, { target: st.options.target });
     this.renderTrack(ui, view, st, ctx);
     ui.dice.innerHTML = '';
-    ui.dice.className = 'dice' + (st.options.dice === 2 ? ' two' : '');
+    ui.dice.className = 'dice pig' + (st.options.dice === 2 ? ' two' : '');
     for (let i = 0; i < st.options.dice; i++) {
       ui.dice.appendChild(renderDie(view.dice[i] ?? null, { tumble: ctx.tumble && !ctx.reduced }));
     }

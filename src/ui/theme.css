@@ -72,6 +72,8 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .chip.active .name { color: var(--gold); }
 .chip .total { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
 .chip .tp { font-size: 0.85rem; color: var(--gold); min-height: 1.1em; }
+.scores.compact .chip { padding: 5px 12px; } /* Shut the Box: no empty status line and tighter boxes, the room goes to the tray */
+.scores.compact .chip .tp:empty { display: none; }
 .chip .trow { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 6px; }
 .chip .tgt { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
 
@@ -99,6 +101,8 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .die .f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
 .die .shadow { position: absolute; left: 8%; right: 8%; bottom: -8%; height: 16%; border-radius: 50%; background: rgba(0,0,0,0.4); filter: blur(4px); }
 .dice.two .die { --s: 80px; }
+.dice.pig .die { --s: 48px; } /* Pig: the die is half the usual size, the room goes to the racetrack */
+.dice.pig.two .die { --s: 40px; }
 .die.blank { opacity: 0.25; }
 .pip { align-self: center; justify-self: center; width: 60%; height: 60%; border-radius: 50%; background: var(--ink); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6); }
 .pip.danger { background: var(--danger); }
@@ -411,10 +415,10 @@ body.fast .cover { transition: none; }
 .controls .quiet { background: rgba(255,255,255,0.1); color: var(--text); }
 
 /* Pig: the racing-pigs track (a pen, a snake of rows of 10 spaces, 5 points a space, the barn at the end) */
-.pgtrack { position: relative; isolation: isolate; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.28); border-radius: 12px; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+.pgtrack { flex: 1 1 auto; max-height: 320px; container-type: inline-size; position: relative; isolation: isolate; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.28); border-radius: 12px; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .pgpen { align-self: flex-start; min-width: 150px; min-height: 30px; box-sizing: border-box; padding: 4px 8px; border-radius: 8px; background: rgba(251,191,36,0.16); color: #fbbf24; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: flex-start; }
-.pggrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px 3px; position: relative; }
-.pgcell { aspect-ratio: 1.25; min-width: 0; }
+.pggrid { display: grid; grid-template-columns: repeat(10, 1fr); grid-auto-rows: minmax(min-content, 1fr); flex: 1 1 auto; gap: 10px 3px; position: relative; } /* the rows share whatever height the racetrack is given */
+.pgcell { min-height: calc((100cqw - 27px) / 12.5); min-width: 0; } /* never shorter than the old 1.25 : 1 shape (the space is (the track's width - the gaps) / 10) */
 .pgw { position: absolute; width: 46px; aspect-ratio: 200 / 98; pointer-events: none; transition: left 0.4s ease, top 0.4s ease; }
 .pgw.pgghost { opacity: 0.5; z-index: 5; }
 .pgw[hidden] { display: none; }

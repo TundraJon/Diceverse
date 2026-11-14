@@ -1,8 +1,8 @@
 // Reusable panels: ScoreStrip and TurnBar.
-// opts.target (and opts.fmt) adds a smaller "/ target" beside each total.
+// opts.target (and opts.fmt) adds a smaller "/ target" beside each total. opts.compact drops the empty status line and tightens the boxes (Shut the Box).
 export function renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts) {
   container.innerHTML = '';
-  container.className = 'scores' + (seats.length === 1 ? ' one' : '');
+  container.className = 'scores' + (seats.length === 1 ? ' one' : '') + (opts && opts.compact ? ' compact' : '');
   seats.forEach((s, i) => {
     const chip = document.createElement('div');
     chip.className = 'chip' + (i === current ? ' active' : '');
