@@ -1,5 +1,5 @@
 // Reusable panels: ScoreStrip and TurnBar.
-// opts.target (and opts.fmt) adds a smaller "/ target" beside each total. opts.compact drops the empty status line and tightens the boxes (Shut the Box).
+// opts.target (and opts.fmt) adds a smaller "/ target" beside each total. opts.compact drops the empty status line and tightens the boxes (Shut the Box). A seat with `swatch` (a colour) gets that colour as a small swatch before its name (Pig).
 export function renderScoreStrip(container, seats, current, turnPoints, onSeatClick, opts) {
   container.innerHTML = '';
   container.className = 'scores' + (seats.length === 1 ? ' one' : '') + (opts && opts.compact ? ' compact' : '');
@@ -10,6 +10,12 @@ export function renderScoreStrip(container, seats, current, turnPoints, onSeatCl
     name.className = 'name';
     const n = document.createElement('span');
     n.textContent = (s.face || (s.isBot ? '🤖' : '👤')) + ' ' + s.name;
+    if (s.swatch) { // the colour of this player's piece (Pig): a small swatch before the avatar and name, as in the other games
+      const sw = document.createElement('i');
+      sw.className = 'swatch';
+      sw.style.background = s.swatch;
+      n.insertBefore(sw, n.firstChild);
+    }
     const t = document.createElement('span');
     t.textContent = `${s.turns} turn${s.turns === 1 ? '' : 's'}`;
     name.append(n, t);

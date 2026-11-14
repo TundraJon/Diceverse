@@ -68,6 +68,7 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .scores.one { grid-template-columns: 1fr; }
 .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
 .chip.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.25); }
+.chip .name .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.25); }
 .chip .name { font-size: 0.85rem; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
 .chip.active .name { color: var(--gold); }
 .chip .total { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }

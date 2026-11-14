@@ -942,3 +942,11 @@ Pig: the die is 25 % larger (the user's request after Build 75).
 - [x] `theme.css`: `.dice.pig .die` 48 px to 60 px, and for two dice (`.dice.pig.two .die`) 40 px to 50 px. Nothing else changed.
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright, 13 checks, 0 failures, 0 JS errors: the die is 60 px (50 px for two dice) and full Pig games finish; scroll 1 px at 412x915, 412x760, 390x844 and 360x740, 13 px at 320x640 (the track gives up 12 px there, 110 px instead of 122, so the screen scrolls no more than before); the Shut the Box and Farkle checks from Build 74 still pass. Screenshot looked at (320x640). Needs a real-device check: how the larger die and the track look together on the Pixel 7 Pro.
+
+## Build Log 77 (completed)
+
+Pig: each score box shows the colour of that player's pig (the user's request).
+
+- [x] `src/ui/panels.js` `renderScoreStrip`: a seat with `swatch` (a colour) gets a 10 px rounded swatch before its avatar and name (`.chip .name .swatch` in `theme.css`, the same kind of swatch the other games use). `src/ui/views/pig-view.js` passes each seat's pig colour (`colorOf`: the player's chosen colour for seat 1, then the palette) so the swatch always equals the pig on the track. Pig only: Farkle, Yacht and Shut the Box have no coloured pieces and show no swatch.
+
+Verification (scratch script, none committed): `preflight` clean. Playwright, 22 checks, 0 failures, 0 JS errors: Pig against 2 bots at 390x844, against 3 bots at 320x640, Solo, and Pass & Play with 2 players at 412x915: every score box has a 10 x 10 px swatch, the swatch colours equal the pig colours in order, the first player's swatch is the colour chosen in Settings (purple), no sideways overflow; Farkle and Shut the Box show no swatches. Screenshots looked at (320 wide with four players). Note: at 320 px wide with four players the two lower boxes wrap the name and "turns" onto two lines (they did before for long names; the swatch makes it a little more likely), the screen still fits. Needs a real-device check: how the swatch looks next to the avatar on the Pixel 7 Pro.

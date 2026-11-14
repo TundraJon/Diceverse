@@ -337,7 +337,7 @@ export const pigView = {
 
   render(ui, view, session, ctx) {
     const st = session.state;
-    renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints, undefined, { target: st.options.target });
+    renderScoreStrip(ui.scores, view.seats.map((s, i) => ({ ...s, swatch: colorOf(view, i) })), view.current, view.turnPoints, undefined, { target: st.options.target });
     this.renderTrack(ui, view, st, ctx);
     ui.dice.innerHTML = '';
     ui.dice.className = 'dice pig' + (st.options.dice === 2 ? ' two' : '');
