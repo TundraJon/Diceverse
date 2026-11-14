@@ -10,6 +10,7 @@ import * as dive from './dive.js';
 import * as liars from './liars.js';
 import * as trails from './trails.js';
 import * as ship from './ship.js';
+import * as highroller from './highroller.js';
 
-export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, trails, ship };
-export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'trails', 'ship'];
+export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, trails, ship, highroller };
+export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'trails', 'ship', 'highroller'];
