@@ -8,7 +8,7 @@ import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, 
 import { createMoods } from './moods.js';
 import { ROLL_MS, startThrow, beginDice } from '../ui/dice.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
-import { KINDS, TONES, COLORS, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
+import { AGES, STYLES, TONE_COLORS, COLORS, DEFAULT_AVATAR, PLAIN_FACE, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
 const app = document.getElementById('app');
 const live = document.getElementById('live');
@@ -315,8 +315,8 @@ function confirmResetDefaults(after) {
   });
 }
 
-// Settings: your name, your avatar and your color. The avatar and the color are two small dropdown buttons; each opens a
-// panel under the row with every choice visible at once.
+// Settings: your name, your avatar (a preview with age, style and skin tone rows) and your color (a dropdown button that opens a
+// panel under it with every choice visible at once).
 function openSettings() {
   openSheet((sheet, close) => {
     sheet.classList.add('settings'); // lets a dropdown panel float over the lower part of the sheet
@@ -336,27 +336,64 @@ function openSettings() {
     nameRow.append(label, input);
     sheet.appendChild(nameRow);
 
-    const row = el('div', 'ddrow');
-    const avBtn = el('button', 'ddbtn');
+    // the avatar: a live preview and three small rows (age, style, skin tone); every tap saves at once. Until something is chosen the preview shows the
+    // plain 👤 and nothing is selected; the first tap fills in the missing choices as Adult and Male (and the first tone).
+    const pick = el('div', 'avpick');
+    const prev = el('div', 'avprev');
+    prev.setAttribute('aria-hidden', 'true');
+    const ctl = el('div', 'avctl');
+    const chosen = () => settings.avatar.age !== 'none' && settings.avatar.style !== 'none';
+    const setAvatar = (patch) => {
+      const a = settings.avatar;
+      settings.avatar = cleanAvatar({ age: chosen() ? a.age : 'adult', style: chosen() ? a.style : 'male', tone: a.tone, ...patch });
+      persistSettings();
+      refresh();
+    };
+    const segs = [];
+    const mkSeg = (title, key, items) => {
+      const box = el('div', 'avrow');
+      box.appendChild(el('span', 'avlab', title));
+      const grp = el('div', 'avseg');
+      grp.setAttribute('role', 'group');
+      grp.setAttribute('aria-label', title);
+      items.forEach((it) => {
+        const b = el('button', 'avsegbtn', it.label);
+        b.type = 'button';
+        b.setAttribute('aria-label', `${title}: ${it.label}`);
+        b.addEventListener('click', () => setAvatar({ [key]: it.key }));
+        segs.push([b, key, it.key]);
+        grp.appendChild(b);
+      });
+      box.appendChild(grp);
+      return box;
+    };
+    ctl.append(mkSeg('Age', 'age', AGES), mkSeg('Style', 'style', STYLES));
+    pick.append(prev, ctl);
+    sheet.appendChild(pick);
+    const toneRow = el('div', 'avtones');
+    toneRow.setAttribute('role', 'group');
+    toneRow.setAttribute('aria-label', 'Skin tone');
+    const toneBtns = [];
+    TONE_COLORS.forEach((hex, t) => {
+      const b = el('button', 'avtone');
+      b.type = 'button';
+      const dot = el('i');
+      dot.style.background = hex;
+      b.appendChild(dot);
+      b.setAttribute('aria-label', `Skin tone ${t + 1}`);
+      b.addEventListener('click', () => setAvatar({ tone: t }));
+      toneBtns.push([b, t]);
+      toneRow.appendChild(b);
+    });
+    sheet.appendChild(toneRow);
+
+    const row = el('div', 'ddrow one');
     const colBtn = el('button', 'ddbtn');
-    avBtn.setAttribute('aria-label', 'Avatar');
     colBtn.setAttribute('aria-label', 'Color');
-    const avVal = el('span', 'ddv');
     const swVal = el('i', 'sw');
-    avBtn.append(avVal, el('span', 'ddc', '\u25BE'));
     colBtn.append(swVal, el('span', 'ddc', '\u25BE'));
-    const avPanel = el('div', 'ddpanel avgrid');
     const colPanel = el('div', 'ddpanel clgrid');
-    avPanel.hidden = true;
     colPanel.hidden = true;
-    const avButtons = [];
-    KINDS.forEach((k) => TONES.forEach((tone, t) => {
-      const b = el('button', 'avbtn', personFace({ kind: k.key, tone: t }));
-      b.setAttribute('aria-label', `${k.label}, ${t === 0 ? 'default tone' : `skin tone ${t}`}`);
-      b.addEventListener('click', () => { settings.avatar = { kind: k.key, tone: t }; persistSettings(); refresh(); closePanels(); });
-      avButtons.push([b, k.key, t]);
-      avPanel.appendChild(b);
-    }));
     const colButtons = [];
     COLORS.forEach((c) => {
       const b = el('button', 'swbtn');
@@ -368,34 +405,32 @@ function openSettings() {
       colButtons.push([b, c.key]);
       colPanel.appendChild(b);
     });
-    row.append(avBtn, colBtn, avPanel, colPanel);
+    row.append(colBtn, colPanel);
     sheet.appendChild(row);
 
     const closePanels = () => {
-      avPanel.hidden = true; colPanel.hidden = true;
-      avBtn.setAttribute('aria-expanded', 'false'); colBtn.setAttribute('aria-expanded', 'false');
+      colPanel.hidden = true;
+      colBtn.setAttribute('aria-expanded', 'false');
     };
-    const toggle = (panel, btn, other) => {
-      const willOpen = panel.hidden;
+    colBtn.addEventListener('click', () => {
+      const willOpen = colPanel.hidden;
       closePanels();
-      if (willOpen) { panel.hidden = false; btn.setAttribute('aria-expanded', 'true'); }
-      void other;
-    };
-    avBtn.addEventListener('click', () => toggle(avPanel, avBtn, colPanel));
-    colBtn.addEventListener('click', () => toggle(colPanel, colBtn, avPanel));
+      if (willOpen) { colPanel.hidden = false; colBtn.setAttribute('aria-expanded', 'true'); }
+    });
     // a tap outside the open panel (or its button) and Escape close it
     sheet.addEventListener('click', (e) => {
-      if ([avBtn, colBtn, avPanel, colPanel].some((n) => n.contains(e.target))) return;
+      if ([colBtn, colPanel].some((n) => n.contains(e.target))) return;
       closePanels();
     });
     sheet.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && (!avPanel.hidden || !colPanel.hidden)) { e.stopPropagation(); closePanels(); }
+      if (e.key === 'Escape' && !colPanel.hidden) { e.stopPropagation(); closePanels(); }
     });
 
     const refresh = () => {
-      avVal.textContent = personFace(settings.avatar);
+      prev.textContent = personFace(settings.avatar);
+      segs.forEach(([b, key, val]) => b.setAttribute('aria-pressed', String(chosen() && settings.avatar[key] === val)));
+      toneBtns.forEach(([b, t]) => b.setAttribute('aria-pressed', String(chosen() && settings.avatar.tone === t)));
       swVal.style.background = COLORS.find((c) => c.key === settings.color).hex;
-      avButtons.forEach(([b, kind, t]) => b.setAttribute('aria-pressed', String(settings.avatar.kind === kind && settings.avatar.tone === t)));
       colButtons.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.color === key)));
     };
     const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); };

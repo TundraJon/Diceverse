@@ -1,28 +1,41 @@
-// Player avatars (18 faces: man / person / woman x six skin tones) and the helpers that decide which face a seat shows.
+// Player avatars: age (child, adult, elder) x style (male, female) x six skin tones = 36 faces, and the helpers that decide which face a seat shows.
 import { AI_ROSTER } from '../ai/roster.js';
 
 export const TONES = ['', '\u{1F3FB}', '\u{1F3FC}', '\u{1F3FD}', '\u{1F3FE}', '\u{1F3FF}']; // default yellow, then light to dark
-// The faces offered in Settings (no neutral "person" row). Until one is chosen the player shows the plain 👤.
-export const KINDS = [
-  { key: 'man', base: '\u{1F468}', label: 'Man' },
-  { key: 'woman', base: '\u{1F469}', label: 'Woman' },
+export const TONE_COLORS = ['#f7d56a', '#f6d3b9', '#e4b58f', '#c4885a', '#8f5a3a', '#5b3a29']; // the swatches in Settings, one per tone
+export const AGES = [
+  { key: 'child', label: 'Child' },
+  { key: 'adult', label: 'Adult' },
+  { key: 'elder', label: 'Elder' },
 ];
+export const STYLES = [
+  { key: 'male', label: 'Male' },
+  { key: 'female', label: 'Female' },
+];
+const FACES = {
+  child: { male: '\u{1F466}', female: '\u{1F467}' }, // boy, girl
+  adult: { male: '\u{1F468}', female: '\u{1F469}' }, // man, woman
+  elder: { male: '\u{1F474}', female: '\u{1F475}' }, // older man, older woman
+};
 export const PLAIN_FACE = '\u{1F464}'; // the plain 👤: the player's starting face, and Pass & Play players 2 to 4
-export const DEFAULT_AVATAR = { kind: 'none', tone: 0 };
+export const DEFAULT_AVATAR = { age: 'none', style: 'none', tone: 0 }; // not chosen yet: shows the plain 👤
 
 export function personFace(avatar) {
-  const k = KINDS.find((x) => x.key === (avatar && avatar.kind));
-  if (!k) return PLAIN_FACE;
+  const f = avatar && FACES[avatar.age] && FACES[avatar.age][avatar.style];
+  if (!f) return PLAIN_FACE;
   const t = Number.isInteger(avatar.tone) && avatar.tone >= 0 && avatar.tone < TONES.length ? avatar.tone : 0;
-  return k.base + TONES[t];
+  return f + TONES[t];
 }
 
-// Keep a saved avatar choice valid. The old neutral "person" default (never offered as a choice) and anything unknown
-// count as "not chosen" and show the plain 👤.
+// Keep a saved avatar choice valid. An older save (`kind` man or woman) is read as an adult of that style; the old neutral "person"
+// and anything unknown count as "not chosen" and show the plain 👤.
 export function cleanAvatar(a) {
-  const kind = a && KINDS.some((x) => x.key === a.kind) ? a.kind : 'none';
-  const tone = kind !== 'none' && Number.isInteger(a.tone) && a.tone >= 0 && a.tone < TONES.length ? a.tone : 0;
-  return { kind, tone };
+  let age = a && FACES[a.age] ? a.age : 'none';
+  let style = a && ['male', 'female'].includes(a.style) ? a.style : 'none';
+  if (age === 'none' && a && (a.kind === 'man' || a.kind === 'woman')) { age = 'adult'; style = a.kind === 'man' ? 'male' : 'female'; }
+  if (age === 'none' || style === 'none') return { age: 'none', style: 'none', tone: 0 };
+  const tone = a && Number.isInteger(a.tone) && a.tone >= 0 && a.tone < TONES.length ? a.tone : 0;
+  return { age, style, tone };
 }
 
 // Player colors: eight that read well on the dark board. The first one is the default.

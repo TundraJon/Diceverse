@@ -270,23 +270,21 @@ body.fast .cover { transition: none; }
 /* Settings (name and avatar), the menu's gear button, and the one-line talk/thinking text */
 .screen { position: relative; }
 .gear { position: absolute; top: 12px; right: 16px; z-index: 2; width: 44px; height: 44px; padding: 0; border-radius: 22px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); font-size: 1.3rem; }
-.sheet.settings { overflow: visible; }
+.sheet.settings { overflow: visible; gap: 8px; } /* a little tighter so the avatar picker still fits at 320x640 */
 .setrow { display: flex; align-items: center; gap: 10px; }
 .setrow label { font-weight: 700; color: var(--muted); }
 .namefield { flex: 1; min-width: 0; min-height: 48px; background: #0b2b21; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; font: inherit; font-size: 16px; }
 .namefield::placeholder { color: var(--muted); opacity: 0.7; }
 .ddrow { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ddrow.one { grid-template-columns: 1fr; }
 .ddbtn { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 12px; font-size: 1.5rem; line-height: 1; }
 .ddbtn .ddc { font-size: 0.9rem; color: var(--muted); }
 .ddbtn .sw { display: block; width: 24px; height: 24px; border-radius: 6px; }
 .ddpanel { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 6; background: #0b2b21; border: 1px solid var(--line); border-radius: 12px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
-.avgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .clgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.avbtn { min-height: 44px; padding: 0; font-size: 1.5rem; line-height: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
 .swbtn { min-height: 44px; padding: 0; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; display: grid; place-items: center; }
 .swbtn i { display: block; width: 26px; height: 26px; border-radius: 6px; }
 .swbtn[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.4); }
-.avbtn[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
 
 /* Speech bubble under the talking bot's chip */
 .talkbubble { position: absolute; z-index: 8; background: #fff6df; color: #2a1d10; border-radius: 12px; padding: 6px 10px; font-size: 0.85rem; line-height: 1.3; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; animation: bubbleIn 0.15s ease; }
@@ -637,3 +635,17 @@ button.hrlgroup { cursor: pointer; }
 .die.hrlc .face { background: linear-gradient(145deg, color-mix(in srgb, var(--dc) 55%, #fff), var(--dc)); }
 .hrlpeek.on { background: #115e59; }
 @media (prefers-reduced-motion: reduce) { .hrlrow.pulse { animation: none; } }
+
+/* Settings avatar picker: a preview, age and style rows, six skin tone swatches */
+.avpick { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: stretch; }
+.avprev { width: 84px; display: grid; place-items: center; font-size: 3rem; line-height: 1; background: #0b2b21; border: 1px solid var(--line); border-radius: 14px; }
+.avctl { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.avrow { display: flex; flex-direction: column; gap: 3px; }
+.avlab { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+.avseg { display: flex; gap: 6px; }
+.avsegbtn { flex: 1; min-width: 0; min-height: 44px; padding: 0 4px; font-size: 0.85rem; font-weight: 700; background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 10px; }
+.avsegbtn[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.avtones { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.avtone { min-height: 44px; padding: 0; display: grid; place-items: center; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
+.avtone i { display: block; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.35); }
+.avtone[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
