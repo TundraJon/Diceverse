@@ -19,6 +19,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 23: age-specific avatars (the user asked on 2026-11-14, not yet specced)
+The user: "For the avatar, I now want to add age specific options." Today (`src/ui/avatars.js`) the Settings avatar offers Man and Woman, each in six skin tones (12 faces, emoji). Emoji exist for other ages with the same six tones: boy, girl, child (neutral), older man, older woman, older person (neutral), baby. Open questions asked of the user: which ages (recommendation: Boy, Girl, Older man, Older woman next to Man and Woman, 36 faces), the layout of the picker (one row of six tones per kind, with a small label), and whether the gender-neutral child and older person are wanted. Saved choices (`man`, `woman`) stay valid.
+
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
