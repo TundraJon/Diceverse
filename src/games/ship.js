@@ -76,6 +76,7 @@ export function setup(options, rng) {
     order: Array.from({ length: n }, (_, k) => (starter + k) % n), // who plays now (all of them, or the tied players)
     pos: 0,
     scores: seats.map(() => null), // this round's score per player (null: not played yet)
+    tiebreak: false, // true while only tied players are playing off
     voyages: 0,
     soloTotal: 0,
     current: starter,
@@ -145,7 +146,13 @@ function endTurn(s, score, events) {
   // everybody in this pass has played
   const best = Math.max(...s.order.map((i) => s.scores[i]));
   const top = s.order.filter((i) => s.scores[i] === best);
+  if (best === 0 && !s.tiebreak) { // nobody scored in the first pass of the round: not a tie, the round just ends with no winner and play goes on
+    events.push({ type: 'ROUND_VOID', scores: s.scores.slice() });
+    startNextRound(s, events);
+    return;
+  }
   if (top.length > 1) { // a tie for the best score: only the tied players take one more turn each
+    s.tiebreak = true;
     events.push({ type: 'TIEBREAK', seats: top.slice() });
     top.forEach((i) => { s.scores[i] = null; });
     s.order = top;
@@ -160,13 +167,18 @@ function endTurn(s, score, events) {
   events.push({ type: 'ROUND_ENDED', scores: s.scores.slice(), winner: w });
   events.push({ type: 'ROUND_WON', seat: w });
   if (s.seats[w].wins >= s.options.target) { s.over = true; s.winner = w; s.winners = [w]; events.push({ type: 'GAME_OVER', winner: w, winners: [w] }); return; }
-  // the next round: the starting player is the one to the right (counter-clockwise) of the last starter
+  startNextRound(s, events);
+}
+
+// The next round: the starting player is the one to the right (counter-clockwise) of the last starter.
+function startNextRound(s, events) {
   const n = s.seats.length;
   s.round += 1;
   s.starter = (s.starter + n - 1) % n;
   s.order = Array.from({ length: n }, (_, k) => (s.starter + k) % n);
   s.pos = 0;
   s.scores = s.seats.map(() => null);
+  s.tiebreak = false;
   s.current = s.starter;
   freshTurn(s);
   events.push({ type: 'TURN_STARTED', seat: s.current });

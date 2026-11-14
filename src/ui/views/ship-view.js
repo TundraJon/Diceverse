@@ -291,12 +291,20 @@ export const shipView = {
       case 'TIEBREAK': {
         const names = ev.seats.map(name);
         ev.seats.forEach((i) => { view.scores[i] = null; });
+        view.scores.forEach((_, i) => { if (!ev.seats.includes(i)) view.scores[i] = null; }); // the players who are out of the tiebreak lose their score from the board too
         view.order = ev.seats.slice();
         view.banner = { text: `${names.join(' and ')} tie: one more turn each`, good: false };
         ctx.announce(`${names.join(' and ')} tie. One more turn each`);
         delay = BANNER_MS;
         break;
       }
+      case 'ROUND_VOID':
+        view.nextRound = true;
+        view.banner = { text: 'Nobody scored: no point this round', good: false };
+        ctx.log(`Round ${view.round}: nobody scored`);
+        ctx.announce('Nobody scored. No point this round');
+        delay = BANNER_MS;
+        break;
       case 'ROUND_ENDED':
         view.seats[ev.winner].wins += 1;
         view.nextRound = true;
