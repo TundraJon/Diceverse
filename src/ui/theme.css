@@ -101,8 +101,8 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .die .f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
 .die .shadow { position: absolute; left: 8%; right: 8%; bottom: -8%; height: 16%; border-radius: 50%; background: rgba(0,0,0,0.4); filter: blur(4px); }
 .dice.two .die { --s: 80px; }
-.dice.pig .die { --s: 48px; } /* Pig: the die is half the usual size, the room goes to the racetrack */
-.dice.pig.two .die { --s: 40px; }
+.dice.pig .die { --s: 60px; } /* Pig: the die is a little over half the usual size (the user asked for 25 % more than 48 px); the rest of the room goes to the racetrack */
+.dice.pig.two .die { --s: 50px; }
 .die.blank { opacity: 0.25; }
 .pip { align-self: center; justify-self: center; width: 60%; height: 60%; border-radius: 50%; background: var(--ink); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6); }
 .pip.danger { background: var(--danger); }
