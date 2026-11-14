@@ -290,6 +290,31 @@ function confirmDelete(ids, after) {
   });
 }
 
+// "Reset game defaults": every game's house rules go back to their standard values. Nothing else changes (name, avatar, color, mode, players,
+// bot level, saved games and personal bests stay).
+function confirmResetDefaults(after) {
+  openSheet((sheet, close) => {
+    sheet.appendChild(el('h2', null, 'Reset game defaults?'));
+    sheet.appendChild(el('p', null, "Every game's house rules go back to their standard settings. Your name, avatar, color, saved games and personal bests are not changed."));
+    const row = el('div', 'confirmrow');
+    const keep = el('button', 'secondary', 'Cancel');
+    const reset = el('button', 'danger', 'Reset');
+    keep.addEventListener('click', close);
+    reset.addEventListener('click', () => {
+      GAME_ORDER.forEach((id) => {
+        settings.house[id] = GAMES[id].defaultOptions();
+        if (GAMES[id].normalizeOptions) settings.house[id] = GAMES[id].normalizeOptions(settings.house[id]);
+      });
+      persistSettings();
+      close();
+      if (after) after();
+    });
+    row.append(keep, reset);
+    sheet.appendChild(row);
+    sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  });
+}
+
 // Settings: your name, your avatar and your color. The avatar and the color are two small dropdown buttons; each opens a
 // panel under the row with every choice visible at once.
 function openSettings() {
@@ -384,6 +409,9 @@ function openSettings() {
     clearAll.addEventListener('click', () => confirmDelete(GAME_ORDER, () => { refreshClear(); renderMenu(); }));
     sheet.appendChild(clearAll);
     refreshClear();
+    const resetDefaults = el('button', 'secondary resetdef', 'Reset game defaults');
+    resetDefaults.addEventListener('click', () => confirmResetDefaults(() => renderMenu()));
+    sheet.appendChild(resetDefaults);
     const ok = el('button', 'primary', 'Done');
     ok.addEventListener('click', () => { save(); close(); });
     sheet.appendChild(ok);
