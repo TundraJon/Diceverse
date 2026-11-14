@@ -47,8 +47,8 @@ function geometry(ui) {
   const pen = ui.pen.getBoundingClientRect();
   const cells = ui.cells.map(c);
   const rh = cells.length > PER_ROW ? cells[PER_ROW].y - cells[0].y : ui.cells[0].getBoundingClientRect().height * 1.6;
-  const edge = Math.min(40, Math.max(16, rh * 0.74)); // the lanes get wider as the rows get taller, up to a limit
-  const fill = Math.min(32, Math.max(12, rh * 0.6));
+  const edge = Math.min(32, Math.max(16, rh * 0.74)); // the lanes get wider as the rows get taller, up to a limit
+  const fill = Math.min(25, Math.max(12, rh * 0.6));
   const room = Math.min(cells[0].x, tb.width - cells[Math.min(PER_ROW, cells.length) - 1].x); // from the end of a row to the edge of the track
   const rx = Math.max(6, Math.min(rh / 2, room - edge / 2 - 2)); // a bend is half an ellipse: as tall as the rows are far apart, but never wider than the room at the end of a row
   return { tb, cells, rh, rx, edge, fill, penC: c(ui.pen), gate: { x: cells[0].x, y: pen.bottom - tb.top } };
@@ -61,7 +61,7 @@ function drawTrail(ui, target) {
   const n = g.cells.length;
   const f = (v) => v.toFixed(1);
   const rows = Math.ceil(n / PER_ROW);
-  let d = `M${f(g.gate.x)} ${f(g.gate.y)} L${f(g.cells[0].x)} ${f(g.cells[0].y)}`;
+  let d = `M${f(g.gate.x)} ${f(g.gate.y + Math.max(0, g.edge / 2 - 6))} L${f(g.cells[0].x)} ${f(g.cells[0].y)}`; // starts a little below the gate so the round end of the lane stays off the word START
   for (let r = 0; r < rows; r++) {
     const endI = Math.min(n, (r + 1) * PER_ROW) - 1;
     const e = g.cells[endI];
@@ -181,7 +181,12 @@ function placePigs(ui, view, st, ctx) {
     const sum = lens.reduce((x, y) => x + y, 0) || 1;
     const total = Math.min(1200, 120 * Math.max(1, Math.abs(b - a)));
     let i = 1;
-    const finish = () => { if (node._walk === token) { node.classList.remove('pgwalk'); setNode(node, end); } };
+    const finish = () => {
+      if (node._walk !== token) return;
+      node.classList.remove('pgwalk');
+      setNode(node, end);
+      if (ui.resizePending && ![...ui.pigs, ui.ghost].some((x) => x.classList.contains('pgwalk'))) { ui.resizePending = false; placePigs(ui, ui.lastView, ui.lastState); } // the track was resized during the walk: settle the pigs on the new one
+    };
     const next = () => {
       if (node._walk !== token) return;
       if (i >= pts.length) { finish(); return; }
@@ -265,7 +270,12 @@ export const pigView = {
     ui.track = el('div', 'pgtrack');
     ui.track.setAttribute('role', 'img');
     ui.table.append(ui.track, ui.banner, ui.dice, ui.turnline);
-    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (ui.lastView) { drawTrail(ui, ui.target); placePigs(ui, ui.lastView, ui.lastState); } }).observe(ui.track); // rotate or resize: put the pigs back
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { // rotate or resize (the browser's address bar showing or hiding changes the height too): redraw the trail and put the pigs back, but never cut a walk short
+      if (!ui.lastView) return;
+      drawTrail(ui, ui.target);
+      if ([...ui.pigs, ui.ghost].some((node) => node.classList.contains('pgwalk'))) ui.resizePending = true;
+      else placePigs(ui, ui.lastView, ui.lastState);
+    }).observe(ui.track);
   },
 
   // The racing-pigs track: a pen, the spaces as a snake of rows (5 points a space) and the barn that shows the target.
