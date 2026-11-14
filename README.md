@@ -17,7 +17,14 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 47: Ship, Captain & Crew: nobody scores, no tie (Not yet authorized to build.)
+
+The user: if every player scores 0 in a round it should not be called a tie with an extra chance; the round should just end and everybody carries on, because the game does not stop until somebody reaches the target. Today (`src/games/ship.js`, the end of the round) any tie for the best score, 0 included, makes the tied players take one more turn each (`TIEBREAK`).
+
+- [ ] When every player's score in a round is 0 (nobody got cargo), no `TIEBREAK`: the round ends with no winner and nobody gets a point. The next round starts as normal (the starting player passes to the right, the table is cleared). New event `ROUND_VOID` (no winner), `round` still counts up. *(Added by Claude. Change before authorizing if wanted.)*
+- [ ] The view (`ship-view.js`) shows a banner for `ROUND_VOID`, "Nobody scored: no point this round" (stays 2.5 s like every banner), clears the round table for the next round, and logs it. *(Banner words are mine.)*
+- [ ] Only the first pass of a round counts. If a real tie (say two players at 7) goes to a tiebreak and the tied players both score 0, they stay tied and take the tiebreak again (the earlier lower scores still lose). *(Added by Claude. Open question for the user.)*
+- [ ] Solo is unaffected (a 0 voyage is just 0). The bot's plans do not change. Headless Node checks: all-zero round gives `ROUND_VOID` and no point; a tie at a positive score still gives a tiebreak; the starting player rotates; the game still ends at the target. Playwright check of the banner.
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
