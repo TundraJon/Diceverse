@@ -17,7 +17,14 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 48: Ship, Captain & Crew: bots-only tiebreak banners are short (Not yet authorized to build.)
+
+The user: when the human is out of a tiebreak and only bots play it off, the banners during the tiebreak need only 1 second instead of 2.5. Only for tiebreakers; the round-won and game-over banners keep 2.5 s. Checked Farkle first: Farkle also replays a tie (with the final-round option, the tied players get one more turn each, `farkle.js`), but it has no tiebreak banner at all, its only banners are HOT DICE, FARKLE and PENALTY, so there is nothing to shorten there. Nothing is queued for Farkle (it does not announce a tie; not asked about).
+
+- [ ] `ship-view.js`: new constant `BOTS_TIEBREAK_MS = 1000`. When a tiebreak starts (`TIEBREAK`) and every tied player is a bot (`view.seats[i].isBot`), the view remembers it (`view.botsTiebreak = true`); the `TIEBREAK` banner itself and every `NO_CARGO` banner during that tiebreak last `BOTS_TIEBREAK_MS` instead of `BANNER_MS`. The flag is cleared at `ROUND_ENDED`, `ROUND_VOID` and `GAME_OVER`. If any tied player is human (you, or a Pass & Play player), everything stays at 2.5 s. *(Which banners are shortened, and the reduced-motion case (also 1 s), are mine. Change before authorizing if wanted.)*
+- [ ] `ROUND_ENDED` ("X wins the round") and `GAME_OVER` stay `BANNER_MS` always, also at the end of a bots-only tiebreak.
+- [ ] Only Ship, Captain & Crew changes. `?speed=0` stays instant.
+- [ ] Verification: a real-speed fixture (a 3-player game where the human loses a round and two bots tie, found by searching seeds): the tiebreak banner and the no-cargo banners during the bots-only tiebreak last about 1 s, the round-won banner 2.5 s; a tiebreak that includes the human keeps 2.5 s for all; no JS errors.
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
