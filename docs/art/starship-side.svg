@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 260" width="1000" height="260">
+  <defs>
+    <style>
+      .hull {
+        fill: #AAB4BE;
+        stroke: #1D2126;
+        stroke-width: 2.5;
+        stroke-linejoin: round;
+      }
+      .hull-shade {
+        fill: #8E98A3;
+        stroke: #1D2126;
+        stroke-width: 2.5;
+        stroke-linejoin: round;
+      }
+      .detail-line {
+        fill: none;
+        stroke: #3A4048;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+      }
+      .dark-trim {
+        fill: #141619;
+      }
+      .bussard {
+        fill: #E63B2E;
+        stroke: #1D2126;
+        stroke-width: 2;
+      }
+      .warp-blue {
+        fill: #4A7FB5;
+        stroke: #1D2126;
+        stroke-width: 1.5;
+      }
+      .gold-accent {
+        fill: #D4A438;
+        stroke: #1D2126;
+        stroke-width: 1.2;
+      }
+      .red-stripe {
+        fill: #B83232;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. WARP NACELLE PYLON (AFT SWEPT) -->
+  <polygon class="hull-shade" points="164,136 276,136 226,192 134,192" />
+
+  <!-- 2. ENGINEERING / STARDRIVE HULL & NECK -->
+  <g id="engineering-hull">
+    <path class="hull" d="M 480,58
+      C 452,62 428,78 408,104
+      L 378,136
+      L 254,136
+      L 222,192
+      L 276,192
+      C 292,192 304,206 314,222
+      L 414,222
+      L 476,214
+      C 496,210 512,196 524,174
+      L 556,110
+      C 566,94 584,88 614,88
+      L 562,62
+      Z" />
+
+    <!-- Main Deflector Dish (Forward Curve) -->
+    <path class="gold-accent" d="M 556,110 C 542,130 530,154 524,174 L 534,170 C 542,150 552,130 562,114 Z" />
+
+    <!-- Ventral Phaser Strip & Hull Lines -->
+    <line class="detail-line" x1="258" y1="186" x2="502" y2="186" />
+    <rect class="gold-accent" x="492" y="182" width="12" height="7" rx="2" />
+    <line class="detail-line" x1="504" y1="130" x2="546" y2="130" />
+  </g>
+
+  <!-- 3. PRIMARY SAUCER SECTION (SIDE PROFILE) -->
+  <g id="saucer-section">
+    <!-- Upper & Lower Saucer Profile -->
+    <path class="hull" d="M 464,62
+      C 514,42 598,28 692,24
+      L 696,18
+      L 724,18
+      L 732,24
+      C 826,28 914,44 988,68
+      L 988,76
+      L 916,78
+      C 864,96 798,108 728,110
+      L 716,114
+      L 688,114
+      L 676,110
+      C 608,108 558,96 524,78
+      L 464,76
+      Z" />
+
+    <!-- Saucer Rim Channel & Phaser Strip -->
+    <line class="detail-line" x1="464" y1="68" x2="988" y2="68" />
+    <line class="detail-line" x1="524" y1="78" x2="916" y2="78" />
+    <line class="detail-line" x1="544" y1="40" x2="906" y2="40" />
+
+    <!-- Forward & Aft Rim RCS Thruster Accents -->
+    <rect class="gold-accent" x="562" y="64" width="14" height="8" rx="2" />
+    <rect class="gold-accent" x="872" y="64" width="14" height="8" rx="2" />
+  </g>
+
+  <!-- 4. STARBOARD WARP NACELLE (FOREGROUND LEFT) -->
+  <g id="warp-nacelle">
+    <!-- Main Nacelle Body -->
+    <path class="hull" d="M 38,96
+      L 322,96
+      L 346,92
+      C 386,96 420,108 438,124
+      C 424,136 394,142 356,140
+      L 332,136
+      L 318,144
+      L 104,144
+      L 94,136
+      L 38,136
+      C 18,136 10,126 10,116
+      C 10,106 18,96 38,96 Z" />
+
+    <!-- Blue Warp Field Grill -->
+    <rect class="warp-blue" x="82" y="96" width="234" height="9" />
+
+    <!-- Dark Intake Grill & Center Groove -->
+    <path class="dark-trim" d="M 10,113 L 324,113 L 342,100 L 364,100 L 376,120 L 364,132 L 342,132 L 324,119 L 10,119 Z" />
+
+    <!-- Red Bussard Collector -->
+    <path class="bussard" d="M 378,102
+      C 402,106 420,114 430,123
+      C 416,126 396,126 384,122
+      Z" />
+
+    <!-- Red Pinstripe & Registry Text -->
+    <rect class="red-stripe" x="112" y="124" width="204" height="3" />
+    <text x="212" y="110" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="7.5" fill="#141619" text-anchor="middle" letter-spacing="0.5">USS BUTCHER NCC-1127-SJ</text>
+  </g>
+</svg>
