@@ -387,9 +387,13 @@ function openSettings() {
     });
     sheet.appendChild(toneRow);
 
-    const row = el('div', 'ddrow one');
+    const colRow = el('div', 'setrow colorrow'); // a title to the left like "Name:"; the open panel spans the whole row
+    const colLabel = el('label', null, 'Favorite color:');
+    colLabel.htmlFor = 'setcolor';
+    const row = el('div', 'ddrow one inrow');
     const colBtn = el('button', 'ddbtn');
-    colBtn.setAttribute('aria-label', 'Color');
+    colBtn.id = 'setcolor';
+    colBtn.setAttribute('aria-label', 'Favorite color');
     const swVal = el('i', 'sw');
     colBtn.append(swVal, el('span', 'ddc', '\u25BE'));
     const colPanel = el('div', 'ddpanel clgrid');
@@ -405,8 +409,9 @@ function openSettings() {
       colButtons.push([b, c.key]);
       colPanel.appendChild(b);
     });
-    row.append(colBtn, colPanel);
-    sheet.appendChild(row);
+    row.append(colBtn);
+    colRow.append(colLabel, row, colPanel);
+    sheet.appendChild(colRow);
 
     const closePanels = () => {
       colPanel.hidden = true;
