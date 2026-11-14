@@ -19,6 +19,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 23: name, avatar and colour for every human in Pass & Play (the user asked on 2026-11-14, not yet specced)
+The user: with more than one human player each should be able to put in a name, avatar and colour. Today (`buildOptions` in `src/shell/main.js`) Pass & Play player 1 uses the Settings profile (name, avatar, colour) and players 2 to 4 are fixed: "Player 2" to "Player 4", the plain 👤, the next free palette colours. Open questions put to the user: where to edit (recommendation: a "Players" button on the menu in Pass & Play that opens a sheet with one section per human, so the menu does not grow), whether players 2 to 4 are remembered between sessions (recommendation: yes), unique colours (recommendation: a colour another player has is grayed out), and that player 1's section is the Settings profile (editing it in either place is the same data).
+
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
