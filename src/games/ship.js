@@ -67,7 +67,8 @@ export function setup(options, rng) {
   if (!['freighter', 'galleon', 'starship'].includes(opts.skin)) throw new Error('Unknown ship look');
   const seats = (opts.seats || [{ name: 'You', isBot: false }]).map((s) => ({ name: s.name, isBot: !!s.isBot, preset: s.preset || null, turns: 0, wins: 0 }));
   const n = seats.length;
-  const starter = n === 1 ? 0 : rng.die(n) - 1; // the first round's starting player is chosen by the rng
+  const drawn = n === 1 ? 0 : rng.die(n) - 1; // the first round's starting player is chosen by the rng
+  const starter = Number.isInteger(opts.first) && opts.first >= 0 && opts.first < n ? opts.first : drawn; // unless the players chose who starts (Pass & Play: the first seat)
   const s = {
     options: { ...opts, seats: seats.map(({ name, isBot, preset }) => ({ name, isBot, preset })) },
     seats,

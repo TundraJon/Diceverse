@@ -78,6 +78,7 @@ export function setup(options, rng) {
   if (![true, false].includes(opts.duel)) throw new Error('Unknown final-duel rule');
   const seats = (opts.seats || [{ name: 'You', isBot: false }, { name: 'Bot', isBot: true }]).map((s) => ({ name: s.name, isBot: !!s.isBot, preset: s.preset || null, turns: 0, dice: opts.dice }));
   if (seats.length < 2) throw new Error("Liar's Dice needs at least two players");
+  const drawn = rng.die(seats.length) - 1;
   const s = {
     options: { ...opts, seats: seats.map(({ name, isBot, preset }) => ({ name, isBot, preset })) },
     seats,
@@ -85,7 +86,7 @@ export function setup(options, rng) {
     hands: [],
     bid: null, // { seat, space, face, q, kind } or { seat, total } in a final duel
     duel: false,
-    current: rng.die(seats.length) - 1, // the first opener is chosen by the rng
+    current: Number.isInteger(opts.first) && opts.first >= 0 && opts.first < seats.length ? opts.first : drawn, // the first opener is chosen by the rng, unless the players chose who starts (Pass & Play: the first seat)
     out: [], // seats in the order they were eliminated
     over: false,
     winner: null,

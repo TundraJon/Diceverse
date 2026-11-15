@@ -8,7 +8,8 @@ import { loadSave, writeSave, clearSave, loadSettings, writeSettings, loadBest, 
 import { createMoods } from './moods.js';
 import { ROLL_MS, startThrow, beginDice } from '../ui/dice.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
-import { MAX_ROSTER, MIN_PLAYERS, cleanRoster, cleanRosterName, listPlayers, displayName, playingCount, takenColors, enforceMax, fixColorClashes, firstFreeColor, seatsFor } from './roster.js';
+import { MAX_ROSTER, MIN_PLAYERS, cleanRoster, cleanOrder, cleanRosterName, listPlayers, displayName, playingCount, takenColors, enforceMax, fixColorClashes, firstFreeColor, nextId, moveBefore, rotateToFirst, rollForFirst, seatsFor } from './roster.js';
+import { flatDieSvg } from '../ui/freighter-art.js';
 import { AGES, STYLES, TONE_COLORS, COLORS, DEFAULT_AVATAR, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
 const app = document.getElementById('app');
@@ -36,6 +37,7 @@ function loadAllSettings() {
   s.color = cleanColor(s.color);
   s.roster = cleanRoster(s.roster, s.color); // the stored Pass & Play players besides you
   s.youPlay = s.youPlay !== false; // whether you are one of the players in Pass & Play
+  s.order = cleanOrder(s.order, s.roster); // the seating order of everybody (the first one starts)
   if (!TEXT_SIZES.some(([k]) => k === s.textSize)) s.textSize = 'normal';
   if (s.house && 'target' in s.house && !s.house.pig) s.house = { pig: s.house }; // old flat layout was Pig's
   if (!GAMES[s.game]) s.game = 'pig';
@@ -131,7 +133,8 @@ function buildOptions() {
     seats = [{ ...you, me: true }].concat(ids.map((id) => ({ name: AI_ROSTER[id].name, isBot: true, preset: settings.preset, botId: id, avatar: AI_ROSTER[id].defaultEmoji })));
   }
   if (settings.mode !== 'pass') seatColors(seats.length, settings.color).forEach((hex, i) => { seats[i].color = hex; }); // yours first, the rest in palette order (Pass & Play players have their own)
-  return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats } : { ...house, seats };
+  const first = settings.mode === 'pass' ? { first: 0 } : {}; // Pass & Play: the first player in the seating order starts (games that draw a starter honour this)
+  return mod.normalizeOptions ? { ...mod.normalizeOptions(house), seats, ...first } : { ...house, seats, ...first };
 }
 
 /* ---------- menu ---------- */
@@ -217,7 +220,7 @@ function renderMenu() {
   }
   screen.appendChild(modePanel);
   // Pass & Play: the stored players (who plays, their name, avatar and colour) open up under the Mode buttons, where vs Bots has its Bot style line.
-  if (settings.mode === 'pass') renderRoster(modePanel);
+  if (settings.mode === 'pass') renderPlayersLine(modePanel);
   // Players: a row inside the Mode panel (vs Bots only; Pass & Play counts the checked players).
   if (settings.mode === 'bots') {
     const prow = el('div', 'row sub');
@@ -259,9 +262,32 @@ function renderMenu() {
   app.appendChild(screen);
 }
 
-// ---- the stored players of Pass & Play (the area under the Mode buttons) ----
-let rosterSel = null; // which row's editor is open (0 is you), not saved
-const colorHex = (key) => COLORS.find((c) => c.key === key).hex;
+// ---- the stored players of Pass & Play ----
+// A player as a pill: the colour swatch, the face and the name (the greyed "Player N" when unnamed). The same pill is used in the menu and in the list.
+function playerPill(pl, extra) {
+  const pill = el('span', 'pl' + (!pl.you && !pl.name ? ' ph' : '') + (extra ? ` ${extra}` : ''));
+  const sw = el('i', 'swatch');
+  sw.style.background = COLORS.find((c) => c.key === pl.color).hex;
+  pill.append(sw, el('span', 'plface', personFace(pl.avatar)), el('span', 'plnm', displayName(pl)));
+  return pill;
+}
+
+// The one line on the menu: who is playing (the same pills) and a button that opens the full-screen Players screen.
+function renderPlayersLine(panel) {
+  const max = GAMES[settings.game].meta.players.max;
+  if (enforceMax(settings, max)) persistSettings(); // a game with fewer seats unchecks players from the bottom
+  const box = el('div', 'plline');
+  box.appendChild(el('div', 'avlab', 'Players'));
+  const pills = el('div', 'plpills');
+  const playing = listPlayers(settings).filter((p) => p.playing);
+  if (playing.length) playing.forEach((p) => pills.appendChild(playerPill(p))); else pills.appendChild(el('span', 'plnone', 'Nobody is playing yet'));
+  box.appendChild(pills);
+  const choose = el('button', 'secondary plchoose', 'Choose players');
+  choose.type = 'button';
+  choose.addEventListener('click', openPlayersScreen);
+  box.appendChild(choose);
+  panel.appendChild(box);
+}
 
 function confirmDeletePlayer(name, onDelete) {
   openSheet((sheet, close) => {
@@ -278,103 +304,40 @@ function confirmDeletePlayer(name, onDelete) {
   });
 }
 
-function renderRoster(panel) {
-  const max = GAMES[settings.game].meta.players.max;
-  if (enforceMax(settings, max)) persistSettings(); // a game with fewer seats unchecks players from the bottom
-  const players = listPlayers(settings);
-  if (rosterSel !== null && rosterSel >= players.length) rosterSel = null;
-  const count = playingCount(settings);
-  const box = el('div', 'rost');
-  box.setAttribute('role', 'group');
-  box.setAttribute('aria-label', 'Players');
-  let editor = null; // the open player's editor goes under the list
-  players.forEach((pl, k) => {
-    const row = el('div', 'rostrow' + (rosterSel === k ? ' sel' : ''));
-    const chkWrap = el('label', 'rostchk');
-    const chk = el('input');
-    chk.type = 'checkbox';
-    chk.checked = pl.playing;
-    chk.disabled = !pl.playing && count >= max; // the game's maximum is reached
-    chk.setAttribute('aria-label', `${displayName(pl)} plays`);
-    chk.addEventListener('change', () => {
-      if (pl.you) settings.youPlay = chk.checked; else settings.roster[pl.index].playing = chk.checked;
-      if (chk.checked) fixColorClashes(settings);
-      persistSettings();
-      renderMenu();
-    });
-    chkWrap.appendChild(chk);
-    const nameBtn = el('button', 'rostname');
-    nameBtn.type = 'button';
-    nameBtn.setAttribute('aria-expanded', String(rosterSel === k));
-    const face = el('span', 'rostface', personFace(pl.avatar));
-    const nm = el('span', 'rostnm' + (pl.you || pl.name ? '' : ' ph'), displayName(pl));
-    const sw = el('i', 'swatch');
-    sw.style.background = colorHex(pl.color);
-    nameBtn.append(face, nm, sw);
-    nameBtn.addEventListener('click', () => { rosterSel = rosterSel === k ? null : k; renderMenu(); });
-    row.append(chkWrap, nameBtn);
-    if (!pl.you) {
-      const del = el('button', 'rostdel', '\u2715');
-      del.type = 'button';
-      del.setAttribute('aria-label', `Delete ${displayName(pl)}`);
-      del.addEventListener('click', () => confirmDeletePlayer(displayName(pl), () => {
-        settings.roster.splice(pl.index, 1);
-        rosterSel = null;
-        persistSettings();
-        renderMenu();
-      }));
-      row.appendChild(del);
-    }
-    box.appendChild(row);
-    if (rosterSel === k) editor = rosterEditor(pl, { face, nm, sw });
-  });
-  const add = el('button', 'secondary rostadd', 'Add player');
-  add.type = 'button';
-  add.disabled = players.length >= MAX_ROSTER + 1;
-  add.addEventListener('click', () => {
-    const playing = count < max; // at the maximum the new player is stored but not checked
-    settings.roster.push({ name: '', avatar: { ...DEFAULT_AVATAR }, color: firstFreeColor(takenColors(settings, 99999)), playing });
-    rosterSel = settings.roster.length; // the new player's row (you are row 0)
-    persistSettings();
-    renderMenu();
-  });
-  box.appendChild(add);
-  if (editor) box.appendChild(editor);
-  panel.appendChild(box);
-}
-
-// The editor of one player: the same layout as the player information in Settings (name, avatar, colour). Edits save at once and update the row without redrawing the menu.
-function rosterEditor(pl, row) {
-  const ed = el('div', 'rosted');
-  const data = () => (pl.you ? settings : settings.roster[pl.index]);
+// The player block shared by Settings and the Pass & Play editor: Name, the avatar picker and "Favorite color:" with its dropdown. `getName` gives what the
+// field shows ('' when the player has no name yet), `setName(raw)` stores it, `taken()` gives the colour keys the player cannot take. Returns { node, refresh }.
+function buildPlayerBlock(o) {
+  const node = el('div', 'plblock');
   const nameRow = el('div', 'setrow');
   const label = el('label', null, 'Name:');
-  label.htmlFor = 'rostname';
+  label.htmlFor = 'setname';
   const input = el('input', 'namefield');
-  input.id = 'rostname';
+  input.id = 'setname';
   input.type = 'text';
   input.maxLength = 12;
-  input.value = pl.you ? (settings.name === 'You' ? '' : settings.name) : settings.roster[pl.index].name;
-  input.placeholder = pl.you ? 'You' : `Player ${pl.n}`; // the greyed suggestion, gone as soon as a letter is typed
+  input.value = o.getName();
+  input.placeholder = o.placeholder; // the faded suggestion: gone as soon as a letter is typed
   input.autocomplete = 'off';
   input.setAttribute('autocapitalize', 'words');
-  input.addEventListener('input', () => {
-    if (pl.you) settings.name = cleanName(input.value); else settings.roster[pl.index].name = cleanRosterName(input.value);
-    persistSettings();
-    const shown = pl.you ? settings.name : settings.roster[pl.index].name;
-    row.nm.textContent = shown || `Player ${pl.n}`;
-    row.nm.classList.toggle('ph', !pl.you && !shown);
-  });
+  input.addEventListener('input', () => o.setName(input.value));
+  input.addEventListener('change', () => { input.value = o.getName(); });
   nameRow.append(label, input);
-  ed.appendChild(nameRow);
-  const av = buildAvatarPicker(() => data().avatar, (a) => { data().avatar = a; persistSettings(); row.face.textContent = personFace(a); });
-  ed.appendChild(av.node);
-  // the colour: eight swatches; a colour another player who is playing has is grayed out
-  const colLabel = el('div', 'avlab', 'Color');
-  const grid = el('div', 'rostcolors');
-  grid.setAttribute('role', 'group');
-  grid.setAttribute('aria-label', 'Color');
-  const taken = takenColors(settings, pl.index);
+  node.appendChild(nameRow);
+  const avPicker = buildAvatarPicker(o.getAvatar, o.setAvatar);
+  node.appendChild(avPicker.node);
+  const colRow = el('div', 'setrow colorrow'); // a title to the left like "Name:"; the open panel spans the whole row
+  const colLabel = el('label', null, 'Favorite color:');
+  colLabel.htmlFor = 'setcolor';
+  const row = el('div', 'ddrow one inrow');
+  const colBtn = el('button', 'ddbtn');
+  colBtn.id = 'setcolor';
+  colBtn.type = 'button';
+  colBtn.setAttribute('aria-label', 'Favorite color');
+  const swVal = el('i', 'sw');
+  colBtn.append(swVal, el('span', 'ddc', '▾'));
+  const colPanel = el('div', 'ddpanel clgrid');
+  colPanel.hidden = true;
+  const colButtons = [];
   COLORS.forEach((c) => {
     const b = el('button', 'swbtn');
     b.type = 'button';
@@ -382,22 +345,240 @@ function rosterEditor(pl, row) {
     dot.style.background = c.hex;
     b.appendChild(dot);
     b.setAttribute('aria-label', c.label);
-    b.setAttribute('aria-pressed', String(data().color === c.key));
-    b.disabled = taken.includes(c.key) && data().color !== c.key;
-    b.addEventListener('click', () => {
-      data().color = c.key;
-      persistSettings();
-      row.sw.style.background = c.hex;
-      grid.querySelectorAll('.swbtn').forEach((x, i) => x.setAttribute('aria-pressed', String(COLORS[i].key === c.key)));
-    });
-    grid.appendChild(b);
+    b.addEventListener('click', () => { o.setColor(c.key); refresh(); closePanel(); });
+    colButtons.push([b, c.key]);
+    colPanel.appendChild(b);
   });
-  ed.append(colLabel, grid);
-  return ed;
+  row.append(colBtn);
+  colRow.append(colLabel, row, colPanel);
+  node.appendChild(colRow);
+  const closePanel = () => { colPanel.hidden = true; colBtn.setAttribute('aria-expanded', 'false'); };
+  const refresh = () => {
+    avPicker.refresh();
+    swVal.style.background = COLORS.find((c) => c.key === o.getColor()).hex;
+    const taken = o.taken();
+    colButtons.forEach(([b, key]) => {
+      b.setAttribute('aria-pressed', String(o.getColor() === key));
+      b.disabled = taken.includes(key) && o.getColor() !== key; // a colour another playing player has is grayed out
+    });
+  };
+  colBtn.addEventListener('click', () => {
+    const willOpen = colPanel.hidden;
+    refresh();
+    closePanel();
+    if (willOpen) { colPanel.hidden = false; colBtn.setAttribute('aria-expanded', 'true'); }
+  });
+  // a tap outside the open panel (or its button) and Escape close it
+  const away = (e) => {
+    if (!node.isConnected) { document.removeEventListener('click', away); return; }
+    if (![colBtn, colPanel].some((n) => n.contains(e.target))) closePanel();
+  };
+  document.addEventListener('click', away);
+  node.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !colPanel.hidden) { e.stopPropagation(); closePanel(); } });
+  closePanel();
+  refresh();
+  return { node, refresh };
 }
 
-function openSheet(build, onClose) {
-  const back = el('div', 'sheet-back');
+// The full-screen Players screen: who plays (a checkbox), the seating order (drag the handle), tap a pill to edit that player, a red X deletes, "Add player",
+// and "Roll for first player".
+function openPlayersScreen() {
+  let sel = null; // the id of the player whose editor is open
+  openSheet((sheet, close) => {
+    sheet.classList.add('full');
+    const head = el('div', 'plhead');
+    const done = el('button', 'secondary small', 'Done');
+    done.addEventListener('click', close);
+    head.append(el('h2', null, 'Players'), done);
+    sheet.appendChild(head);
+    sheet.appendChild(el('div', 'avlab', 'Who plays · drag the handle to set the order'));
+    const listBox = el('div', 'pllist');
+    sheet.appendChild(listBox);
+    const add = el('button', 'secondary pladd', '＋ Add player');
+    add.type = 'button';
+    const rollBtn = el('button', 'secondary plrollbtn', '\u{1F3B2} Roll for first player');
+    rollBtn.type = 'button';
+    const hint = el('p', 'note plhint');
+    const rollBox = el('div', 'plroll');
+    rollBox.hidden = true;
+    sheet.append(add, rollBtn, hint, rollBox);
+
+    const maxPlayers = () => GAMES[settings.game].meta.players.max;
+    const render = () => {
+      if (enforceMax(settings, maxPlayers())) persistSettings();
+      const players = listPlayers(settings);
+      const count = playingCount(settings);
+      if (sel !== null && !players.some((p) => p.id === sel)) sel = null;
+      listBox.innerHTML = '';
+      players.forEach((pl, k) => {
+        const row = el('div', 'plrow' + (sel === pl.id ? ' sel' : ''));
+        row.dataset.id = pl.id;
+        const grip = el('button', 'plgrip', '⠿');
+        grip.type = 'button';
+        grip.setAttribute('aria-label', `Move ${displayName(pl)} (drag, or use the up and down arrow keys)`);
+        const chkWrap = el('label', 'rostchk');
+        const chk = el('input');
+        chk.type = 'checkbox';
+        chk.checked = pl.playing;
+        chk.disabled = !pl.playing && count >= maxPlayers(); // the game's maximum is reached
+        chk.setAttribute('aria-label', `${displayName(pl)} plays`);
+        chk.addEventListener('change', () => {
+          if (pl.you) settings.youPlay = chk.checked; else settings.roster[pl.index].playing = chk.checked;
+          if (chk.checked) fixColorClashes(settings);
+          persistSettings();
+          render();
+        });
+        chkWrap.appendChild(chk);
+        const pillBtn = el('button', 'plpillbtn');
+        pillBtn.type = 'button';
+        pillBtn.setAttribute('aria-expanded', String(sel === pl.id));
+        const pill = playerPill(pl, pl.playing ? '' : 'off');
+        pillBtn.appendChild(pill);
+        pillBtn.addEventListener('click', () => { sel = sel === pl.id ? null : pl.id; render(); });
+        row.append(grip, chkWrap, pillBtn);
+        if (!pl.you) {
+          const del = el('button', 'rostdel', '✕');
+          del.type = 'button';
+          del.setAttribute('aria-label', `Delete ${displayName(pl)}`);
+          del.addEventListener('click', () => confirmDeletePlayer(displayName(pl), () => {
+            settings.roster.splice(pl.index, 1);
+            settings.order = cleanOrder(settings.order, settings.roster);
+            if (sel === pl.id) sel = null;
+            persistSettings();
+            render();
+          }));
+          row.appendChild(del);
+        }
+        // dragging the handle (and the arrow keys) set the seating order
+        grip.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+          e.preventDefault();
+          const ids = listPlayers(settings).map((p) => p.id);
+          const at = ids.indexOf(pl.id);
+          const to = e.key === 'ArrowUp' ? at - 1 : at + 1;
+          if (to < 0 || to >= ids.length) return;
+          moveBefore(settings, pl.id, e.key === 'ArrowUp' ? ids[to] : ids[to + 1] || null);
+          persistSettings();
+          render();
+          listBox.querySelector(`[data-id="${pl.id}"] .plgrip`).focus();
+        });
+        grip.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          grip.setPointerCapture(e.pointerId);
+          listBox.querySelectorAll('.pled').forEach((x) => x.remove()); // close the editor while dragging
+          row.classList.add('drag');
+          const rows = () => [...listBox.querySelectorAll('.plrow')];
+          const move = (ev) => {
+            const others = rows().filter((r) => r !== row);
+            let before = null;
+            for (const r of others) { const b = r.getBoundingClientRect(); if (ev.clientY < b.top + b.height / 2) { before = r; break; } }
+            if (before !== row.nextElementSibling) listBox.insertBefore(row, before);
+          };
+          const up = () => {
+            grip.removeEventListener('pointermove', move);
+            grip.removeEventListener('pointerup', up);
+            grip.removeEventListener('pointercancel', up);
+            settings.order = rows().map((r) => r.dataset.id);
+            persistSettings();
+            sel = null;
+            render();
+          };
+          grip.addEventListener('pointermove', move);
+          grip.addEventListener('pointerup', up);
+          grip.addEventListener('pointercancel', up);
+        });
+        listBox.appendChild(row);
+        if (sel === pl.id) {
+          const ed = el('div', 'pled');
+          const block = buildPlayerBlock({
+            getName: () => (pl.you ? (settings.name === 'You' ? '' : settings.name) : settings.roster[pl.index].name),
+            setName: (raw) => {
+              if (pl.you) settings.name = cleanName(raw); else settings.roster[pl.index].name = cleanRosterName(raw);
+              persistSettings();
+              const shown = pl.you ? settings.name : settings.roster[pl.index].name;
+              const nm = row.querySelector('.plnm');
+              nm.textContent = shown || `Player ${pl.n}`;
+              nm.parentElement.classList.toggle('ph', !pl.you && !shown);
+            },
+            placeholder: pl.you ? 'You' : `Player ${pl.n}`,
+            getAvatar: () => (pl.you ? settings.avatar : settings.roster[pl.index].avatar),
+            setAvatar: (a) => { if (pl.you) settings.avatar = a; else settings.roster[pl.index].avatar = a; persistSettings(); row.querySelector('.plface').textContent = personFace(a); },
+            getColor: () => (pl.you ? settings.color : settings.roster[pl.index].color),
+            setColor: (key) => { if (pl.you) settings.color = key; else settings.roster[pl.index].color = key; persistSettings(); row.querySelector('.swatch').style.background = COLORS.find((c) => c.key === key).hex; },
+            taken: () => takenColors(settings, pl.id),
+          });
+          ed.appendChild(block.node);
+          listBox.appendChild(ed);
+        }
+      });
+      add.disabled = players.length >= MAX_ROSTER + 1;
+      rollBtn.disabled = count < MIN_PLAYERS;
+      hint.textContent = count < MIN_PLAYERS ? 'Pick at least 2 players' : '';
+    };
+    add.addEventListener('click', () => {
+      const id = nextId(settings.roster);
+      settings.roster.push({ id, name: '', avatar: { ...DEFAULT_AVATAR }, color: firstFreeColor(takenColors(settings, null)), playing: playingCount(settings) < maxPlayers() }); // at the maximum the new player is stored but not checked
+      settings.order = cleanOrder(settings.order, settings.roster);
+      sel = id;
+      persistSettings();
+      render();
+    });
+    // Roll for first player: everybody who plays rolls a die, the highest starts (a tie is rolled again between the tied players); the seating turns so they are first
+    const rand6 = () => Math.floor(((newSeed()[0] >>> 0) / 4294967296) * 6) + 1;
+    rollBtn.addEventListener('click', () => {
+      const players = listPlayers(settings).filter((p) => p.playing);
+      const byId = Object.fromEntries(players.map((p) => [p.id, p]));
+      const result = rollForFirst(players.map((p) => p.id), rand6);
+      rollBox.hidden = false;
+      rollBtn.disabled = true;
+      const instant = reduced() || document.body.classList.contains('fast');
+      const show = (round, final, k) => {
+        rollBox.innerHTML = '';
+        rollBox.appendChild(el('div', 'avlab', round.length === players.length ? 'Roll for first player' : 'Tie: rolled again'));
+        const tiles = el('div', 'pltiles');
+        round.forEach((r) => {
+          const t = el('div', 'pltile' + (final && r.id === result.winner ? ' win' : ''));
+          t.append(el('span', 'plface', personFace(byId[r.id].avatar)));
+          const die = el('div', 'pldie');
+          die.innerHTML = flatDieSvg(r.value);
+          t.append(die, el('span', 'plnm', displayName(byId[r.id])));
+          tiles.appendChild(t);
+        });
+        rollBox.appendChild(tiles);
+        if (final) {
+          rollBox.appendChild(el('div', 'plwinner', `${displayName(byId[result.winner])} starts!`));
+          rotateToFirst(settings, result.winner);
+          persistSettings();
+          rollBtn.disabled = false;
+          rollBtn.textContent = '\u{1F3B2} Roll again';
+          render();
+        }
+        void k;
+      };
+      if (instant) { result.rounds.forEach((r, i) => show(r, i === result.rounds.length - 1, i)); return; }
+      let i = 0;
+      const next = () => {
+        if (!rollBox.isConnected) return;
+        const round = result.rounds[i];
+        let ticks = 0;
+        const timer = setInterval(() => { // the dice spin through random faces, then settle
+          if (!rollBox.isConnected) { clearInterval(timer); return; }
+          ticks++;
+          if (ticks < 10) { show(round.map((r) => ({ id: r.id, value: rand6() })), false, i); return; }
+          clearInterval(timer);
+          const last = i === result.rounds.length - 1;
+          show(round, last, i);
+          if (!last) { i++; setTimeout(next, 1100); }
+        }, 90);
+      };
+      next();
+    });
+    render();
+  }, () => renderMenu(), true); // redraw the menu when the screen closes: its line shows who is playing
+}
+
+function openSheet(build, onClose, full) {
+  const back = el('div', 'sheet-back' + (full ? ' full' : ''));
   const sheet = el('div', 'sheet');
   sheet.setAttribute('role', 'dialog');
   sheet.setAttribute('aria-modal', 'true');
@@ -539,49 +720,18 @@ function openSettings() {
     sheet.classList.add('settings'); // lets a dropdown panel float over the lower part of the sheet
     sheet.appendChild(el('h2', null, 'Settings'));
 
-    const nameRow = el('div', 'setrow');
-    const label = el('label', null, 'Name:');
-    label.htmlFor = 'setname';
-    const input = el('input', 'namefield');
-    input.id = 'setname';
-    input.type = 'text';
-    input.maxLength = 12;
-    input.value = settings.name === 'You' ? '' : settings.name;
-    input.placeholder = 'You'; // the faded suggestion: gone as soon as a letter is typed
-    input.autocomplete = 'off';
-    input.setAttribute('autocapitalize', 'words');
-    nameRow.append(label, input);
-    sheet.appendChild(nameRow);
-
-    // the avatar: a live preview and three small rows (age, style, skin tone); every tap saves at once
-    const avPicker = buildAvatarPicker(() => settings.avatar, (a) => { settings.avatar = a; persistSettings(); });
-    sheet.appendChild(avPicker.node);
-
-    const colRow = el('div', 'setrow colorrow'); // a title to the left like "Name:"; the open panel spans the whole row
-    const colLabel = el('label', null, 'Favorite color:');
-    colLabel.htmlFor = 'setcolor';
-    const row = el('div', 'ddrow one inrow');
-    const colBtn = el('button', 'ddbtn');
-    colBtn.id = 'setcolor';
-    colBtn.setAttribute('aria-label', 'Favorite color');
-    const swVal = el('i', 'sw');
-    colBtn.append(swVal, el('span', 'ddc', '\u25BE'));
-    const colPanel = el('div', 'ddpanel clgrid');
-    colPanel.hidden = true;
-    const colButtons = [];
-    COLORS.forEach((c) => {
-      const b = el('button', 'swbtn');
-      const dot = el('i');
-      dot.style.background = c.hex;
-      b.appendChild(dot);
-      b.setAttribute('aria-label', c.label);
-      b.addEventListener('click', () => { settings.color = c.key; persistSettings(); refresh(); closePanels(); });
-      colButtons.push([b, c.key]);
-      colPanel.appendChild(b);
+    // your name, avatar and colour: the same block as the Pass & Play editor
+    const block = buildPlayerBlock({
+      getName: () => (settings.name === 'You' ? '' : settings.name),
+      setName: (raw) => { settings.name = cleanName(raw); persistSettings(); },
+      placeholder: 'You',
+      getAvatar: () => settings.avatar,
+      setAvatar: (a) => { settings.avatar = a; persistSettings(); },
+      getColor: () => settings.color,
+      setColor: (key) => { settings.color = key; persistSettings(); },
+      taken: () => [],
     });
-    row.append(colBtn);
-    colRow.append(colLabel, row, colPanel);
-    sheet.appendChild(colRow);
+    sheet.appendChild(block.node);
 
     // Text size: Normal, Large or Larger (every size in the app that is written in rem follows it)
     const tsRow = el('div', 'setrow tsrow');
@@ -602,32 +752,10 @@ function openSettings() {
     tsRow.append(tsLabel, tsSeg);
     sheet.appendChild(tsRow);
 
-    const closePanels = () => {
-      colPanel.hidden = true;
-      colBtn.setAttribute('aria-expanded', 'false');
-    };
-    colBtn.addEventListener('click', () => {
-      const willOpen = colPanel.hidden;
-      closePanels();
-      if (willOpen) { colPanel.hidden = false; colBtn.setAttribute('aria-expanded', 'true'); }
-    });
-    // a tap outside the open panel (or its button) and Escape close it
-    sheet.addEventListener('click', (e) => {
-      if ([colBtn, colPanel].some((n) => n.contains(e.target))) return;
-      closePanels();
-    });
-    sheet.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !colPanel.hidden) { e.stopPropagation(); closePanels(); }
-    });
-
     const refresh = () => {
-      avPicker.refresh();
-      swVal.style.background = COLORS.find((c) => c.key === settings.color).hex;
-      colButtons.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.color === key)));
+      block.refresh();
       tsBtns.forEach(([b, key]) => b.setAttribute('aria-pressed', String(settings.textSize === key)));
     };
-    const save = () => { settings.name = cleanName(input.value); input.value = settings.name === 'You' ? '' : settings.name; persistSettings(); };
-    input.addEventListener('change', save);
     const clearAll = el('button', 'secondary clearall');
     const refreshClear = () => {
       const n = GAME_ORDER.filter((id) => loadSave(id)).length;
@@ -641,9 +769,8 @@ function openSettings() {
     resetDefaults.addEventListener('click', () => confirmResetDefaults(() => renderMenu()));
     sheet.appendChild(resetDefaults);
     const ok = el('button', 'primary', 'Done');
-    ok.addEventListener('click', () => { save(); close(); });
+    ok.addEventListener('click', close);
     sheet.appendChild(ok);
-    closePanels();
     refresh();
   }, () => renderMenu()); // the Pass & Play list shows your profile: redraw the menu when Settings closes
 }

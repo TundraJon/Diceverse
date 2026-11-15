@@ -64,7 +64,8 @@ export function setup(options, rng) {
   const pile = [];
   NOTE_COUNTS.forEach(([v, c]) => { for (let k = 0; k < c; k++) pile.push(v); });
   for (let i = pile.length - 1; i > 0; i--) { const j = rng.die(i + 1) - 1; [pile[i], pile[j]] = [pile[j], pile[i]]; } // a fair shuffle by the rng
-  const start = n === 1 ? 0 : rng.die(n) - 1;
+  const drawn = n === 1 ? 0 : rng.die(n) - 1;
+  const start = Number.isInteger(opts.first) && opts.first >= 0 && opts.first < n ? opts.first : drawn; // the players may have chosen who starts (Pass & Play: the first seat)
   const s = {
     options: { ...opts, seats: seats.map(({ name, isBot, preset }) => ({ name, isBot, preset })) },
     seats,
