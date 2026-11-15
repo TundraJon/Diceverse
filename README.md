@@ -19,8 +19,8 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
-### Planner 22 — Games still to design (what is left of the old candidate list)
-Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
+### Planner 22 — No more new games; maybe new skins (the user, 2026-11-15)
+The game list is final at twelve (Pig, Farkle, Yacht, Shut the Box, Cliffhanger, Space Salvage, Pirate Plunder, Deep Dive, Liar's Dice, Treasure Trails, Ship Captain & Crew, High Roller); the old "games still to design" candidate list is dropped. Possible next work: a new skin on an existing game. Only Ship Captain & Crew has skins so far (house rule `skin`: freighter, galleon, starship; Builds 71 to 74). Open: which game, and what look.
 
 ### Planner 10 — Dice that roam around the tray (a later extra to Queue 22, idea)
 From the Shut the Box design: dice that bounce around inside the felt tray (not just in their own slot), for the games that have a tray (Shut the Box, Cliffhanger). Queue 22 builds the 3D throw in place (Tier 1) and leaves roaming out to keep the code small; add it only if wanted: more code per game (paths that stay inside the tray and never overlap), cosmetic only.
