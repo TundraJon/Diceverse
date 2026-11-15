@@ -22,7 +22,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 The user (2026-11-15) wants hair and beard variety. Mock-up approved; answers: Elder removed, Child unchanged, both beards kept, one bald face per list.
 
 - [ ] Age row becomes Child / Adult (Elder removed; an old Elder avatar maps to the Adult face 👴/👵 equivalent).
-- [ ] Adult gallery (a grid of tappable faces, selected one outlined in gold, skin tone applies to all): Male 14: 🧑 👨 👱‍♂️ 👱 🧔 🧔‍♂️ 🧔‍♀️ 👨‍🦰 🧑‍🦰 👨‍🦱 🧑‍🦱 👨‍🦳 👨‍🦲 👴. Female 16: 👩 🧑 👱‍♀️ 👱 🧑‍🦰 👩‍🦰 👨‍🦰 👩‍🦱 🧑‍🦱 👩‍🦳 🧑‍🦳 👨‍🦳 👨‍🦲 🧑‍🦲 👵 🧓. *(Bald trimmed to one per list in Male and two in Female by Claude: confirm in the build.)*
+- [ ] Galleries (a grid of tappable faces, selected one outlined in gold, skin tone applies to all), one bald face per list as the user chose. Adult Male 14: 🧑 👨 👱‍♂️ 👱 🧔 🧔‍♂️ 🧔‍♀️ 👨‍🦰 🧑‍🦰 👨‍🦱 🧑‍🦱 👨‍🦳 👨‍🦲 👴. Adult Female 15: 👩 🧑 👱‍♀️ 👱 🧑‍🦰 👩‍🦰 👨‍🦰 👩‍🦱 🧑‍🦱 👩‍🦳 🧑‍🦳 👨‍🦳 👩‍🦲 👵 🧓. Child 3: 👦 👧 🧑‍🦲 (the bald one is the user's pick: no child emoji exists, so it looks adult).
 - [ ] Layout: 8 across, 2 rows (the user's wish); tap target size open (A 8 across, B 8 across at 390 px and wider and 4 across below, C 6 across). Marked as an open decision.
 - [ ] Shared by Settings and the Pass & Play editor (`buildAvatarPicker`), `personFace` and `cleanAvatar` (old saves dropped or mapped, no migration).
 
