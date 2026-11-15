@@ -23,7 +23,7 @@ The user (2026-11-15) wants hair and beard variety. Mock-up approved; answers: E
 
 - [ ] Age row becomes Child / Adult (Elder removed; an old Elder avatar maps to the Adult face 👴/👵 equivalent).
 - [ ] Galleries (a grid of tappable faces, selected one outlined in gold, skin tone applies to all), one bald face per list as the user chose. Adult Male 14: 🧑 👨 👱‍♂️ 👱 🧔 🧔‍♂️ 🧔‍♀️ 👨‍🦰 🧑‍🦰 👨‍🦱 🧑‍🦱 👨‍🦳 👨‍🦲 👴. Adult Female 15: 👩 🧑 👱‍♀️ 👱 🧑‍🦰 👩‍🦰 👨‍🦰 👩‍🦱 🧑‍🦱 👩‍🦳 🧑‍🦳 👨‍🦳 👩‍🦲 👵 🧓. Child 3: 👦 👧 🧑‍🦲 (the bald one is the user's pick: no child emoji exists, so it looks adult).
-- [ ] Layout: 8 across, 2 rows (the user's wish); tap target size open (A 8 across, B 8 across at 390 px and wider and 4 across below, C 6 across). Marked as an open decision.
+- [ ] Layout (the user's choice): two rows, `ceil(count/2)` columns (Female 8+7, Male 7+7, Child one row of 3), the same cell size in every list sized to the Female width, faces shrink with the screen (about 38 px cells at 390 px, 30 px at 320 px) and scale with the Text size setting only as far as the cells allow. Tap targets are under 44 px: needs a real-device check.
 - [ ] Shared by Settings and the Pass & Play editor (`buildAvatarPicker`), `personFace` and `cleanAvatar` (old saves dropped or mapped, no migration).
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
