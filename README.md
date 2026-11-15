@@ -17,16 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 54: Pig skin "Penguin slide" (Not yet authorized to build)
-
-The user (2026-11-15) chose a Penguin slide skin for Pig (mock-ups approved in the conversation; the user supplied the penguin SVG).
-
-- [ ] House rule `skin` for Pig (`meta.houseRules`, options Pig / Penguin slide, default Pig), chosen on the House rules screen with the looks shown side by side like Ship's; the rules and scoring are unchanged. *(Added by Claude: the name "Penguin slide" and that Pig stays the default.)*
-- [ ] Racer: the user's penguin SVG (belly-sliding, faces right; kept in `docs/art/` and embedded inline with prefixed class names like the Ship art), drawn about 70 px wide on a 380 px track and turned with the lane at the bends. The belly gets a white backing. The player color is a **small scarf** at the neck (the user's choice; the neck patch stays white). A rolled 1 turns the penguin belly-up at its place.
-- [ ] Movement: the penguin just **slides** along the path (no trail; the user's choice) instead of the pig's walk.
-- [ ] Track: ice path (same shape, lanes and distances as now, markers 25, 50, 75), the user's igloo at START (replaces the pen and gate) and the user's fish bucket at the target (replaces the barn). The user supplied both SVGs (2026-11-15): the igloo is pale blue (three tones plus a dark blue door), the fish bucket is one black silhouette, so it is split into its pieces (the two fish and the eye dot; the rim bar and the bucket body) and each part is colored directly: fish mid gray #8b939b (the user's choice: the first light gray, #d0d5da, looked almost white on their screen), bucket ice blue *(Added by Claude. Change before authorizing if wanted.)* to show on the dark track panel, with the target number laid over it as HTML text.
-- [ ] Wording: a bust reads "Thin ice!" instead of "BUST!" and the track's aria-label says "Track to the fish bucket"; the rules sheet text mentions the penguins. *(Added by Claude. Change before authorizing if wanted: the user has not chosen the wording yet.)*
-- [ ] Verification plan: the skin chosen on the House rules screen, a full Pig game in each skin, the bust and reset banners, the walk/slide on a resize (reuse the `ui.resizePending` check), 390x844, 320x640 and 412x915 at three text sizes, no result tell while the die rolls, zero JS errors.
+_Empty — nothing queued right now._
 
 ### Planner 22 — No more new games; maybe new skins (the user, 2026-11-15)
 The game list is final at twelve (Pig, Farkle, Yacht, Shut the Box, Cliffhanger, Space Salvage, Pirate Plunder, Deep Dive, Liar's Dice, Treasure Trails, Ship Captain & Crew, High Roller); the old "games still to design" candidate list is dropped. Possible next work: a new skin on an existing game. Only Ship Captain & Crew has skins so far (house rule `skin`: freighter, galleon, starship; Builds 71 to 74). Open: which game, and what look.
@@ -1024,4 +1015,18 @@ Menu summary line for the last four games: always the current value of every set
 - [x] Bug found and fixed in verification: Ship in Solo showed "first to 5" (Solo has no target); left out in Solo.
 
 Verification (scratch scripts, none committed): Playwright at 390x844: defaults of all four games, changed settings of Ship, High Roller, Liar's Dice and Treasure Trails, and Ship and High Roller in Solo; 10 checks, 0 failures, 0 JS errors. Not checked: the longest Ship line wrapping at 320 px (it is an ordinary wrapping paragraph).
+
+## Build Log 84 (completed)
+
+Pig skin "Penguin slide" (was Queue 54; the user's penguin, igloo and fish-bucket SVGs, now in `docs/art/`).
+
+- [x] `src/games/pig.js`: house rule `skin` ("Look": Racing pigs, default, or Penguin slide, with the hint "Only the picture changes, the rules are the same"). Rules, scoring and the bot are untouched; an old save or option set without `skin` is a pig.
+- [x] `src/ui/penguin-art.js` (new): the three SVGs as path data (`PENGUIN` with `outer` for the clip, `IGLOO` layers, `BUCKET` split into `fish` and `pail`). Originals: `docs/art/penguin-slide.svg`, `igloo.svg`, `fish-bucket.svg`.
+- [x] `src/ui/views/pig-view.js`: `view.skin` (set in `sync`); `ensurePenguinDefs` (the penguin drawn once in a hidden svg, racers are `<use>`s; the player's color is a scarf, `--c`), `penguinEl`/`racerEl`/`setRacerColor`, `turnOf` (a penguin flips left or right instead of rotating, so it never goes upside down on a row that runs left). Reused: the whole walking, ghost, fan-out, resize and `ui.resizePending` code; the walk is already a plain glide, so the penguin "just slides" with no trail. `drawTrail` draws an ice path (same lanes and distances), the igloo at the gate and the fish bucket at the target (fish #8b939b, pail ice blue, the target number on a tag under it). Racer width up to 72 px (2.2 x a space), fanned out wider when sharing a space.
+- [x] A bust in the penguin look: the banner reads "THIN ICE! −N" (double ones keep "DOUBLE ONES! TOTAL RESET"), the ghost penguin flips onto its back on a cracking hole (`.pgcrack`) and fades; the track's aria-label says "fish bucket"; the rules sheet gets a Penguin slide line; the menu summary adds "penguin slide".
+- [x] `src/ui/theme.css`: `.pgw.pguin`, `.pgtrack.penguin .pgpen` (START label at the right end of a wider pen, clear of the igloo), `.pgcrack`.
+- [x] Bug found and fixed in verification: three penguins in the pen looked like one black smudge; they are fanned out more (10 px across, 8 px down).
+- [x] `CLAUDE.md` project map: the penguin art file.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844, 320x640 (Larger text) and 412x915: menu summary, the Look rule on the House rules screen, penguin class, 3 racers, igloo and bucket drawn, racer sizes (40 to 72 px), START clear of the igloo, racers inside the track, no sideways scroll; 35 checks, 0 failures. Real speed (Pass & Play): the "THIN ICE! −N" banner, the crack and the flip shown, the pig skin still says "BUST!", the ghost slides in both looks, a default Pig game has no penguin parts; 0 JS errors. Screenshots of both looks checked. Not verified: how the scarf reads at the smallest size on a real phone, and the slide feel (**needs a real-device check**); the 320x640 Larger text track is cramped (the racers are small).
 

@@ -3,6 +3,7 @@ import { renderDie, REVEAL_MS, SETTLE_MS } from '../dice.js';
 import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { PIG } from '../pig-art.js';
+import { PENGUIN, IGLOO, BUCKET } from '../penguin-art.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -37,6 +38,38 @@ function pigEl(color, cls) {
   return w;
 }
 
+// The Penguin slide look: the penguin is drawn once in a hidden <svg> and every racer is a <use> of it, with the player's color (the scarf) in --c.
+const FISH = '#8b939b'; // the fish in the bucket: mid gray; the pail is ice blue
+function ensurePenguinDefs() {
+  if (document.getElementById('pg-penguin-defs')) return;
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.id = 'pg-penguin-defs';
+  s.setAttribute('width', '0');
+  s.setAttribute('height', '0');
+  s.setAttribute('aria-hidden', 'true');
+  s.style.position = 'absolute';
+  s.innerHTML = `<defs><clipPath id="pg-peng-clip"><path d="${PENGUIN.outer}"/></clipPath>`
+    + `<g id="pg-peng"><path d="${PENGUIN.body}" fill="#ffffff"/><path d="${PENGUIN.body}" fill="#050505" fill-rule="evenodd"/><path d="${PENGUIN.beak}" fill="#D99A79" fill-rule="evenodd"/>`
+    + `<g clip-path="url(#pg-peng-clip)"><path d="M1070 150 L1200 340" stroke="var(--c)" stroke-width="64"/><path d="M1070 150 L1200 340" stroke="#000" stroke-opacity=".18" stroke-width="8" transform="translate(-14 -8)"/></g></g></defs>`;
+  document.body.appendChild(s);
+}
+
+// A penguin racer: faces right; the scarf is the player's color.
+function penguinEl(color, cls) {
+  const w = el('span', `pgw pguin${cls ? ' ' + cls : ''}`);
+  w.style.setProperty('--c', color);
+  w.innerHTML = `<svg viewBox="${PENGUIN.vb}" width="100%" height="100%" aria-hidden="true"><use href="#pg-peng"/></svg>`;
+  return w;
+}
+const racerEl = (penguin, color, cls) => (penguin ? penguinEl(color, cls) : pigEl(color, cls));
+const setRacerColor = (node, color) => { if (node.classList.contains('pguin')) node.style.setProperty('--c', color); else node.querySelector('.pg-col').style.background = color; };
+// How a racer is turned for a heading in degrees: a pig turns round; a penguin stays on its belly and only faces left or right (it flips at a bend).
+const turnOf = (ui, deg) => {
+  if (!ui.penguin) return `rotate(${deg}deg)`;
+  const a = ((deg % 360) + 360) % 360;
+  return `scaleX(${a > 90 && a < 270 ? -1 : 1})`;
+};
+
 const spaceOf = (score, n) => Math.min(n, Math.floor(score / STEP)); // 0 = still in the pen
 
 // The trail: one dirt path through the space centers (a snake of rows with rounded bends), a stone at every space, signposts
@@ -69,13 +102,15 @@ function drawTrail(ui, target) {
     if (r < rows - 1) d += ` A${f(g.rx)} ${f(g.rh / 2)} 0 0 ${r % 2 === 0 ? 1 : 0} ${f(e.x)} ${f(e.y + g.rh)}`;
   }
   const { edge, fill } = g;
-  let h = `<path d="${d}" fill="none" stroke="#5b4023" stroke-width="${f(edge)}" stroke-linecap="round" stroke-linejoin="round"/>`
-    + `<path d="${d}" fill="none" stroke="#8a6a3f" stroke-width="${f(fill)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  g.cells.forEach((c, i) => { if (i < n - 1) h += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="2" fill="#4a3319"/>`; });
+  const pg = !!ui.penguin;
+  const C = pg ? { edge: '#5b9cc0', fill: '#d7eef9', dot: '#9fd0e6', post: '#e8f6ff', postLine: '#7fb6d4', num: '#18516e' } : { edge: '#5b4023', fill: '#8a6a3f', dot: '#4a3319', post: '#5b3a1a', postLine: '#d6b36a', num: '#fde68a' };
+  let h = `<path d="${d}" fill="none" stroke="${C.edge}" stroke-width="${f(edge)}" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<path d="${d}" fill="none" stroke="${C.fill}" stroke-width="${f(fill)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  g.cells.forEach((c, i) => { if (i < n - 1) h += `<circle cx="${f(c.x)}" cy="${f(c.y)}" r="2" fill="${C.dot}"/>`; });
   // a stone at the middle of every bend (not a space: no pig stops on it)
   for (let r = 0; r < rows - 1; r++) {
     const e = g.cells[Math.min(n, (r + 1) * PER_ROW) - 1];
-    h += `<circle cx="${f(e.x + (r % 2 === 0 ? 1 : -1) * g.rx)}" cy="${f(e.y + g.rh / 2)}" r="2" fill="#4a3319"/>`;
+    h += `<circle cx="${f(e.x + (r % 2 === 0 ? 1 : -1) * g.rx)}" cy="${f(e.y + g.rh / 2)}" r="2" fill="${C.dot}"/>`;
   }
   // signposts at every 25 points, in the gap under their row (pulled in from the bends)
   g.cells.forEach((c, i) => {
@@ -85,17 +120,20 @@ function drawTrail(ui, target) {
     const inward = rowEnd ? (Math.floor(i / PER_ROW) % 2 === 0 ? -1 : 1) * Math.min(g.rh, 40) * 0.8 : 0;
     const x = c.x + inward;
     const y = c.y + edge / 2 + 5;
-    h += `<rect x="${f(x - 10)}" y="${f(y - 6)}" width="20" height="12" rx="2.5" fill="#5b3a1a" stroke="#d6b36a" stroke-width="1"/>`
-      + `<text x="${f(x)}" y="${f(y + 3)}" font-size="12" font-weight="700" text-anchor="middle" fill="#fde68a">${space * STEP}</text>`;
+    h += `<rect x="${f(x - 10)}" y="${f(y - 6)}" width="20" height="12" rx="2.5" fill="${C.post}" stroke="${C.postLine}" stroke-width="1"/>`
+      + `<text x="${f(x)}" y="${f(y + 3)}" font-size="12" font-weight="700" text-anchor="middle" fill="${C.num}">${space * STEP}</text>`;
   });
-  // the gate of the pen: two posts, one leaf swung open
+  // the gate of the pen: two posts, one leaf swung open (an igloo in the Penguin slide look)
   const gx = g.gate.x;
   const gy = g.gate.y;
-  h += `<rect x="${f(gx - 15)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/><rect x="${f(gx + 11)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/>`
+  if (pg) h += `<svg x="${f(gx - 23)}" y="${f(gy - 40)}" width="46" height="46" viewBox="0 0 512 512">${IGLOO.map(([c, p]) => `<path fill="${c}" d="${p}"/>`).join('')}</svg>`;
+  else h += `<rect x="${f(gx - 15)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/><rect x="${f(gx + 11)}" y="${f(gy - 6)}" width="4" height="12" rx="1" fill="#d6b36a"/>`
     + `<path d="M${f(gx - 11)} ${f(gy - 2)} L${f(gx - 22)} ${f(gy + 7)}" stroke="#d6b36a" stroke-width="2.5" stroke-linecap="round"/>`;
   // the barn at the end: about 1.5 x its old size, the target on the left of the central door
   const b = g.cells[n - 1];
-  h += `<g transform="translate(${f(b.x - 26)} ${f(b.y - 19)})"><path d="M0 16 L26 1 L52 16 V38 H0 Z" fill="#b4472f" stroke="#fde68a" stroke-width="1.6" stroke-linejoin="round"/>`
+  if (pg) h += `<svg x="${f(b.x - 22)}" y="${f(b.y - 36)}" width="44" height="44" viewBox="0 0 512 512"><path fill="#8fd0ee" d="${BUCKET.pail}"/><path fill="${FISH}" d="${BUCKET.fish}"/></svg>`
+    + `<rect x="${f(b.x - 15)}" y="${f(b.y + edge / 2 - 3)}" width="30" height="14" rx="3" fill="#fff0c8" stroke="#f5c542" stroke-width="1"/><text x="${f(b.x)}" y="${f(b.y + edge / 2 + 8)}" font-size="12" font-weight="800" text-anchor="middle" fill="#7a4a00">${target}</text>`;
+  else h += `<g transform="translate(${f(b.x - 26)} ${f(b.y - 19)})"><path d="M0 16 L26 1 L52 16 V38 H0 Z" fill="#b4472f" stroke="#fde68a" stroke-width="1.6" stroke-linejoin="round"/>`
     + `<rect x="21.5" y="22" width="9" height="16" fill="#fde68a"/><text x="10.5" y="32" font-size="12" font-weight="800" text-anchor="middle" fill="#fde68a">${target}</text></g>`;
   ui.svg.setAttribute('viewBox', `0 0 ${f(g.tb.width)} ${f(g.tb.height)}`);
   ui.svg.setAttribute('width', f(g.tb.width));
@@ -136,8 +174,9 @@ function placePigs(ui, view, st, ctx) {
     const r = e.getBoundingClientRect();
     return { x: r.left + r.width / 2 - tb.left, y: r.top + r.height / 2 - tb.top, left: space > 0 && Math.floor((space - 1) / PER_ROW) % 2 === 1 };
   };
-  const pw = Math.min(46, Math.round(ui.cells[0].getBoundingClientRect().width * 1.4)); // the pigs shrink with the spaces on a narrow screen
-  const ph = pw * PIG.h / PIG.w;
+  const cw = ui.cells[0].getBoundingClientRect().width;
+  const pw = ui.penguin ? Math.min(72, Math.round(cw * 2.2)) : Math.min(46, Math.round(cw * 1.4)); // the racers shrink with the spaces on a narrow screen
+  const ph = ui.penguin ? pw * PENGUIN.h / PENGUIN.w : pw * PIG.h / PIG.w;
   [...ui.pigs, ui.ghost].forEach((node) => { node.style.width = `${pw}px`; });
   const canWalk = !!(ctx && !ctx.reduced && !document.body.classList.contains('fast') && ui.pigs[0].animate);
   const spots = view.seats.map((sp) => spaceOf(sp.total, n));
@@ -147,13 +186,13 @@ function placePigs(ui, view, st, ctx) {
   const finalXY = (sp, r, count) => {
     const p = at(sp);
     const k = r - (count - 1) / 2;
-    return { x: Math.max(2, Math.min(tb.width - pw - 2, p.x - pw / 2 + k * 4)), y: p.y - ph / 2 + k * 7, rot: p.left ? 180 : 0 };
+    return { x: Math.max(2, Math.min(tb.width - pw - 2, p.x - pw / 2 + k * (ui.penguin ? 10 : 4))), y: p.y - ph / 2 + k * (ui.penguin ? 8 : 7), rot: p.left ? 180 : 0 }; // racers sharing a space are fanned out (penguins are wider, so more)
   };
   const setNode = (node, xy) => {
     node.style.left = `${xy.x}px`;
     node.style.top = `${xy.y}px`;
     node._rot = ((xy.rot % 360) + 360) % 360;
-    node.style.transform = `rotate(${node._rot}deg)`;
+    node.style.transform = turnOf(ui, node._rot);
   };
   // walk `node` from space `a` to `b`, ending at `end`
   const walk = (node, a, b, end) => {
@@ -192,8 +231,8 @@ function placePigs(ui, view, st, ctx) {
       if (i >= pts.length) { finish(); return; }
       const p0 = pts[i - 1];
       const p1 = pts[i];
-      const an = node.animate([{ left: `${p0.x}px`, top: `${p0.y}px`, transform: `rotate(${rots[i - 1]}deg)` }, { left: `${p1.x}px`, top: `${p1.y}px`, transform: `rotate(${rots[i]}deg)` }], { duration: Math.max(30, total * lens[i - 1] / sum), easing: 'linear', fill: 'forwards' });
-      an.onfinish = () => { node.style.left = `${p1.x}px`; node.style.top = `${p1.y}px`; node.style.transform = `rotate(${rots[i]}deg)`; node._rot = ((rots[i] % 360) + 360) % 360; an.cancel(); i++; next(); };
+      const an = node.animate([{ left: `${p0.x}px`, top: `${p0.y}px`, transform: turnOf(ui, rots[i - 1]) }, { left: `${p1.x}px`, top: `${p1.y}px`, transform: turnOf(ui, rots[i]) }], { duration: Math.max(30, total * lens[i - 1] / sum), easing: 'linear', fill: 'forwards' });
+      an.onfinish = () => { node.style.left = `${p1.x}px`; node.style.top = `${p1.y}px`; node.style.transform = turnOf(ui, rots[i]); node._rot = ((rots[i] % 360) + 360) % 360; an.cancel(); i++; next(); };
     };
     setNode(node, { x: pts[0].x, y: pts[0].y, rot: heads[0] });
     next();
@@ -212,7 +251,7 @@ function placePigs(ui, view, st, ctx) {
   const ghostWasHidden = ui.ghost.hidden;
   ui.ghost.hidden = ghostSpace < 0;
   if (ghostSpace >= 0) {
-    ui.ghost.querySelector('.pg-col').style.background = colorOf(view, view.current);
+    setRacerColor(ui.ghost, colorOf(view, view.current));
     const g = groups[ghostSpace] || [];
     const end = finalXY(ghostSpace, g.length, g.length + 1);
     const from = ghostWasHidden ? spots[view.current] : ui.ghostAt;
@@ -228,7 +267,7 @@ function placePigs(ui, view, st, ctx) {
       if (ghostWasHidden) { void ui.ghost.offsetWidth; ui.ghost.classList.remove('pgnomove'); }
     }
   } else { ui.ghost._walk = null; ui.ghost.classList.remove('pgwalk'); ui.ghostAt = undefined; }
-  tr.setAttribute('aria-label', `Track to the barn at ${st.options.target}: ${view.seats.map((sp) => `${sp.name} ${sp.total}`).join(', ')}`);
+  tr.setAttribute('aria-label', `Track to the ${ui.penguin ? 'fish bucket' : 'barn'} at ${st.options.target}: ${view.seats.map((sp) => `${sp.name} ${sp.total}`).join(', ')}`);
 }
 
 const seatsView = (state) => state.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns }));
@@ -236,8 +275,9 @@ const seatsView = (state) => state.seats.map((s) => ({ name: s.name, isBot: s.is
 export const pigView = {
   title: 'PIG',
 
-  rulesSheet(sheet) {
+  rulesSheet(sheet, options) {
     sheet.appendChild(el('h2', null, 'How to play Pig'));
+    if (options && options.skin === 'penguin') sheet.appendChild(el('p', null, 'Penguin slide: the penguins race to the fish bucket. A 1 is thin ice: the ice cracks and the penguin loses the turn points.'));
     ['On your turn, roll the die as many times as you like.',
      'Each roll adds to your turn points, unless you roll a 1: you lose the turn points and your turn ends.',
      'Press BANK any time to add your turn points to your total and pass the die.',
@@ -249,7 +289,7 @@ export const pigView = {
   },
 
   summary(h, mode) {
-    return `Target ${h.target} · ${h.dice === 1 ? 'one die' : 'two dice'}${mode !== 'solo' && h.equalTurns ? ' · equal turns' : ''}`;
+    return `Target ${h.target} · ${h.dice === 1 ? 'one die' : 'two dice'}${mode !== 'solo' && h.equalTurns ? ' · equal turns' : ''}${h.skin === 'penguin' ? ' · penguin slide' : ''}`;
   },
 
   init(session) {
@@ -258,7 +298,7 @@ export const pigView = {
 
   sync(_view, session) {
     const st = session.state;
-    return { seats: seatsView(st), current: st.current, turnPoints: st.turn.points, dice: st.turn.dice.slice(), banner: '' };
+    return { seats: seatsView(st), current: st.current, turnPoints: st.turn.points, dice: st.turn.dice.slice(), banner: '', skin: st.options.skin === 'penguin' ? 'penguin' : 'pig' };
   },
 
   build(ui) {
@@ -282,9 +322,12 @@ export const pigView = {
   renderTrack(ui, view, st, ctx) {
     const target = st.options.target;
     const n = Math.round(target / STEP);
-    const key = `${target}:${view.seats.length}`;
+    const key = `${target}:${view.seats.length}:${view.skin}`;
     if (ui.trackKey !== key) {
       ui.trackKey = key;
+      ui.penguin = view.skin === 'penguin';
+      ui.track.classList.toggle('penguin', ui.penguin);
+      if (ui.penguin) ensurePenguinDefs();
       ui.track.classList.add('pgfresh');
       ui.cellCount = n;
       ui.track.innerHTML = '';
@@ -306,13 +349,13 @@ export const pigView = {
         ui.cells.push(c);
       }
       ui.track.append(ui.svg, ui.pen, grid);
-      ui.pigs = view.seats.map((_, i) => pigEl(colorOf(view, i), 'pgreal'));
-      ui.ghost = pigEl(colorOf(view, view.current), 'pgghost');
+      ui.pigs = view.seats.map((_, i) => racerEl(ui.penguin, colorOf(view, i), 'pgreal'));
+      ui.ghost = racerEl(ui.penguin, colorOf(view, view.current), 'pgghost');
       ui.ghost.hidden = true;
       ui.pigs.forEach((pg, i) => { pg.setAttribute('role', 'img'); pg.setAttribute('aria-label', view.seats[i].name); ui.track.appendChild(pg); });
       ui.track.appendChild(ui.ghost);
     }
-    ui.pigs.forEach((pg, i) => { pg.querySelector('.pg-col').style.background = colorOf(view, i); pg.setAttribute('aria-label', `${view.seats[i].name} at ${view.seats[i].total}`); });
+    ui.pigs.forEach((pg, i) => { setRacerColor(pg, colorOf(view, i)); pg.setAttribute('aria-label', `${view.seats[i].name} at ${view.seats[i].total}`); });
     ui.lastView = view;
     ui.lastState = st;
     if (view.ghostFall) { // a bust: the ghost pig tumbles into the mud and is gone
@@ -325,8 +368,19 @@ export const pigView = {
         g.classList.add('pgfall');
         ui.track.appendChild(g);
         const r0 = ui.ghost._rot || 0;
-        const a = g.animate([{ transform: `rotate(${r0}deg)`, opacity: 0.55 }, { transform: `rotate(${r0 + 540}deg) scale(0.6)`, opacity: 0 }], { duration: 700, easing: 'ease-in' });
-        a.onfinish = () => g.remove();
+        if (ui.penguin) { // thin ice: a hole opens, the ghost penguin flips onto its back there and is gone
+          const t = turnOf(ui, r0);
+          const hole = el('span', 'pgcrack');
+          hole.style.left = `${ui.ghost.offsetLeft + ui.ghost.offsetWidth / 2 - 16}px`;
+          hole.style.top = `${ui.ghost.offsetTop + ui.ghost.offsetHeight / 2 - 8}px`;
+          hole.innerHTML = '<svg viewBox="0 0 32 16" width="32" height="16" aria-hidden="true"><ellipse cx="16" cy="8" rx="15" ry="6.5" fill="#0b2a44"/><path d="M3 5l5 2-2 3 6 1M29 4l-4 3 4 2M16 2l-1 4 3 1" stroke="#fff" stroke-width="1" fill="none"/></svg>';
+          ui.track.insertBefore(hole, g);
+          hole.animate([{ opacity: 1 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 1100 }).onfinish = () => hole.remove();
+          g.animate([{ transform: t, opacity: 0.55 }, { transform: `${t} scaleY(-1)`, opacity: 0.95, offset: 0.3 }, { transform: `${t} scaleY(-1)`, opacity: 0.95, offset: 0.7 }, { transform: `${t} scaleY(-1) scale(0.6)`, opacity: 0 }], { duration: 1100 }).onfinish = () => g.remove();
+        } else {
+          const a = g.animate([{ transform: `rotate(${r0}deg)`, opacity: 0.55 }, { transform: `rotate(${r0 + 540}deg) scale(0.6)`, opacity: 0 }], { duration: 700, easing: 'ease-in' });
+          a.onfinish = () => g.remove();
+        }
       }
     }
     const fresh = ui.track.classList.contains('pgfresh');
@@ -382,7 +436,7 @@ export const pigView = {
       case 'BUSTED':
         if (view.turnPoints > 0) view.ghostFall = { points: view.turnPoints };
         view.turnPoints = 0;
-        view.banner = ev.reset ? 'DOUBLE ONES! TOTAL RESET' : ev.lost > 0 ? `BUST! −${ev.lost}` : 'BUST!';
+        view.banner = ev.reset ? 'DOUBLE ONES! TOTAL RESET' : `${view.skin === 'penguin' ? 'THIN ICE!' : 'BUST!'}${ev.lost > 0 ? ` −${ev.lost}` : ''}`;
         if (ev.reset) view.seats[ev.seat].total = 0;
         ctx.log(`${name(ev.seat)} busted${ev.reset ? ' and lost their total' : ''}`);
         ctx.announce(`${name(ev.seat)} busted`);

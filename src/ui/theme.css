@@ -721,3 +721,8 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .passcover .pcface { font-size: 6rem; line-height: 1; }
 .passcover .pcname { font-size: 2rem; font-weight: 800; max-width: 100%; overflow-wrap: anywhere; }
 .passcover .pcready { min-height: 56px; padding: 0 36px; font-size: 1.2rem; margin-top: 12px; }
+
+/* Pig, Penguin slide look: penguins on an ice path, an igloo at START (the label moves right of it) */
+.pgw.pguin { aspect-ratio: 1430 / 370; }
+.pgtrack.penguin .pgpen { background: transparent; color: #bfe3f3; min-width: 176px; justify-content: flex-end; padding-right: 10px; } /* the label sits at the right end, clear of the igloo and the penguins waiting in the middle */
+.pgcrack { position: absolute; width: 32px; height: 16px; pointer-events: none; z-index: 4; }

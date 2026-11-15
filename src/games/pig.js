@@ -18,6 +18,11 @@ export const meta = {
     { key: 'target', label: 'Target score', options: [{ value: 50, label: '50' }, { value: 100, label: '100' }, { value: 150, label: '150' }], default: 100 },
     { key: 'dice', label: 'Dice', options: [{ value: 1, label: 'One die' }, { value: 2, label: 'Two dice' }], default: 1 },
     { key: 'equalTurns', label: 'Equal turns', options: [{ value: false, label: 'Off' }, { value: true, label: 'On' }], default: false },
+    {
+      key: 'skin', label: 'Look',
+      options: [{ value: 'pig', label: 'Racing pigs' }, { value: 'penguin', label: 'Penguin slide' }], default: 'pig',
+      hint: () => 'How the track looks. Only the picture changes, the rules are the same.',
+    },
   ],
 };
 
