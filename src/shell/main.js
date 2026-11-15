@@ -10,7 +10,7 @@ import { ROLL_MS, startThrow, beginDice } from '../ui/dice.js';
 import { drawOpponents, AI_ROSTER } from '../ai/roster.js';
 import { MAX_ROSTER, MIN_PLAYERS, cleanRoster, cleanOrder, cleanRosterName, listPlayers, displayName, playingCount, takenColors, enforceMax, fixColorClashes, firstFreeColor, nextId, moveBefore, rotateToFirst, rollForFirst, seatsFor } from './roster.js';
 import { flatDieSvg } from '../ui/freighter-art.js';
-import { AGES, STYLES, TONE_COLORS, COLORS, DEFAULT_AVATAR, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
+import { AGES, STYLES, TONE_COLORS, looksFor, withTone, COLORS, DEFAULT_AVATAR, personFace, cleanAvatar, cleanColor, seatColors, cleanName, isMe, faceFor } from '../ui/avatars.js';
 
 const app = document.getElementById('app');
 const live = document.getElementById('live');
@@ -468,18 +468,29 @@ function openPlayersScreen() {
           grip.setPointerCapture(e.pointerId);
           listBox.querySelectorAll('.pled').forEach((x) => x.remove()); // close the editor while dragging
           row.classList.add('drag');
-          const rows = () => [...listBox.querySelectorAll('.plrow')];
+          // The rows are not moved in the page while dragging (that would drop the pointer capture): the dragged row follows the finger and the rows it passes
+          // slide one place; the order is set once, when the finger lifts.
+          const all = [...listBox.querySelectorAll('.plrow')];
+          const from = all.indexOf(row);
+          const step = all.length > 1 ? all[1].getBoundingClientRect().top - all[0].getBoundingClientRect().top : row.offsetHeight;
+          const startY = e.clientY;
+          let to = from;
           const move = (ev) => {
-            const others = rows().filter((r) => r !== row);
-            let before = null;
-            for (const r of others) { const b = r.getBoundingClientRect(); if (ev.clientY < b.top + b.height / 2) { before = r; break; } }
-            if (before !== row.nextElementSibling) listBox.insertBefore(row, before);
+            const dy = ev.clientY - startY;
+            row.style.transform = `translateY(${dy}px)`;
+            to = Math.max(0, Math.min(all.length - 1, Math.round(from + dy / step)));
+            all.forEach((r, k) => {
+              if (r === row) return;
+              r.style.transform = k > from && k <= to ? `translateY(${-step}px)` : k < from && k >= to ? `translateY(${step}px)` : '';
+            });
           };
           const up = () => {
             grip.removeEventListener('pointermove', move);
             grip.removeEventListener('pointerup', up);
             grip.removeEventListener('pointercancel', up);
-            settings.order = rows().map((r) => r.dataset.id);
+            const ids = all.map((r) => r.dataset.id);
+            ids.splice(to, 0, ids.splice(from, 1)[0]);
+            settings.order = ids;
             persistSettings();
             sel = null;
             render();
@@ -654,9 +665,9 @@ function confirmResetDefaults(after) {
   });
 }
 
-// The avatar picker (Settings and the Pass & Play player editor): a live preview, AGE and STYLE rows beside it and a row of six skin tones.
-// Until something is chosen the preview shows the plain 👤 and nothing is selected; the first tap fills the missing choices as Adult and Male
-// (and the first tone). Every tap calls setAvatar(new avatar) and refreshes. Returns { node, refresh }.
+// The avatar picker (Settings and the Pass & Play player editor): a live preview, AGE and STYLE rows beside it, a row of six skin tones and under them a
+// gallery of faces (two rows, the list depends on age and style). Until something is chosen the preview shows the plain 👤 and nothing is selected; the first
+// tap fills the missing choices as Adult and Male (and the first tone). Every tap calls setAvatar(new avatar) and refreshes. Returns { node, refresh }.
 function buildAvatarPicker(getAvatar, setAvatar) {
   const node = el('div', 'avwrap');
   const pick = el('div', 'avpick');
@@ -664,14 +675,44 @@ function buildAvatarPicker(getAvatar, setAvatar) {
   prev.setAttribute('aria-hidden', 'true');
   const ctl = el('div', 'avctl');
   const chosen = () => getAvatar().age !== 'none' && getAvatar().style !== 'none';
+  const gallery = el('div', 'avgal');
+  gallery.setAttribute('role', 'group');
+  gallery.setAttribute('aria-label', 'Face');
+  let galKey = '';
+  const drawGallery = () => {
+    const a = getAvatar();
+    const age = chosen() ? a.age : 'adult';
+    const style = chosen() ? a.style : 'male';
+    const key = age + (age === 'child' ? '' : style);
+    if (key !== galKey) { // the list only changes with age or style
+      galKey = key;
+      gallery.innerHTML = '';
+      looksFor(age, style).forEach((look, k) => {
+        const b = el('button', 'avface');
+        b.type = 'button';
+        b.dataset.look = look;
+        b.setAttribute('aria-label', `Face ${k + 1}`);
+        b.addEventListener('click', () => setPatch({ look }));
+        gallery.appendChild(b);
+      });
+    }
+    [...gallery.children].forEach((b) => {
+      b.textContent = withTone(b.dataset.look, a.tone);
+      b.setAttribute('aria-pressed', String(chosen() && a.look === b.dataset.look));
+    });
+  };
   const refresh = () => {
     prev.textContent = personFace(getAvatar());
     segs.forEach(([b, key, val]) => b.setAttribute('aria-pressed', String(chosen() && getAvatar()[key] === val)));
     toneBtns.forEach(([b, t]) => b.setAttribute('aria-pressed', String(chosen() && getAvatar().tone === t)));
+    drawGallery();
   };
   const setPatch = (patch) => {
     const a = getAvatar();
-    setAvatar(cleanAvatar({ age: chosen() ? a.age : 'adult', style: chosen() ? a.style : 'male', tone: a.tone, ...patch }));
+    // a new age or style keeps the face when the new list has it, otherwise cleanAvatar gives that list's first face
+    const next = { age: chosen() ? a.age : 'adult', style: chosen() ? a.style : 'male', tone: a.tone, look: chosen() ? a.look : '', ...patch };
+    if (patch.style && next.age === 'child' && !patch.look) next.look = ''; // a child's Style still picks the boy or the girl
+    setAvatar(cleanAvatar(next));
     refresh();
   };
   const segs = [];
@@ -709,7 +750,7 @@ function buildAvatarPicker(getAvatar, setAvatar) {
     toneBtns.push([b, t]);
     toneRow.appendChild(b);
   });
-  node.append(pick, toneRow);
+  node.append(pick, toneRow, gallery);
   refresh();
   return { node, refresh };
 }

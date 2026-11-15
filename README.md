@@ -17,14 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 53: Avatar face gallery for Adults (Not yet authorized to build)
-
-The user (2026-11-15) wants hair and beard variety. Mock-up approved; answers: Elder removed, Child unchanged, both beards kept, one bald face per list.
-
-- [ ] Age row becomes Child / Adult (Elder removed; an old Elder avatar maps to the Adult face 👴/👵 equivalent).
-- [ ] Galleries (a grid of tappable faces, selected one outlined in gold, skin tone applies to all), one bald face per list as the user chose. Adult Male 14: 🧑 👨 👱‍♂️ 👱 🧔 🧔‍♂️ 🧔‍♀️ 👨‍🦰 🧑‍🦰 👨‍🦱 🧑‍🦱 👨‍🦳 👨‍🦲 👴. Adult Female 15: 👩 🧑 👱‍♀️ 👱 🧑‍🦰 👩‍🦰 👨‍🦰 👩‍🦱 🧑‍🦱 👩‍🦳 🧑‍🦳 👨‍🦳 👩‍🦲 👵 🧓. Child 3: 👦 👧 🧑‍🦲 (the bald one is the user's pick: no child emoji exists, so it looks adult).
-- [ ] Layout (the user's choice): two rows, `ceil(count/2)` columns (Female 8+7, Male 7+7, Child one row of 3), the same cell size in every list sized to the Female width, faces shrink with the screen (about 38 px cells at 390 px, 30 px at 320 px) and scale with the Text size setting only as far as the cells allow. Tap targets are under 44 px: needs a real-device check.
-- [ ] Shared by Settings and the Pass & Play editor (`buildAvatarPicker`), `personFace` and `cleanAvatar` (old saves dropped or mapped, no migration).
+_Empty — nothing queued right now._
 
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
@@ -1000,4 +993,16 @@ Pass & Play: a full-screen "Pass the phone" cover at every change of player (the
 - [x] vs Bots and Solo: no cover. `goMenu` removes it.
 
 Verification (scratch script, not committed): Playwright at 390x844, `?speed=0` and real speed, Pig Pass & Play: cover at start names the first player and fills the screen; gone after "I'm ready"; reappears on the turn change naming Player 2 with Roll disabled; none vs Bots; 13 checks, 0 failures, 0 JS errors; screenshot checked. Not verified: High Roller and Liar's Dice in Pass & Play with the cover, other text sizes, and touch on a real phone (**needs a real-device check**). *(Added by Claude: the cover has no Menu button; the Menu is back after "I'm ready".)*
+
+## Build Log 82 (completed)
+
+Avatar face gallery (was Queue 53: the user's face lists, one bald face each, two rows).
+
+- [x] `src/ui/avatars.js`: avatar is now `{age: child|adult, style, look, tone}`. `looksFor(age, style)` gives the list: Child 3 (👦 👧 🧑‍🦲, the same for both styles), Adult Male 14, Adult Female 15 (the user's lists, one bald face each). `withTone` puts the skin tone after the first symbol (👨🏽‍🦲); `personFace` and `cleanAvatar` use `look` (a face not in its list becomes the style's first face; an old Elder becomes 👴/👵; Elder is gone from `AGES`).
+- [x] `src/shell/main.js` `buildAvatarPicker`: a gallery under the skin tones (`.avgal`, `.avface`, 8 columns, two rows, the same cell size in every list, selected face outlined in gold, nothing selected until the player chooses). Age/Style changes keep the face when the new list has it; for a child, Style still picks the boy or the girl. Shared by Settings and the Pass & Play editor.
+- [x] Bug found and fixed in verification (Build 80 code): dragging a player row moved it in the page, which drops the pointer capture, so a drag moved one place only. The rows now slide with transforms and the order is set once when the finger lifts.
+- [x] `src/ui/theme.css`: `.avgal`, `.avface`. Faces scale with the cell (about 41 px cells in Settings at 390 px, 28 px at 320 px), not with the Text size.
+- [x] `CLAUDE.md` project map: the avatar model.
+
+Verification (scratch scripts, none committed): Node avatar checks (counts 3/14/15, no duplicates, tone placement, bad face, old Elder, old man/woman), all pass. Playwright at 390x844, 320x640 and 412x915 at Normal and Larger text, 85 checks, 0 failures, 0 JS errors (list sizes per age and style, tone, bald faces, child boy/girl, persistence, no sideways scroll); the Players screen and cover checks re-run, 49 and 13 pass. Screenshots checked. Old saved avatars map as above (no migration). **Needs a real-device check:** how the 2020 faces (🧔‍♂️, 🧔‍♀️, 👱‍♂️) draw on older phones (they may show as two symbols), tapping the small cells (28 to 41 px) and touch dragging of a row.
 

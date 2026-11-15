@@ -671,6 +671,9 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .avtone { min-height: 44px; padding: 0; display: grid; place-items: center; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 12px; }
 .avtone i { display: block; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.35); }
 .avtone[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+.avgal { container-type: inline-size; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.avface { aspect-ratio: 1; padding: 0; display: grid; place-items: center; font-size: calc((100cqw - 28px) / 8 * 0.66); line-height: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 8px; } /* a face is a picture: it scales with the cell, not with the Text size */
+.avface[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
 
 /* Pass & Play: the stored players under the Mode buttons */
 .avwrap { display: flex; flex-direction: column; gap: 8px; }

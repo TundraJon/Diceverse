@@ -1,4 +1,5 @@
-// Player avatars: age (child, adult, elder) x style (male, female) x six skin tones = 36 faces, and the helpers that decide which face a seat shows.
+// Player avatars: an age (child or adult), a style (male or female) that decides which faces are listed, one face from that list (`look`) and one of six
+// skin tones. The helpers below decide which face a seat shows.
 import { AI_ROSTER } from '../ai/roster.js';
 
 export const TONES = ['', '\u{1F3FB}', '\u{1F3FC}', '\u{1F3FD}', '\u{1F3FE}', '\u{1F3FF}']; // default yellow, then light to dark
@@ -6,36 +7,58 @@ export const TONE_COLORS = ['#f7d56a', '#f6d3b9', '#e4b58f', '#c4885a', '#8f5a3a
 export const AGES = [
   { key: 'child', label: 'Child' },
   { key: 'adult', label: 'Adult' },
-  { key: 'elder', label: 'Elder' },
 ];
 export const STYLES = [
   { key: 'male', label: 'Male' },
   { key: 'female', label: 'Female' },
 ];
-const FACES = {
-  child: { male: '\u{1F466}', female: '\u{1F467}' }, // boy, girl
-  adult: { male: '\u{1F468}', female: '\u{1F469}' }, // man, woman
-  elder: { male: '\u{1F474}', female: '\u{1F475}' }, // older man, older woman
+// The faces to choose from (the user's lists, one bald face each). The first one of a list is its default. A child has the same three for either style.
+const CHILD = ['\u{1F466}', '\u{1F467}', '\u{1F9D1}\u200D\u{1F9B2}']; // boy, girl, bald person
+const ADULT = {
+  male: ['\u{1F468}', '\u{1F9D1}', '\u{1F471}\u200D\u2642\uFE0F', '\u{1F471}', '\u{1F9D4}', '\u{1F9D4}\u200D\u2642\uFE0F', '\u{1F9D4}\u200D\u2640\uFE0F',
+    '\u{1F468}\u200D\u{1F9B0}', '\u{1F9D1}\u200D\u{1F9B0}', '\u{1F468}\u200D\u{1F9B1}', '\u{1F9D1}\u200D\u{1F9B1}', '\u{1F468}\u200D\u{1F9B3}',
+    '\u{1F468}\u200D\u{1F9B2}', '\u{1F474}'],
+  female: ['\u{1F469}', '\u{1F9D1}', '\u{1F471}\u200D\u2640\uFE0F', '\u{1F471}', '\u{1F9D1}\u200D\u{1F9B0}', '\u{1F469}\u200D\u{1F9B0}', '\u{1F468}\u200D\u{1F9B0}',
+    '\u{1F469}\u200D\u{1F9B1}', '\u{1F9D1}\u200D\u{1F9B1}', '\u{1F469}\u200D\u{1F9B3}', '\u{1F9D1}\u200D\u{1F9B3}', '\u{1F468}\u200D\u{1F9B3}',
+    '\u{1F469}\u200D\u{1F9B2}', '\u{1F475}', '\u{1F9D3}'],
 };
+// The faces listed for an age and style (a child has the same list for both styles; 'none' counts as adult male).
+export function looksFor(age, style) {
+  if (age === 'child') return CHILD;
+  return ADULT[style === 'female' ? 'female' : 'male'];
+}
+// The face a style starts with: a boy or a girl for a child, a man or a woman for an adult.
+const defaultLook = (age, style) => (age === 'child' ? CHILD[style === 'female' ? 1 : 0] : looksFor(age, style)[0]);
 export const PLAIN_FACE = '\u{1F464}'; // the plain 👤: the player's starting face, and Pass & Play players 2 to 4
-export const DEFAULT_AVATAR = { age: 'none', style: 'none', tone: 0 }; // not chosen yet: shows the plain 👤
+export const DEFAULT_AVATAR = { age: 'none', style: 'none', look: '', tone: 0 }; // not chosen yet: shows the plain 👤
 
-export function personFace(avatar) {
-  const f = avatar && FACES[avatar.age] && FACES[avatar.age][avatar.style];
-  if (!f) return PLAIN_FACE;
-  const t = Number.isInteger(avatar.tone) && avatar.tone >= 0 && avatar.tone < TONES.length ? avatar.tone : 0;
-  return f + TONES[t];
+// A face with a skin tone: the tone mark goes straight after the first symbol (👨‍🦲 becomes 👨🏽‍🦲).
+export function withTone(look, tone) {
+  const t = Number.isInteger(tone) && tone >= 0 && tone < TONES.length ? tone : 0;
+  const cps = Array.from(look);
+  cps.splice(1, 0, TONES[t]);
+  return cps.join('');
 }
 
-// Keep a saved avatar choice valid. An older save (`kind` man or woman) is read as an adult of that style; the old neutral "person"
-// and anything unknown count as "not chosen" and show the plain 👤.
+export function personFace(avatar) {
+  const a = cleanAvatar(avatar);
+  if (a.age === 'none') return PLAIN_FACE;
+  return withTone(a.look, a.tone);
+}
+
+// Keep a saved avatar choice valid. A face that is not in its list becomes the style's default (so an old Elder, which had no face, becomes an adult's
+// first face; old saves are not kept working beyond that); the old neutral "person" and anything unknown count as "not chosen" and show the plain 👤.
 export function cleanAvatar(a) {
-  let age = a && FACES[a.age] ? a.age : 'none';
+  let age = a && ['child', 'adult', 'elder'].includes(a.age) ? a.age : 'none';
   let style = a && ['male', 'female'].includes(a.style) ? a.style : 'none';
   if (age === 'none' && a && (a.kind === 'man' || a.kind === 'woman')) { age = 'adult'; style = a.kind === 'man' ? 'male' : 'female'; }
-  if (age === 'none' || style === 'none') return { age: 'none', style: 'none', tone: 0 };
+  if (age === 'none' || style === 'none') return { age: 'none', style: 'none', look: '', tone: 0 };
+  const wasElder = age === 'elder'; // an old Elder becomes the older man or woman of the adult list
+  if (wasElder) age = 'adult';
   const tone = a && Number.isInteger(a.tone) && a.tone >= 0 && a.tone < TONES.length ? a.tone : 0;
-  return { age, style, tone };
+  const list = looksFor(age, style);
+  const look = a && list.includes(a.look) ? a.look : wasElder ? (style === 'male' ? '\u{1F474}' : '\u{1F475}') : defaultLook(age, style);
+  return { age, style, look, tone };
 }
 
 // Player colors: eight that read well on the dark board. The first one is the default.
