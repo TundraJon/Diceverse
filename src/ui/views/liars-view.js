@@ -94,12 +94,7 @@ export const liarsView = {
   },
 
   summary(h) {
-    const bits = [];
-    if (h.wild === false) bits.push('no wild ones');
-    if (h.lost === 'diff') bits.push('lose the difference');
-    if (h.dice === 3) bits.push('3 dice');
-    if (h.duel === false) bits.push('no final duel');
-    return bits.length ? bits.join(' · ') : 'Standard rules';
+    return [`${h.dice === 3 ? 3 : 5} dice`, h.wild === false ? 'no wild ones' : 'wild ones', h.lost === 'diff' ? 'lose the difference' : 'lose 1 die', h.duel === false ? 'no final duel' : 'final duel'].join(' \u00B7 ');
   },
 
   init(session) {

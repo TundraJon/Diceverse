@@ -50,10 +50,7 @@ export const trailsView = {
   },
 
   summary(h) {
-    const bits = [];
-    if (h.lockAt !== undefined && h.lockAt !== 5) bits.push(`chest needs ${h.lockAt}`);
-    if (h.penalties !== undefined && h.penalties !== 4) bits.push(`${h.penalties} penalties`);
-    return bits.length ? bits.join(' · ') : 'Standard rules';
+    return `chest needs ${h.lockAt || 5} \u00B7 ${h.penalties || 4} penalties`;
   },
 
   init(session) { return this.sync(null, session); },

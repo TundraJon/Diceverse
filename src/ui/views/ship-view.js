@@ -67,12 +67,14 @@ export const shipView = {
     ].forEach((t) => sheet.appendChild(el('p', null, t)));
   },
 
-  summary(h) {
-    const bits = [];
-    if (h.rolls !== undefined && h.rolls !== 3) bits.push(`${h.rolls} rolls`);
-    if (h.target !== undefined && h.target !== 5) bits.push(`first to ${h.target}`);
-    if (h.skin !== undefined && h.skin !== 'freighter') bits.push(h.skin);
-    return bits.length ? bits.join(' · ') : 'Standard rules';
+  summary(h, mode) {
+    const bits = [`${h.rolls || 3} rolls`];
+    if (h.target && mode !== 'solo') bits.push(`first to ${h.target}`); // Solo has no target
+    bits.push(h.reroll === 'either' ? 'pick cargo re-roll' : 'all cargo re-roll');
+    bits.push(h.order === 'any' ? "Crow's Nest order" : 'strict order');
+    bits.push(h.crew === 'mutiny' ? 'mutiny' : h.crew === 'skeleton' ? 'skeleton crew' : 'full crew');
+    bits.push(h.skin || 'freighter');
+    return bits.join(' \u00B7 ');
   },
 
   init(session) { return this.sync(null, session); },

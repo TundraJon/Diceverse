@@ -56,11 +56,9 @@ export const highRollerView = {
   },
 
   summary(h) {
-    const bits = [];
-    if (h.rounds !== undefined && h.rounds !== 4) bits.push(`${h.rounds} rounds`);
-    if (h.neutral === 'on') bits.push('neutral dice');
-    else if (h.neutral === 'off') bits.push('no neutral dice');
-    return bits.length ? bits.join(' · ') : 'Standard rules';
+    const bits = [`${h.rounds || 4} rounds`];
+    if (h.neutral === 'on' || h.neutral === 'off' || h.neutral === 'auto') bits.push(h.neutral === 'on' ? 'neutral dice on' : h.neutral === 'off' ? 'no neutral dice' : 'neutral dice auto'); // Solo hides this rule
+    return bits.join(' \u00B7 ');
   },
 
   init(session) { return this.sync(null, session); },

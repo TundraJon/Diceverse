@@ -1006,3 +1006,13 @@ Avatar face gallery (was Queue 53: the user's face lists, one bald face each, tw
 
 Verification (scratch scripts, none committed): Node avatar checks (counts 3/14/15, no duplicates, tone placement, bad face, old Elder, old man/woman), all pass. Playwright at 390x844, 320x640 and 412x915 at Normal and Larger text, 85 checks, 0 failures, 0 JS errors (list sizes per age and style, tone, bald faces, child boy/girl, persistence, no sideways scroll); the Players screen and cover checks re-run, 49 and 13 pass. Screenshots checked. Old saved avatars map as above (no migration). **Needs a real-device check:** how the 2020 faces (🧔‍♂️, 🧔‍♀️, 👱‍♂️) draw on older phones (they may show as two symbols), tapping the small cells (28 to 41 px) and touch dragging of a row.
 
+## Build Log 83 (completed)
+
+Menu summary line for the last four games: always the current value of every setting (it said just "Standard rules" before).
+
+- [x] `summary(h, mode)` in `src/ui/views/liars-view.js` (`5 dice · wild ones · lose 1 die · final duel`), `trails-view.js` (`chest needs 5 · 4 penalties`), `highroller-view.js` (`4 rounds · neutral dice auto`; the neutral part is left out in Solo, which hides that rule) and `ship-view.js` (`3 rolls · first to 5 · all cargo re-roll · strict order · full crew · freighter`; "pick cargo re-roll" for Either die, "Crow's Nest order", "mutiny", "skeleton crew"; "first to N" is left out in Solo). "Standard rules" is gone.
+- [x] Ship's old line ignored cargo re-roll, order and crew (changing them still read "Standard rules"); they are now shown.
+- [x] Bug found and fixed in verification: Ship in Solo showed "first to 5" (Solo has no target); left out in Solo.
+
+Verification (scratch scripts, none committed): Playwright at 390x844: defaults of all four games, changed settings of Ship, High Roller, Liar's Dice and Treasure Trails, and Ship and High Roller in Solo; 10 checks, 0 failures, 0 JS errors. Not checked: the longest Ship line wrapping at 320 px (it is an ordinary wrapping paragraph).
+
