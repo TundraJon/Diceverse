@@ -17,6 +17,15 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
+### Queue 53: Avatar face gallery for Adults (Not yet authorized to build)
+
+The user (2026-11-15) wants hair and beard variety. Mock-up approved; answers: Elder removed, Child unchanged, both beards kept, one bald face per list.
+
+- [ ] Age row becomes Child / Adult (Elder removed; an old Elder avatar maps to the Adult face 👴/👵 equivalent).
+- [ ] Adult gallery (a grid of tappable faces, selected one outlined in gold, skin tone applies to all): Male 14: 🧑 👨 👱‍♂️ 👱 🧔 🧔‍♂️ 🧔‍♀️ 👨‍🦰 🧑‍🦰 👨‍🦱 🧑‍🦱 👨‍🦳 👨‍🦲 👴. Female 16: 👩 🧑 👱‍♀️ 👱 🧑‍🦰 👩‍🦰 👨‍🦰 👩‍🦱 🧑‍🦱 👩‍🦳 🧑‍🦳 👨‍🦳 👨‍🦲 🧑‍🦲 👵 🧓. *(Bald trimmed to one per list in Male and two in Female by Claude: confirm in the build.)*
+- [ ] Layout: 8 across, 2 rows (the user's wish); tap target size open (A 8 across, B 8 across at 390 px and wider and 4 across below, C 6 across). Marked as an open decision.
+- [ ] Shared by Settings and the Pass & Play editor (`buildAvatarPicker`), `personFace` and `cleanAvatar` (old saves dropped or mapped, no migration).
+
 ### Planner 22 — Games still to design (what is left of the old candidate list)
 Built (11): Pig, Farkle, Yacht, Shut the Box, Cliffhanger (Can't Stop-style), Space Salvage (Zombie Dice-style), Pirate Plunder (Pickomino-style), Deep Dive (Deep Sea-style), Liar's Dice, Treasure Trails (Qwixx-style roll-and-write), Ship, Captain & Crew. Still on the list, none designed yet: a Las Vegas-style game (dice placed on casino tables to win banknotes), a Camel Up-style betting race (camels on a track, dice drawn from a pyramid), a Pass the Pigs-style asymmetric-dice game, a Clever-style drafting sheet, a Railroad Ink-style route puzzle, King of Tokyo-style and BANG!-style brawlers, Backgammon, Cee-Lo / Mexico, a dungeon-delve solo adventure, a civilization builder, and extras (Roll For It!-style, Ra-style, Cthulhu Dice-style, a picture-dice toy). Public-domain names only (no Qwixx, Can't Stop, LCR names or art).
 
