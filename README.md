@@ -980,3 +980,15 @@ Pass & Play players, the simpler design (was Queue 52; the user's picks 1B, 2A, 
 - [x] Removed Build 79's `renderRoster`, `rosterEditor` and their CSS. Old saves dropped/ignored (no migration; settings without ids/order get them).
 
 Verification (scratch scripts, none committed): `preflight` clean; Node: roster order/move/rotate/seats/ties and `first` in the three games (a tie check was a wrong expectation, fixed in the test); Playwright at 390x844, 320x640 and 412x915, 49 checks, 0 failures, 0 JS errors (full-screen height, add, edit name, grayed taken colours, keyboard and drag reorder, roll for first, minimum hint, delete confirm, no sideways scroll, no text under 12 px). Screenshot checked at 320x640. Not re-run: text sizes Larger and Settings avatar checks (the Settings block moved into the shared function). **Needs a real-device check:** touch dragging of the handle on a phone.
+
+## Build Log 81 (completed)
+
+Pass & Play: a full-screen "Pass the phone" cover at every change of player (the user's pick 3A).
+
+- [x] `src/shell/main.js`: `needsPassCover` (several seats, all human, the player to move differs from `coverSeat`, game not over), `showPassCover(seat)` / `removePassCover`, `coverSeat` (reset in `enterGame`, so a new or resumed game starts with the cover for the first player). Called from `afterEvents` after the turn's events and banners have finished; it sets `busy` before the screen redraws, so nothing underneath can be pressed (a bug found in verification: the Roll button was still enabled under the cover; fixed by showing the cover before `render(false)`).
+- [x] The cover: color bar in the player's color, "Pass the phone to", big face, name, "I'm ready" (focused, announced to screen readers). It shows nothing about the game, so it does not tell a result; it is opaque and hides the previous player's screen (High Roller money, Liar's Dice cups).
+- [x] `src/ui/theme.css`: `.passcover`, `.pcbar`, `.pclab`, `.pcface`, `.pcname`, `.pcready` (z-index 15, under sheets).
+- [x] vs Bots and Solo: no cover. `goMenu` removes it.
+
+Verification (scratch script, not committed): Playwright at 390x844, `?speed=0` and real speed, Pig Pass & Play: cover at start names the first player and fills the screen; gone after "I'm ready"; reappears on the turn change naming Player 2 with Roll disabled; none vs Bots; 13 checks, 0 failures, 0 JS errors; screenshot checked. Not verified: High Roller and Liar's Dice in Pass & Play with the cover, other text sizes, and touch on a real phone (**needs a real-device check**). *(Added by Claude: the cover has no Menu button; the Menu is back after "I'm ready".)*
+

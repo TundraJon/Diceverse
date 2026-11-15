@@ -141,6 +141,7 @@ function buildOptions() {
 function goMenu() {
   sched.cancelAll();
   busy = false;
+  removePassCover();
   session = null;
   renderMenu();
 }
@@ -854,6 +855,8 @@ function persistSession() {
 
 function enterGame() {
   moods.reset();
+  removePassCover();
+  coverSeat = -1; // a new or resumed game: the first player gets the "Pass the phone" cover too
   view = G.view.init(session);
   decorate();
   app.innerHTML = '';
@@ -958,12 +961,48 @@ function present(events, i, done) {
   sched.after(delay, () => { if (after) announce(after); present(events, i + 1, done); });
 }
 
+
+/* ---------- Pass the phone: in Pass & Play a full-screen cover at every change of player ---------- */
+let coverSeat = -1; // the seat whose turn the phone was last handed over for
+let passCover = null;
+function removePassCover() { if (passCover) { passCover.remove(); passCover = null; } }
+// Only in a game of several humans (Pass & Play), and only when the player to move changed since the last cover.
+function needsPassCover() {
+  const seats = session.options.seats || [];
+  return seats.length > 1 && seats.every((s) => !s.isBot) && session.state.current !== coverSeat && !session.isOver();
+}
+// The cover shows only who is next (never anything about the game or a result) and keeps the screen hidden until "I'm ready".
+function showPassCover(seatIdx) {
+  removePassCover();
+  busy = true; // nothing can be done under the cover
+  const seat = session.options.seats[seatIdx];
+  const cover = el('div', 'passcover');
+  cover.setAttribute('role', 'dialog');
+  cover.setAttribute('aria-modal', 'true');
+  cover.setAttribute('aria-label', `Pass the phone to ${seat.name}`);
+  cover.style.setProperty('--pc', seat.color || '#888');
+  cover.append(el('div', 'pcbar'), el('div', 'pclab', 'Pass the phone to'), el('div', 'pcface', seat.avatar || ''), el('div', 'pcname', seat.name));
+  const ready = el('button', 'primary pcready', "I'm ready");
+  ready.type = 'button';
+  ready.addEventListener('click', () => {
+    removePassCover();
+    coverSeat = seatIdx;
+    busy = false;
+    render(false);
+  });
+  cover.appendChild(ready);
+  document.body.appendChild(cover);
+  passCover = cover;
+  ready.focus();
+  announce(`Pass the phone to ${seat.name}`);
+}
+
 /* ---------- after events: bot turn or game over ---------- */
 function afterEvents() {
   if (session.isOver()) { showGameOver(); return; }
   const st = session.state;
   const cur = st.seats[st.current];
-  if (!cur.isBot) { render(false); return; }
+  if (!cur.isBot) { if (needsPassCover()) showPassCover(st.current); render(false); return; }
   busy = true;
   moods.startThinking(st.current);
   render(false);
