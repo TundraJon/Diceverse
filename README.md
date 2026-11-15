@@ -17,7 +17,16 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 55: Installable app (PWA) for Android and iOS (Not yet authorized to build; waiting for the user's icon)
+
+The user (2026-11-15) wants Diceverse installable on Android and iOS; option A (an installable web app, no store listing) is enough. Portrait only (the user will tell their mother the same; landscape work was dropped).
+
+- [ ] `manifest.webmanifest` at the root: name "Diceverse", short_name "Diceverse", `start_url` "./", `scope` "./", `display` "standalone", `orientation` "portrait", background and theme color the app's dark green *(Added by Claude. Change before authorizing if wanted.)*, icons 192, 512 and a maskable 512 (with safe-zone padding).
+- [ ] Icons from the user's artwork (they are making it): 192 and 512 PNG, a maskable 512 and an `apple-touch-icon` 180 (iOS ignores the manifest icon). Made by the build from one source image, kept in the repo (`docs/art/icon.*`).
+- [ ] `index.html` head (from the build's template): `<link rel="manifest">`, `<meta name="theme-color">`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title`, `apple-mobile-web-app-status-bar-style`, `<link rel="apple-touch-icon">`. No other external URL.
+- [ ] `sw.js` (service worker, a real file, the one exception to "ONE self-contained file"): precaches `index.html` and the icons, serves the cache first so the app works offline, and a build-stamped cache name so a new build replaces the old cache. Registered from the page, guarded (only on https or localhost, try/catch, the app works without it). An update shows on the next open.
+- [ ] `build.mjs` emits the extra files next to `index.html` (and stamps `sw.js`); CLAUDE.md "Files and cache-busting" and "ONE self-contained index.html" wording updated (and the user told); `T.preflight` still passes (it checks external URLs, a charset and that `index.html` is not older than `src/`; the manifest and icon links are relative, to check).
+- [ ] Verification plan: manifest valid and linked, icons load with the right sizes, the service worker installs and the app loads offline (Playwright, offline mode), Lighthouse-style installability checks where possible, zero JS errors, the app still works with the service worker blocked. **Cannot be verified here (needs a real-device check):** Android Chrome "Install app", iOS Safari Add to Home Screen, the standalone window, the maskable icon crop, the update flow.
 
 ### Planner 22 — No more new games; maybe new skins (the user, 2026-11-15)
 The game list is final at twelve (Pig, Farkle, Yacht, Shut the Box, Cliffhanger, Space Salvage, Pirate Plunder, Deep Dive, Liar's Dice, Treasure Trails, Ship Captain & Crew, High Roller); the old "games still to design" candidate list is dropped. Possible next work: a new skin on an existing game. Only Ship Captain & Crew has skins so far (house rule `skin`: freighter, galleon, starship; Builds 71 to 74). Open: which game, and what look.
