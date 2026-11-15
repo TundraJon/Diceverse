@@ -17,7 +17,16 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 54: Pig skin "Penguin slide" (Not yet authorized to build; waiting for the user's igloo and fish-bucket art)
+
+The user (2026-11-15) chose a Penguin slide skin for Pig (mock-ups approved in the conversation; the user supplied the penguin SVG).
+
+- [ ] House rule `skin` for Pig (`meta.houseRules`, options Pig / Penguin slide, default Pig), chosen on the House rules screen with the looks shown side by side like Ship's; the rules and scoring are unchanged. *(Added by Claude: the name "Penguin slide" and that Pig stays the default.)*
+- [ ] Racer: the user's penguin SVG (belly-sliding, faces right; kept in `docs/art/` and embedded inline with prefixed class names like the Ship art), drawn about 70 px wide on a 380 px track and turned with the lane at the bends. The belly gets a white backing. The player color is a **small scarf** at the neck (the user's choice; the neck patch stays white). A rolled 1 turns the penguin belly-up at its place.
+- [ ] Movement: the penguin just **slides** along the path (no trail; the user's choice) instead of the pig's walk.
+- [ ] Track: ice path (same shape, lanes and distances as now, markers 25, 50, 75), the user's igloo at START (replaces the pen and gate) and the user's fish bucket at the target (replaces the barn). Both pictures are to be supplied by the user.
+- [ ] Wording: a bust reads "Thin ice!" instead of "BUST!" and the track's aria-label says "Track to the fish bucket"; the rules sheet text mentions the penguins. *(Added by Claude. Change before authorizing if wanted: the user has not chosen the wording yet.)*
+- [ ] Verification plan: the skin chosen on the House rules screen, a full Pig game in each skin, the bust and reset banners, the walk/slide on a resize (reuse the `ui.resizePending` check), 390x844, 320x640 and 412x915 at three text sizes, no result tell while the die rolls, zero JS errors.
 
 ### Planner 22 — No more new games; maybe new skins (the user, 2026-11-15)
 The game list is final at twelve (Pig, Farkle, Yacht, Shut the Box, Cliffhanger, Space Salvage, Pirate Plunder, Deep Dive, Liar's Dice, Treasure Trails, Ship Captain & Crew, High Roller); the old "games still to design" candidate list is dropped. Possible next work: a new skin on an existing game. Only Ship Captain & Crew has skins so far (house rule `skin`: freighter, galleon, starship; Builds 71 to 74). Open: which game, and what look.
