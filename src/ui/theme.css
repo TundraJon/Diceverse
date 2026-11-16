@@ -107,7 +107,7 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .die.blank { opacity: 0.25; }
 .pip { align-self: center; justify-self: center; width: 60%; height: 60%; border-radius: 50%; background: var(--ink); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6); }
 .pip.danger { background: var(--danger); }
-.banner { position: absolute; top: 6px; padding: 8px 18px; border-radius: 999px; background: var(--danger); color: #fff; font-weight: 800; letter-spacing: 0.08em; }
+.banner { position: absolute; top: 6px; z-index: 6; padding: 8px 18px; border-radius: 999px; background: var(--danger); color: #fff; font-weight: 800; letter-spacing: 0.08em; }
 .turnline { color: var(--muted); text-align: center; min-height: 1.4em; }
 .turnline strong { color: var(--gold); }
 

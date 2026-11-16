@@ -17,13 +17,7 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 56: Banners painted behind the dice and tiles (Not yet authorized to build)
-
-Reported 2026-11-16 (Liar's Dice: the "loses a die" message is behind the bid board). Audit (all 12 games, 3 screen sizes x 3 text sizes, the banner forced visible at the start and after one action): the shared `.banner` (`position: absolute; top: 6px`, no z-index) is painted over by (1) the 3D dice in Yacht (96 to 100 % covered at every size; since the 3D dice build of Nov 9, before which it was 2 of 144 points) and Farkle (covered at 360 with Large and Larger text, and at 320 at every text size; a real "FARKLE!" at 320x640 Larger measured 187 of 189 points covered), and (2) the bid-board tiles and a score chip in Liar's Dice (about 22 to 24 % of the pill, the same on its first build, Build Log 54). Clear: Pig, Shut the Box, Cliffhanger, Space Salvage, Pirate Plunder, Deep Dive, Treasure Trails, Ship, High Roller (Shut the Box, Cliffhanger, Space Salvage and Pirate Plunder already set their own z-index).
-
-- [ ] `src/ui/theme.css`: `.banner` gets a z-index above the dice, the board tiles and the chips and below the covers (`.passcover` 15) and sheets (20), for example 6 *(Added by Claude. Change before authorizing if wanted.)*; the games' own higher values stay. The banner stays where it is, so for its 1 to 2 seconds it covers part of the dice, tiles or chips.
-- [ ] Alternative (not chosen): reserve a fixed slot for the banner in Farkle, Yacht and Liar's Dice so nothing is covered (changes those layouts; Yacht already scrolls).
-- [ ] Verification plan: the same audit script (every game, 390x844, 360x740, 320x640, Normal, Large and Larger) shows 0 percent covered for every banner; real banners driven: Liar's Dice challenge (loses a die, is out), Farkle bust and hot dice at 320x640 Larger, Yacht joker (forced); screenshots; zero JS errors. Not audited: the bot speech bubbles and other pop-ups.
+_Empty — nothing queued right now._
 
 ## Build Log 1 (completed)
 
@@ -1016,4 +1010,13 @@ Liar's Dice, Pass & Play: one hand-over screen instead of two, and it shows at e
 - [x] The cover is now the only hand-over screen in Liar's Dice: one tap per hand-over.
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright, Liar's Dice Pass & Play with 2 players through two challenges: the cover shows at the start, between players and after each challenge (including the same player starting again), one cover only (no `.ldcover`); 15 checks at 390x844 and 320x640 Larger text (cup hidden under the cover, shown after "I'm ready", hold-to-peek works, the button and note on screen, note at least 12 px, no sideways scroll); the Pig cover checks re-run (13 pass); 0 JS errors. Not checked: High Roller's cover again (its code is untouched) and the feel on a real phone.
+
+## Build Log 87 (completed)
+
+Banners in front of the dice, tiles and chips (was Queue 56; reported for Liar's Dice, then an audit of all twelve games found Yacht and Farkle worse).
+
+- [x] `src/ui/theme.css`: `.banner` got `z-index: 6` (above the 3D dice, the bid-board tiles and the score chips; below `.passcover` 15 and the sheets 20). The games' own higher rules (`.tray .banner`, `.climbboard .banner`, `.salvstage .banner`, `.pkstage .banner`) are unchanged. The banner stays where it was, so for its 1 to 2 seconds it covers part of the dice, tiles or chips.
+- [x] Causes found by the audit (logged in the old Queue 56): the 3D cube dice (Nov 9) paint above a positioned element with no z-index, so Yacht's banner (JOKER! +100) was 96 to 100 % covered at every size and text size, and Farkle's at 360 (Large, Larger) and 320 (every text size); Liar's Dice's pill was about 22 to 24 % covered by the bid tiles and a chip from its first build (Build Log 54), so it was not new with the Pass & Play cover.
+
+Verification (scratch scripts, none committed): `preflight` clean. Liar's Dice, real challenges driven at 390x844 and 320x640: the "loses a die" pill is the top element (4 of 280 and 2 of 224 sample points are the rounded corners, down from 55 of 224). The audit rerun for all 12 games at 390x844 Normal and 320x640 Larger (banner forced visible at the start and after one action): every banner 1 to 2 % (the corners), Yacht and Farkle included (were 96 to 100 %); screenshot of Farkle at 320x640 Larger checked; 0 JS errors. Not verified: a real in-game Farkle bust (only forced) and the bot speech bubbles and other pop-ups (not audited). Known and unchanged: Farkle's dice row is wider than the screen at 320 px (logged earlier).
 
