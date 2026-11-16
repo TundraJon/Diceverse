@@ -4,11 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DiceVerse</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d1933">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Diceverse">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>/*__CSS__*/</style>
 </head>
 <body>
 <div id="app"></div>
 <div id="live" class="sr-only" aria-live="polite"></div>
 <script>/*__JS__*/</script>
+<script>
+// installable and offline: the service worker (sw.js) only on https or localhost, and the app works without it
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function () { try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {} });
+}
+</script>
 </body>
 </html>
