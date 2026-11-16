@@ -26,13 +26,15 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
   let talkTurn = {};
   let nervous = {};
   let slot = 0;
+  let greeted = {}; // the bots that have said their greeting (once per game)
+  let handoff = null; // the bot whose turn just ended and that may say a hand-off line to the human who is next
   let turnId = 0; // counts turns as they start; a line remembers the turn it was said in
   let endedTurn = 0; // the last turn that has ended
 
   const botSeat = (i) => { const s = seatsOf()[i]; return s && s.isBot && botIdOf(s) ? s : null; };
 
   function reset() {
-    mood = []; token = []; talk = null; waiting = null; thinking = null; thinkingSeat = null; decks = {}; spoke = {}; nervous = {}; wait = {}; talkTurn = {}; slot++; turnId = 0; endedTurn = 0;
+    mood = []; token = []; talk = null; waiting = null; thinking = null; thinkingSeat = null; decks = {}; spoke = {}; nervous = {}; wait = {}; talkTurn = {}; slot++; turnId = 0; endedTurn = 0; greeted = {}; handoff = null;
   }
 
   function setMood(i, m) {
@@ -56,19 +58,19 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
       talk = null;
       const w = waiting;
       waiting = null;
-      if (w && Date.now() - w.at <= STALE_MS && (w.final || w.tid > endedTurn)) startTalk(w); else redraw(); // a line whose turn has ended while it waited is dropped, not said late
+      if (w && Date.now() - w.at <= (w.ttl || STALE_MS) && (w.final || w.tid > endedTurn)) startTalk(w); else redraw(); // a line whose turn has ended while it waited is dropped, not said late
     });
   }
 
   // One speech slot: only one bot talks at a time. A second line waits (only the newest waiting line is kept); a
   // game-over line (`final`) always gets its turn.
-  function say(i, m, final = false) {
+  function say(i, m, final = false, ttl = 0) {
     const s = botSeat(i);
     if (!s) return;
     const id = botIdOf(s);
     const line = dealLine(decks, id, m, rand);
     if (!line) return;
-    const entry = { seat: i, name: s.name, line, at: Date.now(), final, tid: turnId };
+    const entry = { seat: i, name: s.name, line, at: Date.now(), final, tid: turnId, ttl };
     if (!talk || (talk.seat === i && !talk.final)) startTalk(entry); // a bot's reaction replaces its own opener that is still showing
     else if (final || !waiting || !waiting.final) waiting = entry;
   }
@@ -107,14 +109,28 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
           if (!talkTurn[i]) wait[i] -= 1;
         }
         turnId += 1;
+        if (handoff !== null) { // the dice just passed to a human: the bot that passed them says its hand-off line now, or not at all
+          const h = handoff;
+          handoff = null;
+          if (!botSeat(i)) say(h, 'HANDOFF', false, 1500);
+        }
         setMood(i, 'DEFAULT');
         startThinking(i); // a bot is thinking from the moment its turn starts (no "is thinking…" flash before its first action)
-        if (botSeat(i) && talkTurn[i]) { wait[i] = 1 + (rand() % 2); say(i, 'DEFAULT'); } // a talk turn opens with a normal line, said at the start (they are "about to roll" lines); a reaction later in the turn can still speak
+        if (botSeat(i)) {
+          const id = botIdOf(botSeat(i));
+          if (!greeted[i] && AI_ROSTER[id].moods.GREETING) { // a bot with a greeting says it once, on its first turn (that is its talk turn)
+            greeted[i] = true;
+            talkTurn[i] = true;
+            wait[i] = 1 + (rand() % 2);
+            say(i, 'GREETING');
+          } else if (talkTurn[i]) { wait[i] = 1 + (rand() % 2); say(i, 'DEFAULT'); } // a talk turn opens with a normal line at the start (they are "about to roll" lines); a reaction later in the turn can still speak
+        }
         break;
       case 'TURN_ENDED':
         // the thinking line stays through the short gap until the next turn starts (no "is thinking…" flash between turns)
         if (mood[i] === 'THINKING' || mood[i] === 'NERVOUS') setMood(i, 'DEFAULT');
         endedTurn = turnId;
+        handoff = botSeat(i) && talkTurn[i] && AI_ROSTER[botIdOf(botSeat(i))].moods.HANDOFF ? i : null; // said when the next turn starts, if that is a human's
         if (waiting && !waiting.final) waiting = null; // a line still waiting for the speech slot when its turn ends is not said after the dice have been passed
         break;
       case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE': case 'DICE_LOST': case 'PENALTY':

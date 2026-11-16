@@ -1,4 +1,5 @@
-// The AI roster: seven opponents, each with a normal face, a thinking line and six moods (an emoji and spoken lines).
+// The AI roster: seven opponents, each with a normal face, a thinking line and six moods (an emoji and spoken lines). Besides the moods a bot may have
+// three more line groups (no emoji): DEFAULT = openers (said at the start of its turn), HANDOFF (said as the dice pass to a human) and GREETING (said once, on its first turn).
 // Pure data plus one pure helper; nothing here touches the rules, the bot's decisions or the game RNG.
 // Only Pip, Chance, Nat and Snake change face with their mood; Dottie, Alea and Deuce keep one face (their moods omit
 // `emoji`) and only their lines change.
@@ -16,7 +17,13 @@ export const AI_ROSTER = {
       ] },
       DEFAULT: { emoji: "🙂", text: [
         "Let's roll!",
+        "Here goes nothing!",
+        "Fingers crossed!",
+      ] },
+      HANDOFF: { text: [
         "Your turn!",
+        "All yours!",
+        "Your go, friend!",
       ] },
       WINNING: { emoji: "😎", text: [
         "Just as planned!",
@@ -63,7 +70,7 @@ export const AI_ROSTER = {
       ] },
       RELIEVED: { text: [
         "Crisis averted.",
-        "Thermocouple engaged.",
+        "Cooling fans engaged.",
       ] },
     },
   },
@@ -258,8 +265,14 @@ export const AI_ROSTER = {
         "Snake is pondering...",
       ] },
       DEFAULT: { emoji: "👁️", text: [
-        "Your move.",
         "I see everything.",
+        "Observing.",
+        "Noted. Proceeding.",
+      ] },
+      HANDOFF: { text: [
+        "Your move.",
+        "Make it count.",
+        "The board is yours.",
       ] },
       WINNING: { emoji: "👁️‍🗨️", text: [
         "Calculated.",
@@ -275,6 +288,8 @@ export const AI_ROSTER = {
       ] },
       RELIEVED: { emoji: "💓", text: [
         "Within expected margins.",
+        "Contingency held.",
+        "Risk absorbed.",
       ] },
     },
   },
@@ -287,9 +302,18 @@ export const AI_ROSTER = {
       THINKING: { text: [
         "Deuce is scanning...",
       ] },
-      DEFAULT: { text: [
+      GREETING: { text: [
         "Greetings, human.",
+      ] },
+      DEFAULT: { text: [
+        "Initiating roll sequence.",
+        "Engaging roll thrusters!",
+        "Preparing to roll, earthling.",
+      ] },
+      HANDOFF: { text: [
         "Take your turn, earthling.",
+        "The dice are yours, human.",
+        "Your orbit now.",
       ] },
       WINNING: { text: [
         "Out of this world!",
