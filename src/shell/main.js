@@ -1010,7 +1010,8 @@ function removePassCover() { if (passCover) { passCover.remove(); passCover = nu
 // Only in a game of several humans (Pass & Play), and only when the player to move changed since the last cover.
 function needsPassCover() {
   const seats = session.options.seats || [];
-  return seats.length > 1 && seats.every((s) => !s.isBot) && session.state.current !== coverSeat && !session.isOver();
+  // a game can also ask for the cover with `view.cover` (Liar's Dice: every new round, even when the same player starts again)
+  return seats.length > 1 && seats.every((s) => !s.isBot) && (session.state.current !== coverSeat || !!(view && view.cover)) && !session.isOver();
 }
 // The cover shows only who is next (never anything about the game or a result) and keeps the screen hidden until "I'm ready".
 function showPassCover(seatIdx) {
@@ -1022,12 +1023,13 @@ function showPassCover(seatIdx) {
   cover.setAttribute('aria-modal', 'true');
   cover.setAttribute('aria-label', `Pass the phone to ${seat.name}`);
   cover.style.setProperty('--pc', seat.color || '#888');
-  cover.append(el('div', 'pcbar'), el('div', 'pclab', 'Pass the phone to'), el('div', 'pcface', seat.avatar || ''), el('div', 'pcname', seat.name));
+  cover.append(el('div', 'pcbar'), el('div', 'pclab', 'Pass the phone to'), el('div', 'pcface', seat.avatar || ''), el('div', 'pcname', seat.name), el('div', 'pcnote', 'Do not look at the screen until you take the phone.'));
   const ready = el('button', 'primary pcready', "I'm ready");
   ready.type = 'button';
   ready.addEventListener('click', () => {
     removePassCover();
     coverSeat = seatIdx;
+    if (view && view.cover) { view.cover = false; view.peeking = false; } // a game's own hand-over flag (Liar's Dice)
     busy = false;
     render(false);
   });

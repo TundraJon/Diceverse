@@ -141,9 +141,7 @@ export const liarsView = {
     ui.faces = el('div', 'ldfaces');
     ui.mine = el('div', 'ldmine');
     ui.hint = el('div', 'hint');
-    ui.cover = el('div', 'ldcover');
-    ui.cover.hidden = true;
-    ui.table.append(ui.chips, ui.banner, ui.board, ui.faces, ui.mine, ui.hint, ui.cover);
+    ui.table.append(ui.chips, ui.banner, ui.board, ui.faces, ui.mine, ui.hint);
   },
 
   render(ui, view, session, ctx) {
@@ -348,18 +346,7 @@ export const liarsView = {
       ui.mine.appendChild(box);
     }
 
-    // pass & play: nobody else's turn is shown until the next player takes the device
-    ui.cover.hidden = !view.cover || over;
-    if (view.cover && !over) {
-      ui.cover.innerHTML = '';
-      ui.cover.append(el('div', 'ldcoverbox'));
-      const box = ui.cover.firstChild;
-      box.append(el('div', 'ldcoverh', `Pass the device to ${cur.name}`), el('div', 'ldcovers', 'Do not look at the screen until you take the device.'));
-      const go = el('button', 'btn-roll', `I'm ${cur.name}`);
-      go.type = 'button';
-      go.addEventListener('click', () => { view.cover = false; view.peeking = false; this.render(ui, view, session, ctx); });
-      box.appendChild(go);
-    }
+    // pass & play: `view.cover` means "the device is to be handed over": the shell shows its "Pass the phone" cover (and clears this) and your cup stays hidden until then
 
     ui.hint.textContent = statusOverride(view, cur, over) || (over ? '' : cur.isBot ? `${cur.name} is thinking…` : view.reveal ? '' : shaking ? 'Shaking the cups…' : view.bid ? 'Raise the bid or call it' : 'Make the opening bid');
 

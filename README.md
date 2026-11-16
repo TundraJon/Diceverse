@@ -1000,3 +1000,14 @@ Installable app (PWA) for Android and iOS (was Queue 55; the user's icon, option
 
 Verification (scratch script, none committed; Playwright with a local server): `preflight` clean; manifest fields; the three icon sizes (192, 512, 180); the manifest link, theme color and all icons fetch with 200; the service worker activates, the cache is stamped and holds all six files; after a reload under the worker the app reloads and starts a game with the network switched off; the app also works with service workers blocked and with no service worker API; 13 checks, 0 failures, 0 JS errors. **Needs a real-device check (not verifiable here):** Android Chrome "Install app" and the home-screen icon (maskable crop, round or squircle), iOS Safari Add to Home Screen (the icon, the black status bar, standalone mode), portrait lock, and the update flow after a deploy.
 
+## Build Log 86 (completed)
+
+Liar's Dice, Pass & Play: one hand-over screen instead of two, and it shows at every new round (a bug in Build 81, reported by the user: after a lost challenge only the game's own "Pass the device to X / I'm X" appeared and the "Pass the phone to X / I'm ready" screen was skipped).
+
+- [x] Reproduced first (Playwright, 2 players, a challenge): at the start and between players both covers stacked (two taps); after a challenge only Liar's Dice's own cover showed, because the shell cover (Build 81) only fires when the player to move changes, and the same player starts the next round.
+- [x] `src/ui/views/liars-view.js`: the game's own cover (`ui.cover`, `.ldcover*` CSS) is removed; `view.cover` stays as the flag "the device is to be handed over" (set on every `TURN_STARTED` in a multi-human game, and at the start) and still hides your cup.
+- [x] `src/shell/main.js`: `needsPassCover` also fires when the view asks (`view.cover`), so the shell's cover shows at every new round even when the same player starts again; "I'm ready" clears the flag (and the peek). The cover gained the line "Do not look at the screen until you take the phone." (kept from Liar's Dice's old cover; `.pcnote`, 0.85rem). *(An addition for all games, as the user chose option A.)*
+- [x] The cover is now the only hand-over screen in Liar's Dice: one tap per hand-over.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright, Liar's Dice Pass & Play with 2 players through two challenges: the cover shows at the start, between players and after each challenge (including the same player starting again), one cover only (no `.ldcover`); 15 checks at 390x844 and 320x640 Larger text (cup hidden under the cover, shown after "I'm ready", hold-to-peek works, the button and note on screen, note at least 12 px, no sideways scroll); the Pig cover checks re-run (13 pass); 0 JS errors. Not checked: High Roller's cover again (its code is untouched) and the feel on a real phone.
+

@@ -502,11 +502,6 @@ body.fast .cover { transition: none; }
 .ldhand.shake .die:nth-child(2n) { animation-delay: -0.13s; animation-direction: reverse; }
 .ldhand.shake .die:nth-child(3n) { animation-delay: -0.27s; }
 @keyframes ldshake { 0%, 100% { transform: translate(0, 0) rotate(0); } 20% { transform: translate(-13px, -5px) rotate(-22deg); } 40% { transform: translate(9px, 4px) rotate(18deg); } 60% { transform: translate(-10px, 3px) rotate(-16deg); } 80% { transform: translate(12px, -6px) rotate(20deg); } }
-.ldcover { position: fixed; inset: 0; z-index: 40; background: rgba(5,22,18,0.98); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.ldcover[hidden] { display: none; }
-.ldcoverbox { text-align: center; display: flex; flex-direction: column; gap: 12px; max-width: 320px; }
-.ldcoverh { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
-.ldcovers { color: var(--muted); font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) { .ldhand.shake .die, .ldd.hit { animation: none; } }
 
 /* Treasure Trails: the dice, your sheet (four rows of jewels and a chest each), the penalty track and the other players' small sheets */
@@ -726,3 +721,4 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .pgw.pguin { aspect-ratio: 1430 / 370; }
 .pgtrack.penguin .pgpen { background: transparent; color: #bfe3f3; min-width: 176px; justify-content: flex-end; padding-right: 10px; } /* the label sits at the right end, clear of the igloo and the penguins waiting in the middle */
 .pgcrack { position: absolute; width: 32px; height: 16px; pointer-events: none; z-index: 4; }
+.passcover .pcnote { color: var(--muted); font-size: 0.85rem; max-width: 280px; }
