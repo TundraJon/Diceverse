@@ -2,6 +2,16 @@
 
 Rules for working on Diceverse. Adapted from a template that was tested and corrected over many builds. Claude reads this file at the start of every session.
 
+## How Claude replies to the user
+
+*(Added at the user's request, 2026-11-16.)*
+
+- Keep every reply to 300 words or less. Write more only when the user asks for more detail.
+- Write in ASD-STE100 Simplified Technical English: approved plain words, active voice, one instruction or idea per sentence, short sentences, short paragraphs.
+- Explain any big word right after it.
+- Return only what is necessary: what was done, did it work, what the user does now.
+- When the user must decide: give 2 options at most, the context needed to pick fast, and say which option Claude would pick.
+
 ## Standing rule
 
 **Never build or edit code without explicit instruction.**
