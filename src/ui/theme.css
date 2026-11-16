@@ -723,3 +723,4 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .pgcrack { position: absolute; width: 32px; height: 16px; pointer-events: none; z-index: 4; }
 .passcover .pcnote { color: var(--muted); font-size: 0.85rem; max-width: 280px; }
 .log:empty { display: none; }
+.savewarn { font-size: 0.8rem; color: var(--gold); text-align: center; padding: 2px 0; }

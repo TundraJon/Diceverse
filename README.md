@@ -1051,3 +1051,13 @@ The running narrative under the game is gone, in all games (the user's choice, o
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844 and 320x640, all 12 games, three actions each: the log is empty (and hidden at 390x844) in every game; 0 JS errors. Screenshot of Pig checked. **Found, not fixed (already in the build before this change, checked on the previous commit):** the "Progress cannot be saved on this device." warning never shows. `persistSession` runs before the game screen exists, so it sets `storageWarned` while there is no log to write to; `enterGame` then skips the warning. Waiting for the user to decide.
 
+## Build Log 91 (completed)
+
+The "Progress cannot be saved on this device." warning now shows (found in Build 90: it never showed).
+
+- [x] Causes: (1) the first failed save (`persistSession` in `startNew`) ran before the game screen existed, set `storageWarned` and wrote the line to nothing, so `enterGame` skipped it; (2) the log under the game is hidden by 9 of the 12 views (all but Pig, Farkle and Yacht), so the warning would not show there anyway.
+- [x] `src/shell/main.js`: new `showSaveWarning()` puts one line under the top bar of the game screen (`.savewarn`, `role="status"`, 0.8rem) and sets `storageWarned`; `enterGame` calls it when `storageAvailable()` is false and resets `storageWarned` for each game screen, `persistSession` calls it when a save fails mid-game. `src/ui/theme.css`: `.savewarn`.
+- [x] Left as it is (dead code now, not removed because the user did not ask): `addLog`, `ui.log` and the hidden `.log` element.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright with storage blocked, all 12 games at 390x844 and 320x640: exactly one warning, in view, 12.8 px; with normal storage none; a second game in the same session warns again; no JS errors. Screenshot of Pig checked. The two failures were Farkle's sideways overflow at 320 px, which is already there without the warning (logged earlier). The line adds about 20 px at the top of a game screen, only when storage is blocked. Not checked: a real phone with storage turned off (needs a real-device check).
+

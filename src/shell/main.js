@@ -891,7 +891,7 @@ function persistSession() {
   if (!session) return;
   if (session.isOver()) { clearSave(G.id); return; }
   const ok = writeSave(G.id, session.save());
-  if (!ok && !storageWarned) { storageWarned = true; addLog('Progress cannot be saved on this device.'); }
+  if (!ok) showSaveWarning(); // (a first failed save happens before the game screen exists: enterGame shows the warning then)
 }
 
 function enterGame() {
@@ -916,6 +916,7 @@ function enterGame() {
   bar.appendChild(right);
 
   ui = {};
+  storageWarned = false; // each game screen warns once
   ui.scores = el('div');
   ui.table = el('div', 'table');
   G.view.build(ui);
@@ -924,7 +925,8 @@ function enterGame() {
   screen.append(bar, ui.scores, ui.table, ...(ui.after ? [ui.after] : []), ui.controls, ui.log);
   app.appendChild(screen);
 
-  if (!storageAvailable() && !storageWarned) { storageWarned = true; addLog('Progress cannot be saved on this device.'); }
+  ui.bar = bar;
+  if (!storageAvailable()) showSaveWarning();
   render(false);
   afterEvents();
 }
@@ -959,10 +961,20 @@ function render(tumble) {
   placeBubble();
 }
 
-function addLog(text) {
-  if (!ui.log) return;
+// The "cannot save" warning: one line under the top bar of the game screen (every game has that bar; the old log under the game is hidden in 9 games), said once.
+function showSaveWarning() {
+  if (storageWarned || !ui.bar || !ui.bar.isConnected) return;
+  storageWarned = true;
+  const w = el('div', 'savewarn', 'Progress cannot be saved on this device.');
+  w.setAttribute('role', 'status');
+  ui.bar.after(w);
+}
+
+function addLog(text) { // returns true when the line is on the screen (there is a game screen to show it on)
+  if (!ui.log || !ui.log.isConnected) return false;
   ui.log.appendChild(el('div', null, text));
   while (ui.log.children.length > 3) ui.log.removeChild(ui.log.firstChild);
+  return true;
 }
 
 function humanAct(actions) {

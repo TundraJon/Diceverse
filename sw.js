@@ -1,6 +1,6 @@
 // Diceverse service worker (build.mjs stamps the build into the cache name and writes it to sw.js at the repo root). It keeps the app and its icons so Diceverse opens
 // offline; a new build has a new cache name, so the old files are dropped. A change that was just deployed shows on the second open (the first open is served from the cache).
-const CACHE = 'diceverse-1dcd7e1ea1';
+const CACHE = 'diceverse-1fb3563497';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
