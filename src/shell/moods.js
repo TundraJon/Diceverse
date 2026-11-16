@@ -26,11 +26,13 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
   let talkTurn = {};
   let nervous = {};
   let slot = 0;
+  let turnId = 0; // counts turns as they start; a line remembers the turn it was said in
+  let endedTurn = 0; // the last turn that has ended
 
   const botSeat = (i) => { const s = seatsOf()[i]; return s && s.isBot && botIdOf(s) ? s : null; };
 
   function reset() {
-    mood = []; token = []; talk = null; waiting = null; thinking = null; thinkingSeat = null; decks = {}; spoke = {}; nervous = {}; wait = {}; talkTurn = {}; slot++;
+    mood = []; token = []; talk = null; waiting = null; thinking = null; thinkingSeat = null; decks = {}; spoke = {}; nervous = {}; wait = {}; talkTurn = {}; slot++; turnId = 0; endedTurn = 0;
   }
 
   function setMood(i, m) {
@@ -54,7 +56,7 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
       talk = null;
       const w = waiting;
       waiting = null;
-      if (w && Date.now() - w.at <= STALE_MS) startTalk(w); else redraw();
+      if (w && Date.now() - w.at <= STALE_MS && (w.final || w.tid > endedTurn)) startTalk(w); else redraw(); // a line whose turn has ended while it waited is dropped, not said late
     });
   }
 
@@ -66,8 +68,8 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
     const id = botIdOf(s);
     const line = dealLine(decks, id, m, rand);
     if (!line) return;
-    const entry = { seat: i, name: s.name, line, at: Date.now(), final };
-    if (!talk) startTalk(entry);
+    const entry = { seat: i, name: s.name, line, at: Date.now(), final, tid: turnId };
+    if (!talk || (talk.seat === i && !talk.final)) startTalk(entry); // a bot's reaction replaces its own opener that is still showing
     else if (final || !waiting || !waiting.final) waiting = entry;
   }
 
@@ -104,13 +106,16 @@ export function createMoods({ sched, rand, redraw, announce, seatsOf }) {
           talkTurn[i] = wait[i] <= 0;
           if (!talkTurn[i]) wait[i] -= 1;
         }
+        turnId += 1;
         setMood(i, 'DEFAULT');
         startThinking(i); // a bot is thinking from the moment its turn starts (no "is thinking…" flash before its first action)
+        if (botSeat(i) && talkTurn[i]) { wait[i] = 1 + (rand() % 2); say(i, 'DEFAULT'); } // a talk turn opens with a normal line, said at the start (they are "about to roll" lines); a reaction later in the turn can still speak
         break;
       case 'TURN_ENDED':
         // the thinking line stays through the short gap until the next turn starts (no "is thinking…" flash between turns)
         if (mood[i] === 'THINKING' || mood[i] === 'NERVOUS') setMood(i, 'DEFAULT');
-        if (botSeat(i) && talkTurn[i] && !spoke[i]) spokeNow(i, 'DEFAULT'); // a talk turn that gave no mood still gets a normal line
+        endedTurn = turnId;
+        if (waiting && !waiting.final) waiting = null; // a line still waiting for the speech slot when its turn ends is not said after the dice have been passed
         break;
       case 'BUSTED': case 'FARKLED': case 'BLOWN': case 'NO_MOVE': case 'DICE_LOST': case 'PENALTY':
         feel(i, 'SHOCKED');
