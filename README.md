@@ -1041,3 +1041,13 @@ Bot phrases, second pass: three kinds of "normal" line, each at its own moment (
 
 Verification (scratch scripts, none committed): Node traces of the real `moods.js` with a fake clock, 21 checks, 0 failures (a talk turn: opener at the start and the hand-off as the human's turn starts, both from the right groups; no hand-off to a bot or after a quiet turn; Nat, with no hand-off lines, says only his opener; Deuce greets on his first turn in 39 seeds and says it only once; a hand-off behind a busy slot is dropped; no DEFAULT line is a hand-off or greeting; Thermocouple gone; Snake has 3 RELIEVED lines; Nat's duplicate kept); the Build 88 trace re-run, passes. Real app (Pig, 3 players, real speed, 0 JS errors): Deuce's greeting came as his first turn started, and all other lines came during their owner's turn. Not checked: a Pip or Snake hand-off in the real app (the bots are drawn at random, so only Deuce and Alea appeared), and how it feels over a long game.
 
+## Build Log 90 (completed)
+
+The running narrative under the game is gone, in all games (the user's choice, option B).
+
+- [x] `src/shell/main.js`: the `log` function views call (`ctx.log`) does nothing now. 37 calls in the views stay as they are; `addLog` stays for the "Progress cannot be saved on this device." warning.
+- [x] `src/ui/theme.css`: `.log` has no minimum height (it was 3.9em) and `.log:empty` is hidden, so the freed room goes to the game table.
+- [x] Screen readers are not affected: they get the separate spoken messages (`announce`), not this log.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844 and 320x640, all 12 games, three actions each: the log is empty (and hidden at 390x844) in every game; 0 JS errors. Screenshot of Pig checked. **Found, not fixed (already in the build before this change, checked on the previous commit):** the "Progress cannot be saved on this device." warning never shows. `persistSession` runs before the game screen exists, so it sets `storageWarned` while there is no log to write to; `enterGame` then skips the warning. Waiting for the user to decide.
+

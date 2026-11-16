@@ -934,7 +934,7 @@ const ctx = () => ({
   tumble: false,
   reduced: reduced(),
   act: humanAct,
-  log: addLog,
+  log: () => {}, // the running narrative under the game is gone (the user's choice); addLog stays for the "cannot save" warning
   announce,
   vibrate: () => { if (navigator.vibrate) { try { navigator.vibrate(150); } catch { /* ignore */ } } },
 });

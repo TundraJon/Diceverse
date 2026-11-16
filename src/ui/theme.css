@@ -115,7 +115,7 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .controls button { min-height: 64px; border-radius: 16px; border: 0; font-weight: 800; font-size: 1.2rem; }
 .btn-roll { background: linear-gradient(90deg, var(--gold), var(--gold-2)); color: var(--ink); }
 .btn-bank { background: #0f766e; color: #fff; }
-.log { font-size: 0.8rem; color: var(--muted); min-height: 3.9em; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+.log { font-size: 0.8rem; color: var(--muted); min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
 
 .results { display: flex; flex-direction: column; gap: 6px; }
 .results .r { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); }
@@ -722,3 +722,4 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .pgtrack.penguin .pgpen { background: transparent; color: #bfe3f3; min-width: 176px; justify-content: flex-end; padding-right: 10px; } /* the label sits at the right end, clear of the igloo and the penguins waiting in the middle */
 .pgcrack { position: absolute; width: 32px; height: 16px; pointer-events: none; z-index: 4; }
 .passcover .pcnote { color: var(--muted); font-size: 0.85rem; max-width: 280px; }
+.log:empty { display: none; }
