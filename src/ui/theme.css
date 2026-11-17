@@ -127,7 +127,8 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .kept { display: flex; gap: 6px; justify-content: center; opacity: 0.55; }
 .kept .die { --s: 34px; }
 .dice.farkle { gap: 6px; flex-wrap: nowrap; }
-.dice.farkle .die { --s: 52px; }
+.dice.farkle .die { --s: min(52px, calc((100vw - 94px) / 6)); } /* six dice (with their 4 px button padding and the gaps) always fit the width: 52 px on a 412 px phone, smaller below that, as Yacht's five do */
+.dice.farkle .dieBtn { min-width: 0; min-height: 0; } /* the button was at least 52 px wide, so it did not shrink with the die */
 .dieBtn { background: none; border: 0; padding: 4px; border-radius: 14px; min-width: 52px; min-height: 52px; }
 .dieBtn:disabled { cursor: default; opacity: 1; }
 .dieBtn.sel { box-shadow: 0 0 0 3px var(--gold); background: rgba(251,191,36,0.18); }

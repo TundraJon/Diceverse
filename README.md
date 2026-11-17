@@ -1071,3 +1071,13 @@ Ship, Captain & Crew: after a tie between some of the players, the player who is
 
 Verification (scratch scripts, none committed): Node, the real rules and bot, 1,200 games with 2, 3 and 4 players: 871 tiebreaks (290 two-of-three ties, 144 ties of everybody, 128 two-player ties, 210 chained ties), 8,658 checks, 0 failures (all scores blank right after the tie; during the tiebreak only tied players hold a score; at the round end the players who were out stay blank; the winner is a tied player; every game finishes). The same test on the old code: 5,646 failures. Real app (3 players, 12 games at fast speed, a DOM observer over every redraw): 3 ties between two of three players, 22 checks, 0 failures, 0 JS errors (all blank at the tie banner; the player who is out stays blank through the whole tiebreak). The same test on the old build: 16 failures (the third player's score shown during the tiebreak). Not checked: Pass & Play with only humans (same state and view code), and real speed (the order of redraws is the same).
 
+## Build Log 93 (completed)
+
+Farkle: the row of six dice fits the screen on narrow phones (it was 342 px wide and scrolled sideways at 320 px by 35 px, at 360 px by 15 px; known since the text size build).
+
+- [x] `src/ui/theme.css`: `.dice.farkle .die { --s: min(52px, calc((100vw - 94px) / 6)); }` (52 px on a 412 px phone, smaller below that: about 44 px at 360 px and 38 px at 320 px) and `.dice.farkle .dieBtn { min-width: 0; min-height: 0; }`.
+- [x] Found while building: the die buttons (`.dieBtn`, 4 px padding) had `min-width: 52px`, so the buttons did not shrink with the dice; shrinking only the dice (two tries with wrong numbers) did nothing at 320 px. The row is now the width of the buttons (die plus 8 px) and the gaps.
+- [x] At 412 px and wider nothing changes (die 52 px, button 60 px). At 390 px the dice are 49 px instead of 52 px.
+
+Verification (scratch script, none committed): `preflight` clean. Playwright, Farkle after a roll and after tapping a die, at 320x640, 340x700, 360x740, 390x844, 412x915 and 768x1024, each at Normal, Large and Larger text: all six dice inside the screen with at least 3 px to spare, no sideways scroll, 412 px and wider unchanged; 61 checks, 0 failures, 0 JS errors. Screenshot at 320x640 Larger checked. Not checked: a real phone (needs a real-device check). Still known and not fixed: Yacht scrolls up and down on small phones; High Roller with 4 players and neutral dice scrolls a little at 320x640.
+
