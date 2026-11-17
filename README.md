@@ -19,6 +19,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 24 — High Roller scrolls with 4 players and neutral dice on a 320x640 screen (the user decided to leave it, 2026-11-17)
+Measured 2026-11-17: High Roller fits (no scroll) at 412x915, 412x760, 390x844, 360x740 and 320x640 with 2, 3 or 4 players and neutral dice Auto or On, except 4 players with neutral dice On at 320x640: +61 px. Option not taken: smaller cards on tiny screens. Do not raise this again unless the user asks.
+
 ### Planner 23 — Yacht scrolls on small screens (the user decided to leave it, 2026-11-17)
 The ROLL and PICK buttons are already pinned to the bottom, so the scrolling is only to read the whole score sheet (about 400 px, 13 categories). Extra height by screen: 412x915 about 1 px; 412x760 about 63 px; 360x740 about 77 px; 320x640 about 198 px (more at Large and Larger text). Option not taken: smaller category cards (would fix 412x760 and 360x740, not 320x640). Do not raise this again unless the user asks.
 
