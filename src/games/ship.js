@@ -155,7 +155,7 @@ function endTurn(s, score, events) {
   if (top.length > 1) { // a tie for the best score: only the tied players take one more turn each
     s.tiebreak = true;
     events.push({ type: 'TIEBREAK', seats: top.slice() });
-    top.forEach((i) => { s.scores[i] = null; });
+    s.scores = s.scores.map(() => null); // the tied players start blank for the tiebreak and the players who are out lose their score too (the screen is drawn from this state, so it must not keep it)
     s.order = top;
     s.pos = 0;
     s.current = top[0];

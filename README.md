@@ -1061,3 +1061,13 @@ The "Progress cannot be saved on this device." warning now shows (found in Build
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright with storage blocked, all 12 games at 390x844 and 320x640: exactly one warning, in view, 12.8 px; with normal storage none; a second game in the same session warns again; no JS errors. Screenshot of Pig checked. The two failures were Farkle's sideways overflow at 320 px, which is already there without the warning (logged earlier). The line adds about 20 px at the top of a game screen, only when storage is blocked. Not checked: a real phone with storage turned off (needs a real-device check).
 
+## Build Log 92 (completed)
+
+Ship, Captain & Crew: after a tie between some of the players, the player who is out of the tiebreak no longer gets their score back on the screen (the user's report; the Build Log fix "clear the losers in a tiebreak" was only half done).
+
+- [x] Reproduced first in the real app (3 players, a tie between two): at the tie banner all three scores were blank, then the third player's old score came back while the two tied players were still blank.
+- [x] Cause: `src/games/ship.js` kept the third player's score in the game state; only the view cleared it for the one `TIEBREAK` event, and `shipView.sync` (called after every action) redrew the score from the state. The earlier test only looked at the moment right after the tie.
+- [x] `src/games/ship.js`: on a tie the state now clears every score (`s.scores = s.scores.map(() => null)`), so the state and the screen agree. Nothing else reads the scores of players who are out (the tiebreak uses `order`, which holds only the tied players, and the bot reads only those).
+
+Verification (scratch scripts, none committed): Node, the real rules and bot, 1,200 games with 2, 3 and 4 players: 871 tiebreaks (290 two-of-three ties, 144 ties of everybody, 128 two-player ties, 210 chained ties), 8,658 checks, 0 failures (all scores blank right after the tie; during the tiebreak only tied players hold a score; at the round end the players who were out stay blank; the winner is a tied player; every game finishes). The same test on the old code: 5,646 failures. Real app (3 players, 12 games at fast speed, a DOM observer over every redraw): 3 ties between two of three players, 22 checks, 0 failures, 0 JS errors (all blank at the tie banner; the player who is out stays blank through the whole tiebreak). The same test on the old build: 16 failures (the third player's score shown during the tiebreak). Not checked: Pass & Play with only humans (same state and view code), and real speed (the order of redraws is the same).
+
