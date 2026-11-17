@@ -19,6 +19,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 23 — Yacht scrolls on small screens (the user decided to leave it, 2026-11-17)
+The ROLL and PICK buttons are already pinned to the bottom, so the scrolling is only to read the whole score sheet (about 400 px, 13 categories). Extra height by screen: 412x915 about 1 px; 412x760 about 63 px; 360x740 about 77 px; 320x640 about 198 px (more at Large and Larger text). Option not taken: smaller category cards (would fix 412x760 and 360x740, not 320x640). Do not raise this again unless the user asks.
+
 ## Build Log 1 (completed)
 
 Project scaffolding: adopted the Build Workflow from the Startpage project.
