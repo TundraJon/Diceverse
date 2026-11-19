@@ -697,3 +697,8 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .mdduelrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 4px 0; }
 .mdduelname { font-weight: 800; min-width: 7em; }
 .mdduelrays { color: var(--gold); }
+.mdgot { display: flex; flex-wrap: wrap; gap: 2px 8px; margin: 4px 0 2px; }
+.mdgi { display: inline-flex; align-items: center; gap: 3px; font-size: 0.8rem; color: var(--text); }
+.mdgico { flex: none; width: 18px; height: 18px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+.mdgi.full b { color: var(--gold); }
+.mdgi.full b::after { content: "\2713"; margin-left: 2px; }

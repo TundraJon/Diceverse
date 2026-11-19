@@ -3,6 +3,8 @@
 // dice of ONE other type (death rays any time; cows, chickens and humans once each per turn), then roll again or stop. Score: tanks more than death rays = 0;
 // otherwise 1 point per cow, chicken and human, and 3 more if you have all three kinds. Reach the target and everybody gets the same number of turns; a tie is
 // settled by the Death Ray Duel (each tied player rolls 6 dice, more death rays wins).
+// House rule `goal` = 'collect': instead of points, each player collects cows, chickens and humans over the turns (a turn that is not a bust adds what was set
+// aside, no bonus); the first to have `each` of all three kinds ends the game, with the same number of turns for all and the Duel for a tie.
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
@@ -19,10 +21,25 @@ export const meta = {
   soloOK: true,
   estMinutes: 8,
   tier: 'A',
-  soloKey: (o) => String(o.target), // the personal best is per target score (fewest turns to reach it)
+  soloKey: (o) => (o.goal === 'collect' ? `collect:${o.each}` : String(o.target)), // the personal best is per goal (fewest turns to reach it)
   soloHide: [],
   houseRules: [
-    { key: 'target', label: 'Target score', options: [{ value: 15, label: '15' }, { value: 25, label: '25' }, { value: 35, label: '35' }], default: 25 },
+    {
+      key: 'goal', label: 'Goal',
+      options: [{ value: 'points', label: 'Points' }, { value: 'collect', label: 'Collect each type' }],
+      default: 'points',
+      hint: () => 'Points: score points up to the target score · Collect each type: be the first to collect the same number of cows, chickens and humans.',
+    },
+    {
+      key: 'target', label: 'Target score',
+      options: [15, 25, 35].map((v) => ({ value: v, label: String(v), disabled: (o) => o.goal === 'collect', disabledNote: 'The target score is not used when you collect each type.' })),
+      default: 25,
+    },
+    {
+      key: 'each', label: 'Each type',
+      options: [5, 8, 10].map((v) => ({ value: v, label: String(v), disabled: (o) => o.goal !== 'collect', disabledNote: 'Used only when the goal is Collect each type.' })),
+      default: 8,
+    },
   ],
 };
 
@@ -48,14 +65,16 @@ export function setup(options, rng) {
     name: s.name,
     isBot: !!s.isBot,
     preset: s.preset || null,
-    total: 0,
+    total: 0, // points; in Collect mode the progress (each kind counted up to the goal)
     turns: 0,
+    got: { cow: 0, chicken: 0, human: 0 }, // Collect mode: what has been collected over the turns
   }));
+  const collect = opts.goal === 'collect';
   const n = seats.length;
   const drawn = n === 1 ? 0 : rng.die(n) - 1; // the starting player is drawn; Pass & Play can name one (options.first)
   const starter = Number.isInteger(opts.first) && opts.first >= 0 && opts.first < n ? opts.first : drawn;
   return {
-    options: { ...opts, seats: seats.map(({ name, isBot, preset }) => ({ name, isBot, preset })) },
+    options: { ...opts, target: collect ? 3 * opts.each : opts.target, seats: seats.map(({ name, isBot, preset }) => ({ name, isBot, preset })) }, // (the target is the most progress there is, for the bot's catch-up logic)
     seats,
     current: starter,
     starter,
@@ -108,15 +127,31 @@ export function turnScore(kept) {
   return { bust, earth, bonus, gain: bust ? 0 : earth + bonus };
 }
 
+// Collect mode: how much of the goal a seat has (each kind counted up to the goal), and whether it is done.
+export const progress = (got, each) => Math.min(got.cow, each) + Math.min(got.chicken, each) + Math.min(got.human, each);
+export const isDone = (got, each) => got.cow >= each && got.chicken >= each && got.human >= each;
+
 function scoreTurn(s, events) {
   const seat = s.seats[s.current];
   const k = s.turn.kept;
+  const collect = s.options.goal === 'collect';
   const sc = turnScore(k);
-  seat.total += sc.gain;
+  let bonus = sc.bonus;
+  let gain = sc.gain;
+  let added = null;
+  if (collect) { // no bonus: a turn that is not a bust adds the cows, chickens and humans set aside
+    bonus = 0;
+    gain = sc.bust ? 0 : sc.earth;
+    added = sc.bust ? { cow: 0, chicken: 0, human: 0 } : { cow: k.cow, chicken: k.chicken, human: k.human };
+    seat.got.cow += added.cow;
+    seat.got.chicken += added.chicken;
+    seat.got.human += added.human;
+    seat.total = progress(seat.got, s.options.each);
+  } else seat.total += gain;
   seat.turns += 1;
-  events.push({ type: 'TURN_SCORED', seat: s.current, tanks: k.tank, rays: k.ray, cows: k.cow, chickens: k.chicken, humans: k.human, bonus: sc.bonus, gain: sc.gain, bust: sc.bust, total: seat.total });
+  events.push({ type: 'TURN_SCORED', seat: s.current, tanks: k.tank, rays: k.ray, cows: k.cow, chickens: k.chicken, humans: k.human, bonus, gain, bust: sc.bust, total: seat.total, ...(collect ? { added, got: { ...seat.got } } : {}) });
   if (sc.bust) events.push({ type: 'BUSTED', seat: s.current, lost: 0 }); // (the bot moods listen for these two)
-  else if (sc.gain > 0) events.push({ type: 'BANKED', seat: s.current, amount: sc.gain, total: seat.total });
+  else if (gain > 0) events.push({ type: 'BANKED', seat: s.current, amount: gain, total: seat.total });
   events.push({ type: 'TURN_ENDED', seat: s.current });
   nextTurn(s, events);
 }
@@ -129,15 +164,19 @@ function gameOver(s, events, winners) {
 
 function nextTurn(s, events) {
   const target = s.options.target;
+  const collect = s.options.goal === 'collect';
+  const each = s.options.each;
   const seat = s.seats[s.current];
+  const reached = (x) => (collect ? isDone(x.got, each) : x.total >= target);
   if (s.seats.length === 1) {
-    if (seat.total >= target) { gameOver(s, events, [0]); return; }
-  } else if (!s.final && seat.total >= target) {
+    if (reached(seat)) { gameOver(s, events, [0]); return; }
+  } else if (!s.final && reached(seat)) {
     s.final = { turns: seat.turns };
   }
   if (s.final && s.seats.every((x) => x.turns >= s.final.turns)) {
     const best = Math.max(...s.seats.map((x) => x.total));
-    const leaders = s.seats.map((x, i) => (x.total === best ? i : -1)).filter((i) => i >= 0);
+    // Points: the most points. Collect: everybody who is done (two or more tie and go to the Duel).
+    const leaders = s.seats.map((x, i) => ((collect ? isDone(x.got, each) : x.total === best) ? i : -1)).filter((i) => i >= 0);
     if (leaders.length === 1) { gameOver(s, events, leaders); return; }
     s.duel = { seats: leaders, round: 1 }; // a tie for the most points: the Death Ray Duel
     s.current = leaders[0];
@@ -235,20 +274,32 @@ export function candidatePlans(obs, seat) {
 export const isDeterministic = (plan) => plan.length === 1 && plan[0].type === 'STOP';
 
 // What the simple policy of the rest of a simulated turn picks to set aside: the type worth most right now.
-function keepValue(t, type) {
+function keepValue(s, type) {
+  const t = s.turn;
   const count = t.pending.filter((x) => x === type).length;
   const danger = t.kept.tank > t.kept.ray; // tanks lead: death rays are what is needed
   if (type === 'ray') return count * (danger ? 2.2 : 0.9);
+  if (s.options.goal === 'collect') { // only what is still needed counts (a kind at the goal is worth almost nothing)
+    const got = s.seats[s.current].got;
+    const need = Math.max(0, s.options.each - got[type] - t.kept[type]);
+    return Math.min(count, need) + 0.05 * count;
+  }
   const others = ['cow', 'chicken', 'human'].filter((x) => x !== type);
   const completes = others.every((x) => t.kept[x] > 0) ? BONUS : 0;
   return count + completes + (t.kept[type] === 0 && others.some((x) => t.kept[x] > 0) ? 0.5 : 0);
 }
 
 // Roll again or stop, for the rest of a simulated turn: stop with few dice left or a good score; with tanks in front keep trying for rays.
-function wantsToRoll(t) {
+function wantsToRoll(s) {
+  const t = s.turn;
   if (t.left <= 2) return false;
   const sc = turnScore(t.kept);
   if (sc.bust) return t.left >= 3;
+  if (s.options.goal === 'collect') { // stop once the turn has added a good amount of what is still needed
+    const got = s.seats[s.current].got;
+    const useful = ['cow', 'chicken', 'human'].reduce((a, x) => a + Math.min(t.kept[x], Math.max(0, s.options.each - got[x])), 0);
+    return useful < 6;
+  }
   return sc.gain < 7;
 }
 
@@ -261,8 +312,8 @@ export function rollout(state, seat, rng, turnsAtStart) {
     if (t.phase === 'roll') a = { type: 'ROLL' };
     else if (t.phase === 'choose') {
       const types = availableTypes(t);
-      a = { type: 'KEEP', face: types.reduce((best, x) => (keepValue(t, x) > keepValue(t, best) ? x : best), types[0]) };
-    } else a = wantsToRoll(t) ? { type: 'ROLL' } : { type: 'STOP' };
+      a = { type: 'KEEP', face: types.reduce((best, x) => (keepValue(s, x) > keepValue(s, best) ? x : best), types[0]) };
+    } else a = wantsToRoll(s) ? { type: 'ROLL' } : { type: 'STOP' };
     s = apply(s, a, rng).state;
   }
   return s;

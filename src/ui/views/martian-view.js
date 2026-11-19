@@ -22,7 +22,9 @@ const TYPE_FACE = { ray: 1, cow: 2, human: 3, chicken: 4, tank: 5 }; // a face n
 const LABELS = FACES.map((t) => NAMES[t]);
 const KEEP_TYPES = ['ray', 'cow', 'chicken', 'human'];
 
-const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns }));
+const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns, got: { ...s.got } }));
+const KINDS = ['cow', 'chicken', 'human']; // what is collected in the Collect mode
+const addText = (added) => KINDS.filter((t) => added[t] > 0).map((t) => `+${added[t]} ${added[t] === 1 ? NAMES[t] : PLURAL[t]}`).join(', ');
 const zero = () => ({ tank: 0, ray: 0, cow: 0, chicken: 0, human: 0 });
 const faceType = (f) => FACES[f - 1];
 const listOf = (dice) => {
@@ -30,12 +32,33 @@ const listOf = (dice) => {
   dice.forEach((f) => { c[faceType(f)] = (c[faceType(f)] || 0) + 1; });
   return TYPES.filter((t) => c[t]).map((t) => `${c[t]} ${c[t] === 1 ? NAMES[t] : PLURAL[t]}`).join(', ');
 };
+// Collect mode: instead of one total, each player card shows cows, chickens and humans collected so far out of the goal (a full one is marked), and what
+// the turn in play would add (after the dice have settled).
+function renderGoalChips(container, view, add) {
+  container.innerHTML = '';
+  container.className = 'scores' + (view.seats.length === 1 ? ' one' : '');
+  view.seats.forEach((s, i) => {
+    const chip = el('div', 'chip' + (i === view.current ? ' active' : ''));
+    const name = el('div', 'name');
+    name.append(el('span', null, `${s.face || (s.isBot ? '\u{1F916}' : '\u{1F464}')} ${s.name}`), el('span', null, `${s.turns} turn${s.turns === 1 ? '' : 's'}`));
+    const row = el('div', 'mdgot');
+    KINDS.forEach((t) => {
+      const full = s.got[t] >= view.each;
+      const item = el('span', 'mdgi' + (full ? ' full' : ''));
+      item.append(el('i', `mdgico mdsym-${t}`), el('b', null, `${Math.min(s.got[t], view.each)}/${view.each}`));
+      row.appendChild(item);
+    });
+    chip.setAttribute('aria-label', `${s.name}: ${KINDS.map((t) => `${PLURAL[t]} ${Math.min(s.got[t], view.each)} of ${view.each}`).join(', ')}`);
+    chip.append(name, row, el('div', 'tp', i === view.current && add ? add : ''));
+    container.appendChild(chip);
+  });
+}
 const dieOf = (face, ctx, tumble) => renderDie(face, { tumble: !!tumble && !ctx.reduced, cls: 'cream', images: FACE_CLASSES, labels: LABELS });
 
 export const martianView = {
   title: 'MARTIAN DICE',
 
-  rulesSheet(sheet) {
+  rulesSheet(sheet, options) {
     sheet.appendChild(el('h2', null, 'How to play Martian Dice'));
     ['You have 13 dice. Each die shows a tank, a death ray (two faces), a cow, a chicken or a human.',
      'Roll all your dice. The tanks you roll are always set aside.',
@@ -45,10 +68,11 @@ export const martianView = {
      'When a player reaches the target, everyone gets the same number of turns. The most points wins. A tie is settled by the Death Ray Duel: each tied player rolls 6 dice, and more death rays wins.',
      'Solo: reach the target in as few turns as you can.']
       .forEach((t) => sheet.appendChild(el('p', null, t)));
+    if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect each type: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
   },
 
   summary(h) {
-    return `Target ${h.target}`;
+    return h.goal === 'collect' ? `Collect ${h.each} of each` : `Target ${h.target}`;
   },
 
   init(session) {
@@ -63,13 +87,15 @@ export const martianView = {
       seats: seatsView(st),
       current: st.current,
       target: st.options.target,
+      collect: st.options.goal === 'collect',
+      each: st.options.each,
       phase: st.winner !== null ? 'over' : st.duel ? 'duel' : t.phase,
       kept: { ...t.kept },
       used: { ...t.used },
       left: t.left,
       rolled: t.phase === 'choose' ? t.rolled.filter((f) => faceType(f) !== 'tank') : [], // the dice to pick from
       pending: t.pending.slice(),
-      turnPoints: t.phase === 'roll' ? 0 : turnScore(t.kept).gain,
+      turnPoints: t.phase === 'roll' || st.winner !== null ? 0 : turnScore(t.kept).gain, // (nothing is "in play" once the game is over)
       duel: st.duel ? (old && old.duel && old.duel.rolls ? old.duel : { seats: st.duel.seats.slice(), rolls: null, counts: false }) : null, // the last duel roll stays on show (until the next one, or behind the result sheet)
       banner: null,
       note: '',
@@ -93,7 +119,8 @@ export const martianView = {
     const st = session.state;
     const over = session.isOver();
     const cur = view.seats[view.current];
-    renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints, undefined, { target: view.target });
+    if (view.collect) renderGoalChips(ui.scores, view, view.turnPoints > 0 ? addText(view.kept) : '');
+    else renderScoreStrip(ui.scores, view.seats, view.current, view.turnPoints, undefined, { target: view.target });
     const duel = !!view.duel; // (the game state is already over while the last banners show, so this does not look at `over`)
     const human = !over && !cur.isBot && !ctx.busy;
 
@@ -238,12 +265,21 @@ export const martianView = {
         break;
       case 'TURN_SCORED': {
         view.seats[ev.seat].total = ev.total;
+        if (ev.got) view.seats[ev.seat].got = { ...ev.got }; // Collect mode
         view.turnPoints = 0;
         const bonus = ev.bonus ? ' (3 bonus)' : '';
-        view.banner = ev.bust
-          ? { text: `TANKS WIN! ${name(ev.seat)} scores 0`, good: false }
-          : { text: ev.gain > 0 ? `${name(ev.seat)}: +${ev.gain}${bonus}` : `${name(ev.seat)}: 0 points`, good: ev.gain > 0 };
-        ctx.announce(ev.bust ? `${name(ev.seat)}: more tanks than death rays, no points` : `${name(ev.seat)} scored ${ev.gain}`);
+        if (view.collect) {
+          const txt = ev.added ? addText(ev.added) : '';
+          view.banner = ev.bust
+            ? { text: `TANKS WIN! ${name(ev.seat)} adds nothing`, good: false }
+            : { text: txt ? `${name(ev.seat)}: ${txt}` : `${name(ev.seat)}: nothing added`, good: !!txt };
+          ctx.announce(ev.bust ? `${name(ev.seat)}: more tanks than death rays, nothing added` : `${name(ev.seat)} ${txt ? `added ${txt.replace(/\+/g, '')}` : 'added nothing'}`);
+        } else {
+          view.banner = ev.bust
+            ? { text: `TANKS WIN! ${name(ev.seat)} scores 0`, good: false }
+            : { text: ev.gain > 0 ? `${name(ev.seat)}: +${ev.gain}${bonus}` : `${name(ev.seat)}: 0 points`, good: ev.gain > 0 };
+          ctx.announce(ev.bust ? `${name(ev.seat)}: more tanks than death rays, no points` : `${name(ev.seat)} scored ${ev.gain}`);
+        }
         if (ev.bust) ctx.vibrate();
         delay = ctx.reduced ? 1500 : BANNER_MS;
         break;
