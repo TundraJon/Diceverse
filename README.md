@@ -1191,3 +1191,11 @@ Main menu: the game buttons fit on small phones with big text (Planner 25, the u
 - [x] Planner 25 removed (resolved).
 
 Verification (scratch script, none committed): `preflight` clean. Playwright at 320, 340, 360, 390 and 412 px wide, each at Normal, Large and Larger text: 76 checks, 0 failures, 0 JS errors (no sideways scroll, 12 game buttons, none outside the grid or the panel, text at least 12 px). The first try fixed only 320 px Larger; the same check showed buttons sticking out of the grid at 320 px Large, 340 px Large and 360 px Larger, so the fix was widened. Screenshots looked at. Not checked: a real phone.
+
+## Build Log 104 (completed)
+
+High Roller: the `+$` amount of each casino pay-out is drawn in the winner's colour (the user's request; the amounts still disappear when the next casino is paid).
+
+- [x] `src/ui/views/highroller-view.js`, casino rows: the award `<em>` gets `style.color = colorOf(view, j)`, the same colour as the swatch beside it. The tie text keeps its red.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844, three full games against bots (3 players and 4 players at `?speed=0`, 3 players at real speed): every `+$` amount seen during the pay-outs had the same computed colour as its winner's swatch; 6 checks, 0 failures, 0 JS errors. Screenshot looked at (the blue winner's `+$50K` is blue). Not checked: a real phone. Pass & Play, and the lighter colours (white, pink, cyan) on the dark card, were not looked at.

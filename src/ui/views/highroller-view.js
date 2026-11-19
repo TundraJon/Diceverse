@@ -171,7 +171,11 @@ export const highRollerView = {
         const sw = el('i');
         sw.style.setProperty('--dc', colorOf(view, j));
         row.append(sw, el('b', null, `×${cnt}`));
-        if (award) row.appendChild(el('em', null, `+${short(award.note)}`));
+        if (award) {
+          const amt = el('em', null, `+${short(award.note)}`);
+          amt.style.color = colorOf(view, j); // the winner's own color
+          row.appendChild(amt);
+        }
         else if (cancelled) row.appendChild(el('em', 'tie', 'tie'));
         rows.appendChild(row);
       });
