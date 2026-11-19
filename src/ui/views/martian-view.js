@@ -23,7 +23,7 @@ const LABELS = FACES.map((t) => NAMES[t]);
 const KEEP_TYPES = ['ray', 'cow', 'chicken', 'human'];
 
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns, got: { ...s.got } }));
-const KINDS = ['cow', 'chicken', 'human']; // what is collected in the Collect mode
+const KINDS = ['chicken', 'cow', 'human']; // what is collected in the Collect mode (alphabetical, as on the result screen)
 const addText = (added) => KINDS.filter((t) => added[t] > 0).map((t) => `+${added[t]} ${added[t] === 1 ? NAMES[t] : PLURAL[t]}`).join(', ');
 const zero = () => ({ tank: 0, ray: 0, cow: 0, chicken: 0, human: 0 });
 const faceType = (f) => FACES[f - 1];
@@ -69,7 +69,7 @@ export const martianView = {
      'Solo: reach the target in as few turns as you can.']
       .forEach((t) => sheet.appendChild(el('p', null, t)));
     if (options && options.stranded === 'zero') sheet.appendChild(el('p', null, 'House rule, Stranded: if you roll and cannot set anything aside, the turn scores nothing (in Collect mode it adds nothing).'));
-    if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect each type: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
+    if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
   },
 
   // The result line of a player when the game is over: in Collect mode the pictures of what was collected (chickens, cows, humans: alphabetical), then the turns.

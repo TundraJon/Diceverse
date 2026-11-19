@@ -1168,3 +1168,12 @@ Martian Dice: the House rules screen shows only the rule that applies, and a new
 
 Verification (scratch scripts, none committed): `preflight` clean. Node, the real rules: 17 Stranded checks, 0 failures (the keep and zero outcomes of the same turn, a bust that is also stranded, 13 tanks, stopping is not stranded, Collect mode, `lost` with and without the bonus, the default, the hide hooks, 18 bot games with the rule on at every preset that finish and replay exactly, the balanced bot beats a weak bot that never stops 23 of 30); the Points tests re-run (45 checks) and the Collect tests re-run (22 checks), 0 failures. Playwright: the House rules screen (Points: Goal, Target score, Stranded; Collect: Goal, Each type, Stranded; nothing greyed; the earlier choices kept through the switches; the menu summary), and at real speed a saved game one roll before a stranded roll: the note comes after the dice settle (about 1.3 s), nothing about the roll shows in the first second, the banner `STRANDED! Ann scores 0` stays 2.2 s or more, with the same dice and the rule off the banner is `Ann: +12 (3 bonus)`, and in Collect mode `STRANDED! Ann adds nothing`; 22 of 23 checks pass, 0 JS errors; the one failure is the 12 px sideways scroll of the menu behind the screen at 320 px with Larger text (Planner 25, already there before). Not checked: a real phone.
 
+## Build Log 101 (completed)
+
+Martian Dice wording and order (the user's two requests).
+
+- [x] `src/games/martian.js`: the Goal choice "Collect each type" is now "Collect"; the help text under it reads `Collect: be the first to collect the same number of chickens, cows and humans.`
+- [x] `src/ui/views/martian-view.js`: `KINDS` is now chicken, cow, human (alphabetical, as on the result screen), so the three counters on a player card, the "+N this turn" note, the end-of-turn banner and the spoken text of the card all follow that order; the rules sheet line reads `House rule, Collect:`. The menu summary (`Collect 8 of each`) and the "Each type" rule name are unchanged.
+
+Verification (scratch script, none committed): `preflight` clean; Playwright: the Goal buttons read Points and Collect and the help text is new; the player card shows chicken, cow, human in that order with the spoken text in the same order; with a saved game one roll from the end of a turn, the note before the roll and the banner after it read `+2 chickens, +4 cows, +3 humans`; 9 checks, 0 failures, 0 JS errors. Not checked: a real phone.
+

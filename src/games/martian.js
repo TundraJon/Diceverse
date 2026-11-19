@@ -27,9 +27,9 @@ export const meta = {
   houseRules: [
     {
       key: 'goal', label: 'Goal',
-      options: [{ value: 'points', label: 'Points' }, { value: 'collect', label: 'Collect each type' }],
+      options: [{ value: 'points', label: 'Points' }, { value: 'collect', label: 'Collect' }],
       default: 'points',
-      hint: () => 'Points: score points up to the target score · Collect each type: be the first to collect the same number of cows, chickens and humans.',
+      hint: () => 'Points: score points up to the target score · Collect: be the first to collect the same number of chickens, cows and humans.',
     },
     {
       key: 'target', label: 'Target score',
