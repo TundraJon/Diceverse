@@ -1,4 +1,4 @@
-# Diceverse rules (temporary.md)
+# Diceverse rules
 
 ## Replies
 - Max 200 words. ASD-STE100. Short sentences. Explain big words.
