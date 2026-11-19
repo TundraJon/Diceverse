@@ -1114,3 +1114,14 @@ Martian Dice: the user's better face art (five separate pictures, about 920 px e
 
 Verification (scratch scripts, none committed): `preflight` clean; Playwright start, roll and pick screen at 390x844 (screenshot checked: all five faces on the dice and on the buttons, clear background); layout at 390, 360 and 320 px at all three text sizes: 44 checks pass, 0 JS errors (the one failure is the menu scrolling sideways by 12 px at 320 px with Larger text, Planner 25, already there before). The rules and the timing are untouched, so their tests were not run again. Not checked: a real phone.
 
+## Build Log 96 (completed)
+
+Treasure Trails removed from the app (the user: too many rules). Twelve games now.
+
+- [x] Deleted `src/games/trails.js` (239 lines) and `src/ui/views/trails-view.js` (267 lines); removed the game from `src/games/index.js` (`GAMES`, `GAME_ORDER`) and `src/ui/views/index.js` (`VIEWS`).
+- [x] `src/ui/theme.css`: removed the Treasure Trails block (the `.tr*` rules and the `.die.k-pearl`, `k-ruby`, `k-gold`, `k-emerald` and `k-sapphire` dice colors, used only by it; 49 lines). `src/shell/moods.js`: removed the `ROW_LOCKED` case (only this game sent that event).
+- [x] `CLAUDE.md` project map: Treasure Trails removed from the game list, from the games with their own `choose` bot hook, from the list of drawn screens, and from the action payloads (`row` and `n` for MARK).
+- [x] Left on purpose: the old Build Log entries (history) and the Planner notes. Anything an old phone stored for Treasure Trails (a saved game, a personal best, its house rules, or it being the chosen game) is ignored: a stored choice of it falls back to Pig. The code stays in git history if the game is ever wanted back.
+
+Verification (scratch script, none committed): `preflight` clean; Playwright at 390x844 Normal, 360x740 Large and 320x640 Larger: the menu shows 12 games, none is Treasure Trails, the last is Martian Dice, no sideways scroll at the first two sizes; a phone that had chosen Treasure Trails (with its house rules, a saved game and a best score stored) opens on Pig with no Resume button and Pig starts; all 12 remaining games start and play; 27 checks, 0 failures, 0 JS errors. `index.html` went from 514.6 KB to 495.8 KB. Not checked: a real phone.
+

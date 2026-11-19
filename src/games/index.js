@@ -8,10 +8,9 @@ import * as salvage from './salvage.js';
 import * as plunder from './plunder.js';
 import * as dive from './dive.js';
 import * as liars from './liars.js';
-import * as trails from './trails.js';
 import * as ship from './ship.js';
 import * as highroller from './highroller.js';
 import * as martian from './martian.js';
 
-export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, trails, ship, highroller, martian };
-export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'trails', 'ship', 'highroller', 'martian'];
+export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, ship, highroller, martian };
+export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'ship', 'highroller', 'martian'];

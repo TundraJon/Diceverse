@@ -7,9 +7,8 @@ import { salvageView } from './salvage-view.js';
 import { plunderView } from './plunder-view.js';
 import { diveView } from './dive-view.js';
 import { liarsView } from './liars-view.js';
-import { trailsView } from './trails-view.js';
 import { shipView } from './ship-view.js';
 import { highRollerView } from './highroller-view.js';
 import { martianView } from './martian-view.js';
 
-export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, trails: trailsView, ship: shipView, highroller: highRollerView, martian: martianView };
+export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, ship: shipView, highroller: highRollerView, martian: martianView };
