@@ -19,9 +19,6 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
-### Planner 25 — Menu scrolls sideways by 12 px at 320 px with Larger text (found 2026-11-19, in the build before Martian Dice too; not fixed)
-The game buttons in the menu are 51 px wide at that size and reach 332 px on a 320 px screen (the Pig and Martian Dice screens themselves do not scroll). Decision waiting for the user.
-
 ### Planner 24 — High Roller scrolls with 4 players and neutral dice on a 320x640 screen (the user decided to leave it, 2026-11-17)
 Measured 2026-11-17: High Roller fits (no scroll) at 412x915, 412x760, 390x844, 360x740 and 320x640 with 2, 3 or 4 players and neutral dice Auto or On, except 4 players with neutral dice On at 320x640: +61 px. Option not taken: smaller cards on tiny screens. Do not raise this again unless the user asks.
 
@@ -1186,3 +1183,11 @@ Martian Dice, Stranded rule: a roll of only tanks is not stranded (the user's co
 
 Verification (scratch scripts, none committed): `preflight` clean. Node, the real rules: 23 Stranded checks, 0 failures (new: only tanks rolled with rays 4 and tanks 4 scores 5 with the rule on and off, no `BUSTED`; six more tanks than rays is a bust and not stranded; humans again after taking humans plus a tank is still stranded and loses 5). Playwright at real speed with saved games one roll before each case: an all-tanks last roll scores (`Ann: +6` in Points mode, `Ann: +1 chicken, +5 cows` in Collect mode) with the normal note; a real stranded roll still shows `Stranded: nothing can be set aside` and `STRANDED! Ann scores 0` / `adds nothing` with the score unchanged; 13 checks, 0 failures, 0 JS errors. Found in the test (test fault, not the app): the card's turn count and "+N this turn" note change at the end of a turn, so only the score is compared. Not checked: a real phone.
 
+## Build Log 103 (completed)
+
+Main menu: the game buttons fit on small phones with big text (Planner 25, the user said "Yes, fix the menu scroll at 320 px").
+
+- [x] `src/ui/theme.css`, `.seg.games`: the four columns use `1fr`, which cannot shrink below the longest word (Cliffhanger), so they were too wide. Now: at 360 px wide or less with Larger text, and at 340 px or less with Large text, the grid uses three columns `repeat(3, minmax(0, 1fr))`. At 340 px or less with Large or Larger text, the buttons get 1 px side padding and `overflow-wrap: anywhere`; with Larger text the font is 0.62rem (12.4 px, above the 12 px floor). Four columns stay at every other size, so 390 px and 412 px look the same as before.
+- [x] Planner 25 removed (resolved).
+
+Verification (scratch script, none committed): `preflight` clean. Playwright at 320, 340, 360, 390 and 412 px wide, each at Normal, Large and Larger text: 76 checks, 0 failures, 0 JS errors (no sideways scroll, 12 game buttons, none outside the grid or the panel, text at least 12 px). The first try fixed only 320 px Larger; the same check showed buttons sticking out of the grid at 320 px Large, 340 px Large and 360 px Larger, so the fix was widened. Screenshots looked at. Not checked: a real phone.
