@@ -705,3 +705,4 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .mdres { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
 .mdresi { display: inline-flex; align-items: center; gap: 4px; }
 .mdresi .mdgico { width: 22px; height: 22px; }
+.sheet .panel[hidden] { display: none; }

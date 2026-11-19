@@ -5,6 +5,7 @@
 // settled by the Death Ray Duel (each tied player rolls 6 dice, more death rays wins).
 // House rule `goal` = 'collect': instead of points, each player collects cows, chickens and humans over the turns (a turn that is not a bust adds what was set
 // aside, no bonus); the first to have `each` of all three kinds ends the game, with the same number of turns for all and the Duel for a tie.
+// House rule `stranded` = 'zero': a roll that leaves nothing to set aside ("stranded") makes the turn score nothing (Collect mode: add nothing).
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
@@ -32,13 +33,21 @@ export const meta = {
     },
     {
       key: 'target', label: 'Target score',
-      options: [15, 25, 35].map((v) => ({ value: v, label: String(v), disabled: (o) => o.goal === 'collect', disabledNote: 'The target score is not used when you collect each type.' })),
+      options: [15, 25, 35].map((v) => ({ value: v, label: String(v) })),
       default: 25,
+      hidden: (o) => o.goal === 'collect', // not used when the goal is to collect each type: the House rules screen does not show it
     },
     {
       key: 'each', label: 'Each type',
-      options: [5, 8, 10].map((v) => ({ value: v, label: String(v), disabled: (o) => o.goal !== 'collect', disabledNote: 'Used only when the goal is Collect each type.' })),
+      options: [5, 8, 10].map((v) => ({ value: v, label: String(v) })),
       default: 8,
+      hidden: (o) => o.goal !== 'collect', // used only when the goal is to collect each type
+    },
+    {
+      key: 'stranded', label: 'Stranded',
+      options: [{ value: 'keep', label: 'Keep what you have' }, { value: 'zero', label: 'Score nothing' }],
+      default: 'keep',
+      hint: () => 'Stranded is a roll that leaves nothing you can set aside. Keep what you have: the turn ends and scores what you set aside before. Score nothing: the turn scores 0 (Collect mode: adds nothing).',
     },
   ],
 };
@@ -131,26 +140,30 @@ export function turnScore(kept) {
 export const progress = (got, each) => Math.min(got.cow, each) + Math.min(got.chicken, each) + Math.min(got.human, each);
 export const isDone = (got, each) => got.cow >= each && got.chicken >= each && got.human >= each;
 
-function scoreTurn(s, events) {
+function scoreTurn(s, events, stranded = false) {
   const seat = s.seats[s.current];
   const k = s.turn.kept;
   const collect = s.options.goal === 'collect';
-  const sc = turnScore(k);
+  let sc = turnScore(k);
+  // Stranded rule: a roll with nothing to set aside scores nothing. `lost` is what the turn would have scored (a bust loses nothing: it scored 0 anyway).
+  const strandedZero = stranded && s.options.stranded === 'zero';
+  const lost = strandedZero && !sc.bust ? (collect ? sc.earth : sc.gain) : 0; // (Collect mode has no bonus)
+  if (strandedZero) sc = { bust: sc.bust, earth: 0, bonus: 0, gain: 0 };
   let bonus = sc.bonus;
   let gain = sc.gain;
   let added = null;
   if (collect) { // no bonus: a turn that is not a bust adds the cows, chickens and humans set aside
     bonus = 0;
     gain = sc.bust ? 0 : sc.earth;
-    added = sc.bust ? { cow: 0, chicken: 0, human: 0 } : { cow: k.cow, chicken: k.chicken, human: k.human };
+    added = sc.bust || strandedZero ? { cow: 0, chicken: 0, human: 0 } : { cow: k.cow, chicken: k.chicken, human: k.human };
     seat.got.cow += added.cow;
     seat.got.chicken += added.chicken;
     seat.got.human += added.human;
     seat.total = progress(seat.got, s.options.each);
   } else seat.total += gain;
   seat.turns += 1;
-  events.push({ type: 'TURN_SCORED', seat: s.current, tanks: k.tank, rays: k.ray, cows: k.cow, chickens: k.chicken, humans: k.human, bonus, gain, bust: sc.bust, total: seat.total, ...(collect ? { added, got: { ...seat.got } } : {}) });
-  if (sc.bust) events.push({ type: 'BUSTED', seat: s.current, lost: 0 }); // (the bot moods listen for these two)
+  events.push({ type: 'TURN_SCORED', seat: s.current, tanks: k.tank, rays: k.ray, cows: k.cow, chickens: k.chicken, humans: k.human, bonus, gain, bust: sc.bust, stranded: lost > 0, lost, total: seat.total, ...(collect ? { added, got: { ...seat.got } } : {}) });
+  if (sc.bust || lost > 0) events.push({ type: 'BUSTED', seat: s.current, lost: 0 }); // (the bot moods listen for these two: a stranded turn that lost points counts as a bad turn)
   else if (gain > 0) events.push({ type: 'BANKED', seat: s.current, amount: gain, total: seat.total });
   events.push({ type: 'TURN_ENDED', seat: s.current });
   nextTurn(s, events);
@@ -212,7 +225,7 @@ function rollDice(s, rng, events) {
   if (tanks) events.push({ type: 'TANKS_KEPT', seat: s.current, count: tanks, tanks: t.kept.tank });
   if (!availableTypes(t).length) { // nothing can be set aside: the turn is over
     events.push({ type: 'NO_KEEP', seat: s.current });
-    scoreTurn(s, events);
+    scoreTurn(s, events, true);
     return;
   }
   t.phase = 'choose';
@@ -294,6 +307,7 @@ function wantsToRoll(s) {
   const t = s.turn;
   if (t.left <= 2) return false;
   const sc = turnScore(t.kept);
+  if (s.options.stranded === 'zero' && t.left <= 4 && !sc.bust && sc.gain > 0) return false; // few dice left: a stranded roll would lose what the turn has
   if (sc.bust) return t.left >= 3;
   if (s.options.goal === 'collect') { // stop once the turn has added a good amount of what is still needed
     const got = s.seats[s.current].got;

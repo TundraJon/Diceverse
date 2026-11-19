@@ -68,6 +68,7 @@ export const martianView = {
      'When a player reaches the target, everyone gets the same number of turns. The most points wins. A tie is settled by the Death Ray Duel: each tied player rolls 6 dice, and more death rays wins.',
      'Solo: reach the target in as few turns as you can.']
       .forEach((t) => sheet.appendChild(el('p', null, t)));
+    if (options && options.stranded === 'zero') sheet.appendChild(el('p', null, 'House rule, Stranded: if you roll and cannot set anything aside, the turn scores nothing (in Collect mode it adds nothing).'));
     if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect each type: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
   },
 
@@ -91,7 +92,7 @@ export const martianView = {
   },
 
   summary(h) {
-    return h.goal === 'collect' ? `Collect ${h.each} of each` : `Target ${h.target}`;
+    return `${h.goal === 'collect' ? `Collect ${h.each} of each` : `Target ${h.target}`}${h.stranded === 'zero' ? ' \u00B7 stranded scores nothing' : ''}`;
   },
 
   init(session) {
@@ -107,6 +108,7 @@ export const martianView = {
       current: st.current,
       target: st.options.target,
       collect: st.options.goal === 'collect',
+      stranded: st.options.stranded === 'zero',
       each: st.options.each,
       phase: st.winner !== null ? 'over' : st.duel ? 'duel' : t.phase,
       kept: { ...t.kept },
@@ -268,7 +270,7 @@ export const martianView = {
         delay = ctx.reduced ? 250 : 600;
         break;
       case 'NO_KEEP':
-        view.note = 'Nothing can be set aside: the turn is over';
+        view.note = view.stranded ? 'Stranded: nothing can be set aside' : 'Nothing can be set aside: the turn is over';
         delay = ctx.reduced ? 500 : 1000;
         break;
       case 'KEPT':
@@ -287,7 +289,11 @@ export const martianView = {
         if (ev.got) view.seats[ev.seat].got = { ...ev.got }; // Collect mode
         view.turnPoints = 0;
         const bonus = ev.bonus ? ' (3 bonus)' : '';
-        if (view.collect) {
+        if (ev.stranded) { // the Stranded rule took what the turn had
+          view.banner = { text: view.collect ? `STRANDED! ${name(ev.seat)} adds nothing` : `STRANDED! ${name(ev.seat)} scores 0`, good: false };
+          ctx.announce(`${name(ev.seat)} is stranded: nothing can be set aside, ${view.collect ? 'nothing added' : 'no points'}`);
+          ctx.vibrate();
+        } else if (view.collect) {
           const txt = ev.added ? addText(ev.added) : '';
           view.banner = ev.bust
             ? { text: `TANKS WIN! ${name(ev.seat)} adds nothing`, good: false }

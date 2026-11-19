@@ -849,6 +849,7 @@ function openHouseRules() {
       sheet.appendChild(wrap);
       refreshers.push(() => {
         const cur = settings.house[gameId];
+        wrap.hidden = !!(rule.hidden && rule.hidden(cur)); // a rule that does not apply to the other choices is not shown (Martian Dice: Target score or Each type)
         rule.options.forEach((opt, i) => {
           buttons[i].setAttribute('aria-pressed', String(cur[rule.key] === opt.value));
           buttons[i].disabled = !!(opt.disabled && opt.disabled(cur));
