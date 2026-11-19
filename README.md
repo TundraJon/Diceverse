@@ -1148,3 +1148,12 @@ Martian Dice, Collect mode: the result sheet says what each player collected (th
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright: Solo in Collect mode at 390x844 Normal and 320x640 Larger (the line in the right order with the turns, each kind at least the goal, the sheet inside the screen, no sideways scroll, screenshot checked); Solo in Points mode keeps `6 · 3 turns`; a two-player Collect game (a saved game at the Death Ray Duel, played to the end) shows two lines in the new wording; 11 checks, 0 failures, 0 JS errors. Not checked: a real phone.
 
+## Build Log 99 (completed)
+
+Martian Dice, Collect mode: the result line shows the pictures of what was collected (the user's idea: icons take far less room; option A, the game's own pictures, and the word "turns" kept). It replaces the words of Build Log 98.
+
+- [x] `src/ui/views/martian-view.js`: new `resultLine(row, options)` hook: in Collect mode a `.mdres` box with the chicken, cow and human pictures (22 px, the same `mdsym-*` pictures as the dice) each with its count, in alphabetical order, then `· 10 turns`; a spoken text for screen readers (`role="img"`, `aria-label` like `8 chickens, 8 cows, 6 humans, 10 turns`) and the pictures hidden from them. `src/ui/theme.css`: `.mdres`, `.mdresi`.
+- [x] `src/shell/main.js` `showGameOver`: the hook is read from the game's screen (`G.view.resultLine`), so it can draw pictures; `src/games/martian.js`: the `standingText` hook of Build Log 98 is removed (a rules file cannot draw). Every other game and Martian Dice in Points mode keep the plain points line.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright: Solo in Collect mode at 390x844 Normal and 320x640 Larger (the three pictures drawn at 22 px in the order chicken, cow, human, each count at least the goal, then the turns, and the spoken text; the sheet inside the screen; no sideways scroll); Solo in Points mode keeps `6 · 38 turns`; a two-player Collect game (a saved game at the Death Ray Duel, played to the end) shows two lines with pictures; screenshots at 390 and 320 px checked; 11 checks, 0 failures, 0 JS errors. Not checked: a real phone, and a screen reader.
+

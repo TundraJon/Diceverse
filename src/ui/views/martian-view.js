@@ -71,6 +71,25 @@ export const martianView = {
     if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect each type: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
   },
 
+  // The result line of a player when the game is over: in Collect mode the pictures of what was collected (chickens, cows, humans: alphabetical), then the turns.
+  resultLine(r, options) {
+    if (options.goal !== 'collect' || !r.got) return null;
+    const one = (n, t) => `${n} ${n === 1 ? NAMES[t] : PLURAL[t]}`;
+    const box = el('span', 'mdres');
+    box.setAttribute('role', 'img');
+    box.setAttribute('aria-label', `${one(r.got.chicken, 'chicken')}, ${one(r.got.cow, 'cow')}, ${one(r.got.human, 'human')}, ${r.turns} turns`);
+    ['chicken', 'cow', 'human'].forEach((t) => {
+      const g = el('span', 'mdresi');
+      g.setAttribute('aria-hidden', 'true');
+      g.append(el('i', `mdgico mdsym-${t}`), el('b', null, String(r.got[t])));
+      box.appendChild(g);
+    });
+    const turns = el('span', 'mdresturns', `\u00B7 ${r.turns} turns`);
+    turns.setAttribute('aria-hidden', 'true');
+    box.appendChild(turns);
+    return box;
+  },
+
   summary(h) {
     return h.goal === 'collect' ? `Collect ${h.each} of each` : `Target ${h.target}`;
   },

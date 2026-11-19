@@ -702,3 +702,6 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .mdgico { flex: none; width: 18px; height: 18px; background-size: contain; background-repeat: no-repeat; background-position: center; }
 .mdgi.full b { color: var(--gold); }
 .mdgi.full b::after { content: "\2713"; margin-left: 2px; }
+.mdres { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+.mdresi { display: inline-flex; align-items: center; gap: 4px; }
+.mdresi .mdgico { width: 22px; height: 22px; }
