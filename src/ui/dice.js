@@ -43,14 +43,15 @@ export function beginDice() { seq = 0; }
 const num = (v, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 
 // `symbols` (six emoji, one per face number) draws symbol dice instead of pips; an empty entry (null) keeps the pips on that face; `kind` is the body colour (green, yellow, red, crew).
+// `images` (six CSS class names, one per face number, each drawing a picture as a background image) and `labels` (six names for the screen reader) draw picture dice, as the Martian Dice.
 // `pips` (six numbers, one per cube face) sets how many pips each face shows, for dice such as 1, 1, 2, 2, 3, 3.
-export function renderDie(value, { tumble = false, danger = true, cls = '', sides = 6, symbols = null, kind = '', pips = null } = {}) {
+export function renderDie(value, { tumble = false, danger = true, cls = '', sides = 6, symbols = null, kind = '', pips = null, images = null, labels = null } = {}) {
   if (sides !== 6) throw new Error('Only six-sided dice are built so far');
   const k = seq++;
   const el = document.createElement('div');
-  el.className = 'die' + (value == null ? ' blank' : '') + (symbols && symbols.every(Boolean) ? ' sym' : '') + (kind ? ' k-' + kind : '') + (cls ? ' ' + cls : '');
+  el.className = 'die' + (value == null ? ' blank' : '') + ((symbols && symbols.every(Boolean)) || (images && images.every(Boolean)) ? ' sym' : '') + (kind ? ' k-' + kind : '') + (cls ? ' ' + cls : '');
   el.setAttribute('role', 'img');
-  el.setAttribute('aria-label', value == null ? 'Die, not rolled' : (symbols && symbols[value - 1] ? `Die showing ${symbols[value - 1]}` : `Die showing ${pips ? pips[value - 1] : value}`));
+  el.setAttribute('aria-label', value == null ? 'Die, not rolled' : (labels && labels[value - 1] ? `Die showing ${labels[value - 1]}` : symbols && symbols[value - 1] ? `Die showing ${symbols[value - 1]}` : `Die showing ${pips ? pips[value - 1] : value}`));
 
   const tilt = document.createElement('div');
   tilt.className = 'tilt';
@@ -60,6 +61,14 @@ export function renderDie(value, { tumble = false, danger = true, cls = '', side
     const face = document.createElement('div');
     face.className = `face f${f}`;
     face.setAttribute('aria-hidden', 'true');
+    if (images && images[f - 1]) { // a picture face (drawn only once the die has a value, like the symbols)
+      face.classList.add('symf');
+      const sy = document.createElement('div');
+      sy.className = 'symface imgsym' + (value != null ? ' ' + images[f - 1] : '');
+      face.appendChild(sy);
+      cube.appendChild(face);
+      continue;
+    }
     if (symbols && symbols[f - 1]) {
       face.classList.add('symf');
       const sy = document.createElement('div');

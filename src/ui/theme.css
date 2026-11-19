@@ -316,6 +316,7 @@ body.fast .cover { transition: none; }
 .die .face.symf { display: flex; align-items: center; justify-content: center; padding: 0; }
 .die .symface { font-size: calc(var(--s) * 0.5); line-height: 1; text-align: center; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px rgba(255,255,255,0.9)); } /* a light halo so a gray symbol stands out on any body colour */
 .die .symface.two { font-size: calc(var(--s) * 0.3); letter-spacing: -0.04em; }
+.die .symface.imgsym { width: 82%; height: 82%; font-size: 0; filter: none; background-size: contain; background-repeat: no-repeat; background-position: center; } /* picture dice (Martian Dice) */
 .die.k-green .face { background: linear-gradient(145deg, #6fd68a, #2f9e55); }
 .die.k-yellow .face { background: linear-gradient(145deg, #fde68a, #e0b21f); }
 .die.k-red .face { background: linear-gradient(145deg, #f58b8b, #c63a3a); }
@@ -725,3 +726,23 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .passcover .pcnote { color: var(--muted); font-size: 0.85rem; max-width: 280px; }
 .log:empty { display: none; }
 .savewarn { font-size: 0.8rem; color: var(--gold); text-align: center; padding: 2px 0; }
+
+/* Martian Dice */
+.table.mdtable { gap: 8px; justify-content: flex-start; align-items: stretch; width: 100%; }
+.mdbox { background: rgba(0,0,0,0.28); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.mdbox[hidden], .mdchoose[hidden] { display: none; }
+.mdlab { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+.mddice { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; min-height: 36px; padding: 2px 4px; } /* a cube is drawn about 20 % wider than its box: the gap leaves room for that */
+.mddice .die { --s: clamp(28px, calc((100vw - 138px) / 7), 36px); }
+.mddice.kept { gap: 10px; }
+.mddice.kept .die { --s: clamp(24px, calc((100vw - 124px) / 8), 30px); }
+.mdnone { color: var(--muted); font-size: 0.82rem; }
+.mdkeep { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.mdkeepbtn { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 48px; padding: 4px 8px; text-align: left; background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 12px; }
+.mdkeepbtn:disabled { opacity: 0.4; }
+.mdico { flex: none; width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+.mdkn { flex: 1; min-width: 0; font-size: 0.8rem; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+.mdkc { flex: none; font-size: 1rem; color: var(--gold); }
+.mdduelrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 4px 0; }
+.mdduelname { font-weight: 800; min-width: 7em; }
+.mdduelrays { color: var(--gold); }
