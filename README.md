@@ -1177,3 +1177,12 @@ Martian Dice wording and order (the user's two requests).
 
 Verification (scratch script, none committed): `preflight` clean; Playwright: the Goal buttons read Points and Collect and the help text is new; the player card shows chicken, cow, human in that order with the spoken text in the same order; with a saved game one roll from the end of a turn, the note before the roll and the banner after it read `+2 chickens, +4 cows, +3 humans`; 9 checks, 0 failures, 0 JS errors. Not checked: a real phone.
 
+## Build Log 102 (completed)
+
+Martian Dice, Stranded rule: a roll of only tanks is not stranded (the user's correction of Build Log 100).
+
+- [x] `src/games/martian.js` `rollDice`: the `NO_KEEP` event carries `stranded`, true only when the roll has dice that cannot be set aside (`t.pending` is not empty: earthlings of a kind already taken this turn). When every die is a tank, nothing is left to pick, the turn simply ends and scores as normal (a bust only when tanks beat death rays), with no `STRANDED` and no loss; the Stranded rule text and the rules sheet say so.
+- [x] `src/ui/views/martian-view.js`: the note says `Stranded: nothing can be set aside` only for a real stranded roll; an all-tanks roll shows `Nothing can be set aside: the turn is over`.
+
+Verification (scratch scripts, none committed): `preflight` clean. Node, the real rules: 23 Stranded checks, 0 failures (new: only tanks rolled with rays 4 and tanks 4 scores 5 with the rule on and off, no `BUSTED`; six more tanks than rays is a bust and not stranded; humans again after taking humans plus a tank is still stranded and loses 5). Playwright at real speed with saved games one roll before each case: an all-tanks last roll scores (`Ann: +6` in Points mode, `Ann: +1 chicken, +5 cows` in Collect mode) with the normal note; a real stranded roll still shows `Stranded: nothing can be set aside` and `STRANDED! Ann scores 0` / `adds nothing` with the score unchanged; 13 checks, 0 failures, 0 JS errors. Found in the test (test fault, not the app): the card's turn count and "+N this turn" note change at the end of a turn, so only the score is compared. Not checked: a real phone.
+

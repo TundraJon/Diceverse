@@ -68,7 +68,7 @@ export const martianView = {
      'When a player reaches the target, everyone gets the same number of turns. The most points wins. A tie is settled by the Death Ray Duel: each tied player rolls 6 dice, and more death rays wins.',
      'Solo: reach the target in as few turns as you can.']
       .forEach((t) => sheet.appendChild(el('p', null, t)));
-    if (options && options.stranded === 'zero') sheet.appendChild(el('p', null, 'House rule, Stranded: if you roll and cannot set anything aside, the turn scores nothing (in Collect mode it adds nothing).'));
+    if (options && options.stranded === 'zero') sheet.appendChild(el('p', null, 'House rule, Stranded: if you roll dice that you cannot set aside, the turn scores nothing (in Collect mode it adds nothing). A roll of only tanks is not stranded.'));
     if (options && options.goal === 'collect') sheet.appendChild(el('p', null, `House rule, Collect: there are no points. A turn that is not a bust adds the cows, chickens and humans you set aside to your counts. The first player with ${options.each} of each wins (everyone gets the same number of turns; a tie is settled by the Death Ray Duel).`));
   },
 
@@ -270,7 +270,7 @@ export const martianView = {
         delay = ctx.reduced ? 250 : 600;
         break;
       case 'NO_KEEP':
-        view.note = view.stranded ? 'Stranded: nothing can be set aside' : 'Nothing can be set aside: the turn is over';
+        view.note = view.stranded && ev.stranded ? 'Stranded: nothing can be set aside' : 'Nothing can be set aside: the turn is over';
         delay = ctx.reduced ? 500 : 1000;
         break;
       case 'KEPT':

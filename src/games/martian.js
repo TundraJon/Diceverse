@@ -5,7 +5,8 @@
 // settled by the Death Ray Duel (each tied player rolls 6 dice, more death rays wins).
 // House rule `goal` = 'collect': instead of points, each player collects cows, chickens and humans over the turns (a turn that is not a bust adds what was set
 // aside, no bonus); the first to have `each` of all three kinds ends the game, with the same number of turns for all and the Duel for a tie.
-// House rule `stranded` = 'zero': a roll that leaves nothing to set aside ("stranded") makes the turn score nothing (Collect mode: add nothing).
+// House rule `stranded` = 'zero': a roll with dice that cannot be set aside (earthlings of a kind already taken this turn; not a roll of only tanks) makes the
+// turn score nothing (Collect mode: add nothing).
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
@@ -47,7 +48,7 @@ export const meta = {
       key: 'stranded', label: 'Stranded',
       options: [{ value: 'keep', label: 'Keep what you have' }, { value: 'zero', label: 'Score nothing' }],
       default: 'keep',
-      hint: () => 'Stranded is a roll that leaves nothing you can set aside. Keep what you have: the turn ends and scores what you set aside before. Score nothing: the turn scores 0 (Collect mode: adds nothing).',
+      hint: () => 'Stranded is a roll with dice that you cannot set aside (a roll of only tanks does not count). Keep what you have: the turn ends and scores what you set aside before. Score nothing: the turn scores 0 (Collect mode: adds nothing).',
     },
   ],
 };
@@ -224,8 +225,9 @@ function rollDice(s, rng, events) {
   t.pending = types.filter((x) => x !== 'tank');
   if (tanks) events.push({ type: 'TANKS_KEPT', seat: s.current, count: tanks, tanks: t.kept.tank });
   if (!availableTypes(t).length) { // nothing can be set aside: the turn is over
-    events.push({ type: 'NO_KEEP', seat: s.current });
-    scoreTurn(s, events, true);
+    const stranded = t.pending.length > 0; // dice that cannot be taken: stranded. A roll of only tanks is not stranded (the tanks are set aside and the turn simply ends).
+    events.push({ type: 'NO_KEEP', seat: s.current, stranded });
+    scoreTurn(s, events, stranded);
     return;
   }
   t.phase = 'choose';
