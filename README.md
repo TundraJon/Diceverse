@@ -1138,3 +1138,13 @@ Martian Dice house rule "Goal": collect a number of each type (was Queue 58; all
 
 Verification (scratch scripts, none committed): `preflight` clean. Node, the real rules: 23 checks, 0 failures (counts added only on a non-bust turn, no bonus, a bust adds nothing, done exactly at the goal and equal turns, one done wins, two done in the same round go to the Duel, more than the goal is fine, solo, the greyed-out rules, 24 bot games at every preset and 1 to 4 players that finish and replay exactly, the balanced bot beats the weak bot 30 of 30); the Points mode tests re-run: 45 checks, 0 failures. Playwright: the House rules screen (the right rule greyed in each mode, the notes, the menu summary); full games in Collect mode at 390x844 Normal, 320x640 Larger and 412x915 (3 counters on each card, 0/goal at the start, somebody full at the end, no points total, no sideways scroll, card text at least 12 px); at real speed 6 rolls with the counters, note, choices and banner unchanged in the first second, 3 banners that say what was set aside and counters that rose by exactly that; Solo in Collect mode to the end ("Done in 23 turns", personal best saved); screenshots at 390 and 320 px checked; 0 JS errors. Not checked: Pass & Play in Collect mode (the same state and view code), and a real phone (how readable the counters are).
 
+## Build Log 98 (completed)
+
+Martian Dice, Collect mode: the result sheet says what each player collected (the user's choice A, in alphabetical order: chickens, cows, humans).
+
+- [x] `src/games/martian.js`: `meta.standingText(row, options)` gives, in Collect mode, `8 chickens, 4 cows, 5 humans · 17 turns` (singular for one: `1 chicken`, `1 cow`, `1 human`) and nothing in Points mode; `result()` standings now carry `got`.
+- [x] `src/shell/main.js` `showGameOver`: a game may word its own result line through `meta.standingText`; without it (every other game, and Martian Dice in Points mode) the line is as before.
+- [x] `src/ui/theme.css`: `.results .r` may wrap (`flex-wrap`, a small gap), so a long line goes under the name on a narrow screen.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright: Solo in Collect mode at 390x844 Normal and 320x640 Larger (the line in the right order with the turns, each kind at least the goal, the sheet inside the screen, no sideways scroll, screenshot checked); Solo in Points mode keeps `6 · 3 turns`; a two-player Collect game (a saved game at the Death Ray Duel, played to the end) shows two lines in the new wording; 11 checks, 0 failures, 0 JS errors. Not checked: a real phone.
+

@@ -1099,7 +1099,8 @@ function showGameOver() {
     res.standings.forEach((r) => {
       const row = el('div', 'r');
       const at = r.seat !== undefined ? r.seat : st.seats.findIndex((x) => x.name === r.name);
-      row.append(el('span', null, `${faceFor(optSeats[at], 'DEFAULT')} ${r.name}`), el('span', null, `${r.total.toLocaleString('en-US')} · ${r.turns} turns`));
+      const custom = meta.standingText ? meta.standingText(r, st.options) : null; // a game may word its own result line (Martian Dice, Collect mode)
+      row.append(el('span', null, `${faceFor(optSeats[at], 'DEFAULT')} ${r.name}`), el('span', null, custom || `${r.total.toLocaleString('en-US')} · ${r.turns} turns`));
       list.appendChild(row);
     });
     sheet.appendChild(list);

@@ -118,7 +118,7 @@ select { min-height: 48px; background: #0b2b21; color: var(--text); border: 1px 
 .log { font-size: 0.8rem; color: var(--muted); min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
 
 .results { display: flex; flex-direction: column; gap: 6px; }
-.results .r { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.results .r { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 6px 0; border-bottom: 1px solid var(--line); } /* a long result line (Martian Dice, Collect mode) goes under the name on a narrow screen */
 
 
 /* Farkle */

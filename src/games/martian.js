@@ -23,6 +23,12 @@ export const meta = {
   tier: 'A',
   soloKey: (o) => (o.goal === 'collect' ? `collect:${o.each}` : String(o.target)), // the personal best is per goal (fewest turns to reach it)
   soloHide: [],
+  // The result line of a player when the game is over: in Collect mode what was collected (in alphabetical order), not a score.
+  standingText: (r, o) => {
+    if (o.goal !== 'collect' || !r.got) return null;
+    const one = (n, singular, plural) => `${n} ${n === 1 ? singular : plural}`;
+    return `${one(r.got.chicken, 'chicken', 'chickens')}, ${one(r.got.cow, 'cow', 'cows')}, ${one(r.got.human, 'human', 'humans')} \u00B7 ${r.turns} turns`;
+  },
   houseRules: [
     {
       key: 'goal', label: 'Goal',
@@ -114,7 +120,7 @@ export function isOver(state) {
 
 export function result(state) {
   const standings = state.seats
-    .map((s, i) => ({ seat: i, name: s.name, total: s.total, turns: s.turns }))
+    .map((s, i) => ({ seat: i, name: s.name, total: s.total, turns: s.turns, got: { ...s.got } }))
     .sort((a, b) => b.total - a.total);
   return { winner: state.winner, winners: state.winners.slice(), standings, soloTurns: state.seats.length === 1 ? state.seats[0].turns : null };
 }
