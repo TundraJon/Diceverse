@@ -19,6 +19,10 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+### Planner 26 — Press-your-luck racing game, like Rallyman GT (idea, 2026-11-24; design still open, not authorized)
+The user chose: a Race for 2 to 4 players or bots (laps, first across the line wins) with a Solo time trial. Idea so far: a track of spaces with corners, each corner has a speed limit; on your turn you pick a gear and roll that gear's dice (higher gear = more dice); you may shift up and roll again to go farther; entering a corner faster than its limit means a spin-out (the turn's progress is lost). Keep only gears and corners (no tyre wear, no weather). Reuses the `src/blocks/push-loop` block. *(Added by Claude. Change before authorizing if wanted.)*
+Open questions (with my pick): 1. How many gears and dice per gear (my pick: 4 gears with 1, 2, 3, 4 dice). 2. What a spin-out costs (my pick: lose this turn's distance and drop to gear 1). 3. Track: one fixed track or three to choose from (my pick: one fixed track of about 30 spaces, laps 2/3/5 as a house rule). 4. How a bot judges risk (my pick: Cautious/Balanced/Bold presets as in the other games).
+
 ### Planner 24 — High Roller scrolls with 4 players and neutral dice on a 320x640 screen (the user decided to leave it, 2026-11-17)
 Measured 2026-11-17: High Roller fits (no scroll) at 412x915, 412x760, 390x844, 360x740 and 320x640 with 2, 3 or 4 players and neutral dice Auto or On, except 4 players with neutral dice On at 320x640: +61 px. Option not taken: smaller cards on tiny screens. Do not raise this again unless the user asks.
 
