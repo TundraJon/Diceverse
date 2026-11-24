@@ -17,11 +17,20 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
-
-### Planner 26 — Press-your-luck racing game, like Rallyman GT (idea, 2026-11-24; design still open, not authorized)
-The user chose: a Race for 2 to 4 players or bots (laps, first across the line wins) with a Solo time trial. Idea so far: a track of spaces with corners, each corner has a speed limit; on your turn you pick a gear and roll that gear's dice (higher gear = more dice); you may shift up and roll again to go farther; entering a corner faster than its limit means a spin-out (the turn's progress is lost). Keep only gears and corners (no tyre wear, no weather). Reuses the `src/blocks/push-loop` block. *(Added by Claude. Change before authorizing if wanted.)*
-Open questions (with my pick): 1. How many gears and dice per gear (my pick: 4 gears with 1, 2, 3, 4 dice). 2. What a spin-out costs (my pick: lose this turn's distance and drop to gear 1). 3. Track: one fixed track or three to choose from (my pick: one fixed track of about 30 spaces, laps 2/3/5 as a house rule). 4. How a bot judges risk (my pick: Cautious/Balanced/Bold presets as in the other games).
+### Queue 1 — Dice Rally: a press-your-luck racing game (Not yet authorized to build)
+The user chose: a Race (2 to 4 players or bots, laps) plus a Solo time trial; all my recommendations except two tracks instead of one. Anything not said by the user is *(Added by Claude. Change before authorizing if wanted.)* Numbers below are a first guess, to be tuned in the build with bot games.
+- **Name** `Dice Rally`, id `rally`, players 1 to 4, `soloOK`.
+- **Track:** a ring of numbered spaces, space 0 is the start/finish line. Corners are fixed spaces with a speed limit. House rule `track`: **Sprint Loop** (40 spaces, 3 corners, limits 14, 12, 10) or **Mountain Pass** (60 spaces, 6 tighter corners, limits 12, 10, 8, 12, 9, 7). House rule `laps`: 2, 3 (default), 5.
+- **Gears:** 1 to 4; gear g rolls g dice. Each car keeps its gear between turns. Start in gear 1.
+- **Turn:** (1) You may shift DOWN any number of gears, or stay. (2) ROLL: roll g dice; the total is your speed; the car moves forward that many spaces. (3) Then STOP (the car stays, gear stays) or SHIFT UP one gear (max 4) and ROLL again, moving on from where you are. Your turn ends when you stop, spin out, or have rolled in gear 4.
+- **Spin-out:** if a roll's speed is above the limit of any corner the car passes or lands on during that roll, the car spins out: it goes back to where the turn began, drops to gear 1, and the turn ends. A roll of exactly the limit is safe. *(Added by Claude.)* Corners only count when passed in a roll, not when already behind the car.
+- **Finish:** a car that completes the laps finishes. Everyone gets equal turns (like Martian Dice). If several finish in the same round, the one that went farthest past the line wins; equal = shared win. Solo: finish the laps in as few turns as possible (personal best by track and laps).
+- **Bots:** Cautious, Balanced, Bold presets using the generic search hooks in `src/ai/brain.js` (`candidatePlans`, `rollout`, `isDeterministic`), as Martian Dice does.
+- **Files:** `src/games/rally.js` (pure rules, seeded, `legalActions`: SHIFT_DOWN `{gears}`, ROLL, SHIFT_UP, STOP; events ROLLED, MOVED, SPUN_OUT, STOPPED, FINISHED), `src/ui/views/rally-view.js` (track drawn as HTML/SVG with text laid over it, cars as player colours, dice by `renderDie`, gear buttons, banners), register in `src/games/index.js` and `src/ui/views/index.js`, `BIG_BANK.rally` in `src/shell/moods.js`, rules sheet, summary, results line.
+- **No tell:** during a roll and until `SETTLE_MS` after it stops, the car must not move, no corner may flash, no spin-out text or sound of it, no button may change; the screen-reader announcement waits too. Test it at real speed.
+- **Layout:** check 390x844, 360x740, 320x640 at the 3 text sizes; text at least 12 px.
+- **Tests (Node):** gear/dice counts, corner pass/land/exact-limit, spin-out reset, equal turns, finish tie, solo, 300 random games ending, bot beats a weak bot, replay is exact. **Tests (Playwright):** full games, Pass & Play with the cover, solo, no-tell timing, layouts, 0 JS errors. Real-device check: touch feel and how readable the track is.
+- Old saves: none (new game).
 
 ### Planner 24 — High Roller scrolls with 4 players and neutral dice on a 320x640 screen (the user decided to leave it, 2026-11-17)
 Measured 2026-11-17: High Roller fits (no scroll) at 412x915, 412x760, 390x844, 360x740 and 320x640 with 2, 3 or 4 players and neutral dice Auto or On, except 4 players with neutral dice On at 320x640: +61 px. Option not taken: smaller cards on tiny screens. Do not raise this again unless the user asks.
