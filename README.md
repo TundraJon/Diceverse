@@ -17,7 +17,9 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-### Queue 1 — Dice Rally: a press-your-luck racing game (Not yet authorized to build)
+_Empty — nothing queued right now._
+
+### Planner 26 — Dice Rally: a racing game idea for a SEPARATE app, not for Diceverse (moved from the Queue 2026-11-25; the user decided it is a board game that uses dice, so it does not fit a dice-game app)
 The user chose: a Race (2 to 4 players or bots, laps) plus a Solo time trial; all my recommendations except two tracks instead of one. Anything not said by the user is *(Added by Claude. Change before authorizing if wanted.)* Numbers below are a first guess, to be tuned in the build with bot games.
 - **Name** `Dice Rally`, id `rally`, players 1 to 4, `soloOK`.
 - **Track:** a ring of numbered spaces, space 0 is the start/finish line. Corners are fixed spaces with a speed limit. House rule `track`: **Sprint Loop** (40 spaces, 3 corners, limits 14, 12, 10) or **Mountain Pass** (60 spaces, 6 tighter corners, limits 12, 10, 8, 12, 9, 7). House rule `laps`: 2, 3 (default), 5.
