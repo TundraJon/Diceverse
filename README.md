@@ -19,6 +19,8 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 _Empty — nothing queued right now._
 
+## Build Planner
+
 ### Planner 26 — Dice Rally: a racing game idea for a SEPARATE app, not for Diceverse (moved from the Queue 2026-11-25; the user decided it is a board game that uses dice, so it does not fit a dice-game app)
 The user chose: a Race (2 to 4 players or bots, laps) plus a Solo time trial; all my recommendations except two tracks instead of one. Anything not said by the user is *(Added by Claude. Change before authorizing if wanted.)* Numbers below are a first guess, to be tuned in the build with bot games.
 - **Name** `Dice Rally`, id `rally`, players 1 to 4, `soloOK`.
