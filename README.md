@@ -21,6 +21,9 @@ _Empty — nothing queued right now._
 
 ## Build Planner
 
+### Planner 27 — Ideas from the Homescapes "Four Elements" dice event (note only, not a game; 2026-11-26)
+The user asked about it; I advised skipping it as a game (its hooks are match-3 level rewards, online co-op partners and chests, and its dice part is one luck die with a bet multiplier; it is also a board-movement loop). Parts that could be reused in a future game: (1) a die with colours and element symbols instead of pips (a colour moves a token to the next tile of that colour; a symbol scores points without moving); (2) an "x2 space" that gives a free roll with doubled points; (3) a "bonus space" that makes the next roll sweep up the points of every tile passed. Use our own theme and art, not the event's names or look.
+
 ### Planner 26 — Dice Rally: a racing game idea for a SEPARATE app, not for Diceverse (moved from the Queue 2026-11-25; the user decided it is a board game that uses dice, so it does not fit a dice-game app)
 The user chose: a Race (2 to 4 players or bots, laps) plus a Solo time trial; all my recommendations except two tracks instead of one. Anything not said by the user is *(Added by Claude. Change before authorizing if wanted.)* Numbers below are a first guess, to be tuned in the build with bot games.
 - **Name** `Dice Rally`, id `rally`, players 1 to 4, `soloOK`.
