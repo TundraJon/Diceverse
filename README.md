@@ -1263,3 +1263,11 @@ Dice Chase fairy: skin and hair follow the player's face (the user's rules, "go 
 - [x] Only the colour of the hair changes, not its shape (no curls, no beard).
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844: 7 human faces (plain, 👱, 🦰, 🦱, 🦳, 👵, 🦲) with tones 0 to 5 and one with no avatar at all: every skin and hair colour as expected (16 checks); in games with 3 bots, every usual face (🙂 🖐️ 🤖 👽 🏛️ 👁️ 🎲) gave the right skin and blond hair, and the skin stayed the same when the mood face changed (✊ 🧠 👄 🔮 💀 🤔); 27 checks, 0 failures, 0 JS errors; screenshot of six combinations looked at (bald in the dress colour, red, dark, white, blond with blue skin, plain). Not checked: a real phone, Pass & Play with different faces, and how the lighter hair shade looks in a browser without `color-mix` (older phones show the old light yellow).
+
+## Build Log 109 (completed)
+
+Dice Chase: the score key above the row shows each score in brackets (the user's request).
+
+- [x] `src/ui/views/chase-view.js`: the key reads `Ice (1)`, `Leaf (2)`, `Water (3)`, `Fire (4)`, `Sweep (2)`, `x2 (2)` (the points of Sweep and x2 now come from `pointsOf`, not typed text).
+
+Verification (scratch script, none committed): `preflight` clean. Playwright at 390x844 Normal, 360x740 Large and 320x640 Larger with a 10-dice row: the six texts are exactly as above, no sideways scroll, text at least 12 px; 9 checks, 0 failures, 0 JS errors; screenshot looked at. Not checked: a real phone.

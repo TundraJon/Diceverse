@@ -126,11 +126,11 @@ export const chaseView = {
     ui.key.innerHTML = '';
     [1, 2, 3, 4].forEach((f) => {
       const k = el('span', 'chk');
-      k.append(el('i', `chkico ${ROW_IMAGES[f - 1]}`), el('b', null, `${ROW_LABELS[f - 1]} ${pointsOf(f)}`));
+      k.append(el('i', `chkico ${ROW_IMAGES[f - 1]}`), el('b', null, `${ROW_LABELS[f - 1]} (${pointsOf(f)})`));
       ui.key.appendChild(k);
     });
     const sp = el('span', 'chk');
-    sp.append(el('i', `chkico ${IMG.star}`), el('b', null, 'Sweep 2'), el('i', `chkico ${IMG.x2}`), el('b', null, 'x2 2'));
+    sp.append(el('i', `chkico ${IMG.star}`), el('b', null, `Sweep (${pointsOf(5)})`), el('i', `chkico ${IMG.x2}`), el('b', null, `x2 (${pointsOf(6)})`));
     ui.key.appendChild(sp);
 
     // the row and the fairy (the fairy is one element, so it can hop; the row is drawn again)
