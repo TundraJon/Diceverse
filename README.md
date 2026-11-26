@@ -1244,3 +1244,12 @@ Dice Chase: the placeholder fairy is replaced by the user's fairy art (candidate
 - [x] Candidates #2, #3 and #4 are not used. Only #1 is in the code; the others stayed in my scratch folder (not committed).
 
 Verification (scratch scripts, none committed): `preflight` clean. Playwright: 56 layout and game checks, 0 failures, 0 JS errors (menu, a 10-dice row at 390x844, 360x740 and 320x640 at three text sizes, full games vs bots, solo, Pass & Play, resume, rules sheet, 768x1024); the fairy's dress follows whose turn it is in a game with a bot (two different colours seen); pixel counts of a 6x screenshot of the fairy: blue, red and green players have the right dress colour, and tones 0, 3 and 5 the right skin colour, with the blonde hair and sky-blue wings in all; turn banners still last 2.5 s; screenshots looked at (390 and 320 Larger, purple player). The first colour test failed because it read the colours from the hidden sprite, not the drawn copy (a test mistake, replaced by the pixel counts). Not checked: a real phone (how the 46 px fairy reads), Pass & Play with players of different tones.
+
+## Build Log 107 (completed)
+
+Stored the other fairy candidates for possible use later (the user's request). No game code changed.
+
+- [x] `docs/art/fairy-2-coloured.svg` and `docs/art/fairy-4-coloured.svg`: the coloured versions (blonde hair, sky-blue wings; the dress and skin read the CSS variables `--dress` and `--skin`, with defaults blue and light skin; transparent background). #4 has the chest cup and skirt tips in dress colour, as the user marked. #2 and #4 were one solid shape, so their parts are cut with clip paths and masks and the edges are close, not exact.
+- [x] `docs/art/fairy-3-line.svg`: candidate #3, a line drawing, kept as sent (not coloured: it has no filled shapes). Candidate #1 is already in `src/ui/chase-art.js` (Build Log 106).
+
+Verification: each file was drawn in a browser on its own; screenshot looked at (the three fairies side by side). Not checked: the stored files in the game (they are not used by it).
