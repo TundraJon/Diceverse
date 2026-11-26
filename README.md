@@ -17,7 +17,24 @@ Rules of engagement (standing rule, lifecycle, commit discipline, verification a
 
 ## Build Queue
 
-_Empty — nothing queued right now._
+### Queue 1 — Dice Chase: a push-your-luck game where the rolled dice are the track (Not yet authorized to build)
+From the user's "Dice Row" idea (the Four Elements colour-chase, with no board). Anything the user did not say is *(Added by Claude. Change before authorizing if wanted.)* The numbers are a first guess, to be tuned in the build with bot games.
+- **Name** `Dice Chase`, id `chase`, players 1 to 4, `soloOK`.
+- **The row:** at the start of each turn, 8 dice are rolled and laid in a row, left to right (house rule `row`: 6, 8, 10). Faces 1 to 4 show pips; face 5 is a **Sweep** die (star); face 6 is a **x2** die. A cursor starts left of the first die.
+- **Action die** (one d6, rolled each step): 1 to 4 = the cursor jumps to the next die to its right that shows that number; 5 = jumps to the next special die (Sweep or x2); 6 = **Surge**: +3 points, the cursor stays, roll again. *(Added by Claude: the user's text had 5 = instant points and 6 = 2x. I moved the 2x to a row die so the user's Sweep and x2 spaces can be reached.)*
+- **Scoring a jump:** landing on a numbered die scores its pips; a Sweep or x2 die scores 2. Dice jumped over stay in the row but are behind the cursor (dead for this turn).
+- **Sweep:** landing on a Sweep die arms it. The next jump also scores the pips of every numbered die it jumps over (specials jumped over score 2 each).
+- **x2:** landing on an x2 die gives a free roll; the points of the next jump are doubled.
+- **Push your luck:** after each jump, STOP (bank the turn's points) or ROLL again. If the action die has no matching die to the right of the cursor, you bust: the turn's unbanked points are lost. The row thins out to the right, so the risk grows. Rolling 6 (Surge) is always safe.
+- **The turn** also ends when the cursor passes the last die (nothing is left): you bank automatically.
+- **Win:** house rule `target`: 40, 60 (default), 80 points. Equal turns after someone reaches it (like Martian Dice); the highest total wins; a tie is shared. Solo: reach the target in as few turns as possible (personal best per target).
+- **Risk to watch:** the only decision is STOP or ROLL (like Pig). If the bot games show it is too thin, ask the user before adding anything.
+- **Bots:** Cautious, Balanced, Bold presets, using the generic search hooks in `src/ai/brain.js` (`candidatePlans`, `rollout`, `isDeterministic`), as Martian Dice does.
+- **Files:** `src/games/chase.js` (pure seeded rules; actions ROLL, STOP; events ROW, ACTION, JUMPED, SURGE, BUSTED, BANKED), `src/ui/views/chase-view.js` (the row of real dice via `renderDie` with `symbols` for the star and x2, a cursor marker, a visible dead zone, the action die, banners, text laid over drawings), register in `src/games/index.js` and `src/ui/views/index.js`, `BIG_BANK.chase` in `src/shell/moods.js`, rules sheet, summary, results line.
+- **No tell:** while the action die rolls, and until `SETTLE_MS` after it stops, the cursor must not move, no die may highlight or dim, no bust text, no button may change, and the screen-reader announcement waits too. The same for the row roll at the start of a turn. Test at real speed.
+- **Layout:** check 390x844, 360x740, 320x640 at the 3 text sizes; 10 dice must fit in one row at 320 px; text at least 12 px.
+- **Tests (Node):** jump rules (next match, none = bust, specials), Sweep and x2 scoring, Surge, auto-bank at the end, equal turns, solo, 300 random games ending, bot beats a weak bot, replay is exact. **Tests (Playwright):** full games, Pass & Play with the cover, solo, no-tell timing, layouts, 0 JS errors. Real-device check: touch feel and how readable the row is.
+- Old saves: none (new game).
 
 ## Build Planner
 
