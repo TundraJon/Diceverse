@@ -17,12 +17,24 @@ const el = (tag, cls, text) => {
 };
 
 const BANNER_MS = 2500; // every banner stays at least this long
-// The fairy's colors: the dress is the player's color; the skin is the tone chosen in the player's face (a skin-tone mark in the emoji), light when none is chosen.
+// The fairy's colors. Dress: the player's color. Skin: the skin tone chosen in the player's face (a skin-tone mark in the emoji); the blue of the default 👤 when no tone
+// is chosen. A bot's skin follows its usual face: yellow (🙂 🖐️), silver (🤖 👽), blue (🏛️ 👁️) or green (🎲). Hair: the hair of the player's face (blond, red, dark curly,
+// white or grey, plain faces dark brown; a bald face takes the dress color); a bot has blond hair. (The shades are my choice.)
 const DEFAULT_DRESS = '#3b82f6';
-const skinOf = (avatar) => {
-  const m = typeof avatar === 'string' ? avatar.match(/[\u{1F3FB}-\u{1F3FF}]/u) : null;
-  return TONE_COLORS[m ? m[0].codePointAt(0) - 0x1F3FB + 1 : 1];
-};
+const SKIN = { yellow: '#f7d56a', silver: '#c0c8d0', blue: '#6b8fc7', green: '#8cc084' };
+const HAIR = { blond: '#f5d76e', red: '#c8501f', dark: '#4a2f1b', white: '#e5e7eb', plain: '#5a3a22' };
+const has = (str, ...cps) => cps.some((cp) => str.includes(String.fromCodePoint(cp)));
+function fairyColors(opt, dress) {
+  const face = typeof opt.avatar === 'string' ? opt.avatar : '';
+  if (opt.isBot) {
+    const skin = has(face, 0x1F642, 0x1F590) ? SKIN.yellow : has(face, 0x1F3DB, 0x1F441) ? SKIN.blue : has(face, 0x1F3B2) ? SKIN.green : SKIN.silver; // (a bot with an unknown face is silver, like 🤖)
+    return { skin, hair: HAIR.blond };
+  }
+  const m = face.match(/[\u{1F3FB}-\u{1F3FF}]/u);
+  const skin = m ? TONE_COLORS[m[0].codePointAt(0) - 0x1F3FB + 1] : SKIN.blue;
+  const hair = has(face, 0x1F9B2) ? dress : has(face, 0x1F9B0) ? HAIR.red : has(face, 0x1F9B1) ? HAIR.dark : has(face, 0x1F9B3, 0x1F474, 0x1F475, 0x1F9D3) ? HAIR.white : has(face, 0x1F471) ? HAIR.blond : HAIR.plain;
+  return { skin, hair };
+}
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns }));
 const rowDie = (face, ctx, tumble) => renderDie(face, { tumble: !!tumble && !ctx.reduced, cls: 'cream', images: ROW_IMAGES, labels: ROW_LABELS });
 const actDie = (face, ctx, tumble) => renderDie(face, { tumble: !!tumble && !ctx.reduced, cls: 'cream', images: ACT_IMAGES, labels: ACT_LABELS });
@@ -142,8 +154,11 @@ export const chaseView = {
     ui.fairy.style.left = `${((col + 0.5) / (n + 1)) * 100}%`;
     ui.fairy.setAttribute('class', `chfairy${view.sweep ? ' sweep' : ''}${view.x2 ? ' x2' : ''}${ctx.reduced ? ' still' : ''}`);
     const seatOpt = (session.options.seats || [])[view.current] || {};
-    ui.fairy.style.setProperty('--dress', seatOpt.color || DEFAULT_DRESS);
-    ui.fairy.style.setProperty('--skin', skinOf(seatOpt.avatar));
+    const dressColor = seatOpt.color || DEFAULT_DRESS;
+    const fc = fairyColors(seatOpt, dressColor);
+    ui.fairy.style.setProperty('--dress', dressColor);
+    ui.fairy.style.setProperty('--skin', fc.skin);
+    ui.fairy.style.setProperty('--hair', fc.hair);
     ui.fairy.setAttribute('aria-label', view.pos < 0 ? 'Fairy, at the start' : `Fairy, on die ${view.pos + 1} of ${n}`);
 
     // what is armed and what the turn has so far (these change only after the dice have settled)

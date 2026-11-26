@@ -719,8 +719,8 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .chfairy { position: absolute; top: 0; width: 28px; height: 46px; margin-left: -14px; overflow: visible; transition: left 0.35s ease-in-out; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); } /* the fairy: an inline picture from the sprite, with --dress and --skin set by the view */
 .chf-wing { fill: #bae6fd; stroke: #38bdf8; stroke-width: 6; stroke-linejoin: round; }
 .chf-wingl { fill: #f0f9ff; }
-.chf-hair { fill: #f5d76e; stroke: #b8860b; stroke-width: 4; }
-.chf-hairl { fill: #fff3b0; }
+.chf-hair { fill: var(--hair, #f5d76e); stroke: #3b2a1a; stroke-width: 4; stroke-linejoin: round; }
+.chf-hairl { fill: #fff3b0; fill: color-mix(in srgb, var(--hair, #f5d76e) 55%, #fff); } /* a lighter shade of the hair */
 .chf-skin { fill: var(--skin); stroke: #3b2a1a; stroke-width: 5; stroke-linejoin: round; }
 .chf-dress { fill: var(--dress); stroke: #3b2a1a; stroke-width: 5; stroke-linejoin: round; }
 .chfairy.still { transition: none; }

@@ -1253,3 +1253,13 @@ Stored the other fairy candidates for possible use later (the user's request). N
 - [x] `docs/art/fairy-3-line.svg`: candidate #3, a line drawing, kept as sent (not coloured: it has no filled shapes). Candidate #1 is already in `src/ui/chase-art.js` (Build Log 106).
 
 Verification: each file was drawn in a browser on its own; screenshot looked at (the three fairies side by side). Not checked: the stored files in the game (they are not used by it).
+
+## Build Log 108 (completed)
+
+Dice Chase fairy: skin and hair follow the player's face (the user's rules, "go ahead and build it").
+
+- [x] `src/ui/views/chase-view.js`: `skinOf` is replaced by `fairyColors(seatOptions, dress)`. Skin: a human with a chosen tone keeps it (`TONE_COLORS`); a human with no tone gets the blue of the default 👤 (`#6b8fc7`, was light skin). A bot's skin follows its usual face (the roster's `defaultEmoji`, not its mood face): yellow `#f7d56a` for 🙂 and 🖐️, silver `#c0c8d0` for 🤖 and 👽 (also any unknown bot face), blue for 🏛️ and 👁️, green `#8cc084` for 🎲. Hair: from the human's face emoji: 🦲 bald takes the dress colour, 🦰 red `#c8501f`, 🦱 dark `#4a2f1b`, 🦳 and the older faces 👴 👵 🧓 white `#e5e7eb`, 👱 blond `#f5d76e`, any other face dark brown `#5a3a22`; bots have blond hair. `render` sets `--hair` with `--dress` and `--skin`.
+- [x] `src/ui/theme.css`: `.chf-hair` fills with `var(--hair)` and has a dark brown outline (the gold outline did not suit dark hair); `.chf-hairl` is a lighter shade of the hair (`color-mix`, with the old light yellow as a fallback). *(The shades are my picks; change if wanted.)*
+- [x] Only the colour of the hair changes, not its shape (no curls, no beard).
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844: 7 human faces (plain, 👱, 🦰, 🦱, 🦳, 👵, 🦲) with tones 0 to 5 and one with no avatar at all: every skin and hair colour as expected (16 checks); in games with 3 bots, every usual face (🙂 🖐️ 🤖 👽 🏛️ 👁️ 🎲) gave the right skin and blond hair, and the skin stayed the same when the mood face changed (✊ 🧠 👄 🔮 💀 🤔); 27 checks, 0 failures, 0 JS errors; screenshot of six combinations looked at (bald in the dress colour, red, dark, white, blond with blue skin, plain). Not checked: a real phone, Pass & Play with different faces, and how the lighter hair shade looks in a browser without `color-mix` (older phones show the old light yellow).
