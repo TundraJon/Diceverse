@@ -21,6 +21,18 @@ _Empty — nothing queued right now._
 
 ## Build Planner
 
+### Planner 28 — Delete all the Farkle code (Farkle was taken off the menu in Build Log 111; the user asked for this note, 2026-11-26; not authorized to build)
+The game no longer loads, but its files are still in the project. To remove it completely, in one build:
+- Delete `src/games/farkle.js`, `src/ui/views/farkle-view.js`, `docs/farkle-rules-sheet.png`.
+- `src/ui/theme.css`: the `/* Farkle */` rules (`.dice.farkle`, `.dice.farkle .die`, `.dice.farkle .dieBtn`) and the "Farkle scoring comparison table" rules.
+- `src/blocks/combo-table.js`: used only by Farkle? Check first (`grep -r combo-table src`); if so, delete it too and its mention in `docs/block-spec.md`.
+- `src/shell/moods.js`: `farkle` in `BIG_BANK` and `STAKES`, and the `FARKLED` event name in the BUSTED case (check no other game emits it); the "Pig and Farkle" comment.
+- `src/core/engine.js`: the word "Farkle" in the comment above `sameAction`; check whether Farkle's `ids` payload is still used by other games (Yacht, Shut the Box, Pirate Plunder, Deep Dive use it, so keep `ids`).
+- `docs/bot-lines-review.md` and `docs/block-spec.md`: the Farkle mentions (the user may want the history kept: ask).
+- Old build-log entries that name Farkle stay (the log is append-only).
+- Old Farkle saves and settings in a phone's storage are already ignored; nothing to migrate.
+- Check at the end: `grep -ri farkle src` finds nothing, the other 12 games still start, `index.html` rebuilt, a Build Log entry.
+
 ### Planner 27 — Ideas from the Homescapes "Four Elements" dice event (note only, not a game; 2026-11-26)
 The user asked about it; I advised skipping it as a game (its hooks are match-3 level rewards, online co-op partners and chests, and its dice part is one luck die with a bet multiplier; it is also a board-movement loop). Parts that could be reused in a future game: (1) a die with colours and element symbols instead of pips (a colour moves a token to the next tile of that colour; a symbol scores points without moving); (2) an "x2 space" that gives a free roll with doubled points; (3) a "bonus space" that makes the next roll sweep up the points of every tile passed. Use our own theme and art, not the event's names or look.
 
@@ -1279,3 +1291,13 @@ Service worker: the install and the background refresh no longer use the browser
 - [x] `src/shell/sw.template.js`: the install saves the files with `new Request(f, { cache: 'reload' })` (straight from the server), and the background refresh uses `fetch(req.url, { cache: 'no-cache' })` (asks the server if the file changed). The file keeps serving from the cache first and falls back to it when offline. `sw.js` is rebuilt (new cache name).
 
 Verification (scratch script with a test server that sends `Cache-Control: max-age=600` like GitHub Pages, none committed): I tried to reproduce the problem first. With the old `sw.js` a new build showed on the second refresh, not later, so I could NOT reproduce a stale app that lasts for 6 refreshes. With the new `sw.js` the result is the same (second refresh), and the offline reload still opens the app (the new version, title "DiceVerse"); the menu and Dice Chase still start, 0 JS errors. So this change removes one possible cause (the browser's own 10-minute copy) but I cannot prove it fixes what the user saw. The live site did have the new version (checked with a no-cache request), so the likely cause is GitHub's own copy, which lasts about 10 minutes and which no app change can skip. Needs a real-device check: after the next deploy, how many opens an installed app needs to show the change. This build itself reaches a phone through the old service worker (the second open, or later).
+
+## Build Log 111 (completed)
+
+Farkle is taken off the menu (the user: "I don't care for Farkle. Remove it from the list", "go ahead and build it"). Its code stays for now (Planner 28).
+
+- [x] `src/games/index.js`: the `farkle` import is removed, and `farkle` is removed from `GAMES` and `GAME_ORDER`. `src/ui/views/index.js`: the `farkleView` import and the `VIEWS` entry are removed. The menu has 12 games. Nothing else loads the two Farkle files any more, so `index.html` is smaller (530.9 KB to 515.3 KB).
+- [x] A phone that had chosen Farkle opens on Pig (the settings check `if (!GAMES[s.game]) s.game = 'pig'` was already there); it has no Resume Farkle button. Old Farkle saves, best scores and house rules stay in the phone's storage unused, and are dropped from use.
+- [x] Planner 28 added: delete all the Farkle code.
+
+Verification (scratch scripts, none committed): `preflight` clean. Playwright at 390x844 with a phone that had Farkle chosen, a saved Farkle game and a Farkle best score: the menu shows 12 games, none is Farkle, no Resume Farkle button, Pig is selected, no sideways scroll; all 12 remaining games start with their controls and take a first click; 18 checks, 0 failures, 0 JS errors. The menu matrix (5 widths x 3 text sizes): 76 checks, 0 failures (12 buttons in three rows of four, none outside the grid). Not checked: a real phone.
