@@ -11,6 +11,7 @@ import * as liars from './liars.js';
 import * as ship from './ship.js';
 import * as highroller from './highroller.js';
 import * as martian from './martian.js';
+import * as chase from './chase.js';
 
-export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, ship, highroller, martian };
-export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'ship', 'highroller', 'martian'];
+export const GAMES = { pig, farkle, yacht, shutbox, cliffhanger, salvage, plunder, dive, liars, ship, highroller, martian, chase };
+export const GAME_ORDER = ['pig', 'farkle', 'yacht', 'shutbox', 'cliffhanger', 'salvage', 'plunder', 'dive', 'liars', 'ship', 'highroller', 'martian', 'chase'];

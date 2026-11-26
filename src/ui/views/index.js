@@ -10,5 +10,6 @@ import { liarsView } from './liars-view.js';
 import { shipView } from './ship-view.js';
 import { highRollerView } from './highroller-view.js';
 import { martianView } from './martian-view.js';
+import { chaseView } from './chase-view.js';
 
-export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, ship: shipView, highroller: highRollerView, martian: martianView };
+export const VIEWS = { pig: pigView, farkle: farkleView, yacht: yachtView, shutbox: shutboxView, cliffhanger: cliffhangerView, salvage: salvageView, plunder: plunderView, dive: diveView, liars: liarsView, ship: shipView, highroller: highRollerView, martian: martianView, chase: chaseView };
