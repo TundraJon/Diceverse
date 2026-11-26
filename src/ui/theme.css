@@ -715,8 +715,14 @@ html[data-text="larger"] .avprev { width: 84px; font-size: 60px; } /* the face i
 .chk { display: inline-flex; align-items: center; gap: 3px; }
 .chkico { flex: none; width: 18px; height: 18px; background-size: contain; background-repeat: no-repeat; background-position: center; }
 .chbox { background: rgba(0,0,0,0.28); border: 1px solid var(--line); border-radius: 12px; padding: 8px 6px; }
-.chlane { position: relative; height: 34px; }
-.chfairy { position: absolute; top: 0; width: 34px; height: 34px; margin-left: -17px; background-size: contain; background-repeat: no-repeat; background-position: center; transition: left 0.35s ease-in-out; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+.chlane { position: relative; height: 46px; }
+.chfairy { position: absolute; top: 0; width: 28px; height: 46px; margin-left: -14px; overflow: visible; transition: left 0.35s ease-in-out; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); } /* the fairy: an inline picture from the sprite, with --dress and --skin set by the view */
+.chf-wing { fill: #bae6fd; stroke: #38bdf8; stroke-width: 6; stroke-linejoin: round; }
+.chf-wingl { fill: #f0f9ff; }
+.chf-hair { fill: #f5d76e; stroke: #b8860b; stroke-width: 4; }
+.chf-hairl { fill: #fff3b0; }
+.chf-skin { fill: var(--skin); stroke: #3b2a1a; stroke-width: 5; stroke-linejoin: round; }
+.chf-dress { fill: var(--dress); stroke: #3b2a1a; stroke-width: 5; stroke-linejoin: round; }
 .chfairy.still { transition: none; }
 .chfairy.sweep, .chfairy.x2 { filter: drop-shadow(0 0 6px var(--gold)); }
 .chrow { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); align-items: center; justify-items: center; container-type: inline-size; }

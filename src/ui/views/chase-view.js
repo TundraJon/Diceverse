@@ -7,6 +7,7 @@ import { renderScoreStrip, renderTurnBar } from '../panels.js';
 import { isMe, statusOverride } from '../avatars.js';
 import { pointsOf, SURGE } from '../../games/chase.js';
 import { ROW_IMAGES, ROW_LABELS, ACT_IMAGES, ACT_LABELS, IMG, ensureChaseCss } from '../chase-art.js';
+import { TONE_COLORS } from '../avatars.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -16,6 +17,12 @@ const el = (tag, cls, text) => {
 };
 
 const BANNER_MS = 2500; // every banner stays at least this long
+// The fairy's colors: the dress is the player's color; the skin is the tone chosen in the player's face (a skin-tone mark in the emoji), light when none is chosen.
+const DEFAULT_DRESS = '#3b82f6';
+const skinOf = (avatar) => {
+  const m = typeof avatar === 'string' ? avatar.match(/[\u{1F3FB}-\u{1F3FF}]/u) : null;
+  return TONE_COLORS[m ? m[0].codePointAt(0) - 0x1F3FB + 1 : 1];
+};
 const seatsView = (st) => st.seats.map((s) => ({ name: s.name, isBot: s.isBot, total: s.total, turns: s.turns }));
 const rowDie = (face, ctx, tumble) => renderDie(face, { tumble: !!tumble && !ctx.reduced, cls: 'cream', images: ROW_IMAGES, labels: ROW_LABELS });
 const actDie = (face, ctx, tumble) => renderDie(face, { tumble: !!tumble && !ctx.reduced, cls: 'cream', images: ACT_IMAGES, labels: ACT_LABELS });
@@ -76,8 +83,15 @@ export const chaseView = {
     ui.key = el('div', 'chkey');
     ui.board = el('div', 'chbox');
     ui.lane = el('div', 'chlane');
-    ui.fairy = el('div', `chfairy ${IMG.fairy}`);
+    const NS = 'http://www.w3.org/2000/svg'; // the fairy is drawn from the sprite so its colors can change (see chase-art.js)
+    ui.fairy = document.createElementNS(NS, 'svg');
+    ui.fairy.setAttribute('class', 'chfairy');
     ui.fairy.setAttribute('role', 'img');
+    const use = document.createElementNS(NS, 'use');
+    use.setAttribute('href', '#chf-fairy');
+    use.setAttribute('width', '100%');
+    use.setAttribute('height', '100%');
+    ui.fairy.appendChild(use);
     ui.lane.appendChild(ui.fairy);
     ui.rowBox = el('div', 'chrow');
     ui.board.append(ui.lane, ui.rowBox);
@@ -126,7 +140,10 @@ export const chaseView = {
     }
     const col = rowRolling || view.row.length === 0 ? 0 : view.pos + 1;
     ui.fairy.style.left = `${((col + 0.5) / (n + 1)) * 100}%`;
-    ui.fairy.className = `chfairy ${IMG.fairy}${view.sweep ? ' sweep' : ''}${view.x2 ? ' x2' : ''}${ctx.reduced ? ' still' : ''}`;
+    ui.fairy.setAttribute('class', `chfairy${view.sweep ? ' sweep' : ''}${view.x2 ? ' x2' : ''}${ctx.reduced ? ' still' : ''}`);
+    const seatOpt = (session.options.seats || [])[view.current] || {};
+    ui.fairy.style.setProperty('--dress', seatOpt.color || DEFAULT_DRESS);
+    ui.fairy.style.setProperty('--skin', skinOf(seatOpt.avatar));
     ui.fairy.setAttribute('aria-label', view.pos < 0 ? 'Fairy, at the start' : `Fairy, on die ${view.pos + 1} of ${n}`);
 
     // what is armed and what the turn has so far (these change only after the dice have settled)
