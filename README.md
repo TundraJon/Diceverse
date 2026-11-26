@@ -1271,3 +1271,11 @@ Dice Chase: the score key above the row shows each score in brackets (the user's
 - [x] `src/ui/views/chase-view.js`: the key reads `Ice (1)`, `Leaf (2)`, `Water (3)`, `Fire (4)`, `Sweep (2)`, `x2 (2)` (the points of Sweep and x2 now come from `pointsOf`, not typed text).
 
 Verification (scratch script, none committed): `preflight` clean. Playwright at 390x844 Normal, 360x740 Large and 320x640 Larger with a 10-dice row: the six texts are exactly as above, no sideways scroll, text at least 12 px; 9 checks, 0 failures, 0 JS errors; screenshot looked at. Not checked: a real phone.
+
+## Build Log 110 (completed)
+
+Service worker: the install and the background refresh no longer use the browser's own copy of the files (the user saw no change after 6 refreshes; "go ahead and build it").
+
+- [x] `src/shell/sw.template.js`: the install saves the files with `new Request(f, { cache: 'reload' })` (straight from the server), and the background refresh uses `fetch(req.url, { cache: 'no-cache' })` (asks the server if the file changed). The file keeps serving from the cache first and falls back to it when offline. `sw.js` is rebuilt (new cache name).
+
+Verification (scratch script with a test server that sends `Cache-Control: max-age=600` like GitHub Pages, none committed): I tried to reproduce the problem first. With the old `sw.js` a new build showed on the second refresh, not later, so I could NOT reproduce a stale app that lasts for 6 refreshes. With the new `sw.js` the result is the same (second refresh), and the offline reload still opens the app (the new version, title "DiceVerse"); the menu and Dice Chase still start, 0 JS errors. So this change removes one possible cause (the browser's own 10-minute copy) but I cannot prove it fixes what the user saw. The live site did have the new version (checked with a no-cache request), so the likely cause is GitHub's own copy, which lasts about 10 minutes and which no app change can skip. Needs a real-device check: after the next deploy, how many opens an installed app needs to show the change. This build itself reaches a phone through the old service worker (the second open, or later).

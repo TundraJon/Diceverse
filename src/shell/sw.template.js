@@ -1,10 +1,10 @@
 // Diceverse service worker (build.mjs stamps the build into the cache name and writes it to sw.js at the repo root). It keeps the app and its icons so Diceverse opens
-// offline; a new build has a new cache name, so the old files are dropped. A change that was just deployed shows on the second open (the first open is served from the cache).
+// offline; a new build has a new cache name, so the old files are dropped. A change that was just deployed shows on the second open (the first open is served from the cache). The install and the background refresh skip the browser's own copy of the files (GitHub Pages lets it keep them 10 minutes).
 const CACHE = 'diceverse-__BUILD__';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -16,7 +16,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then((hit) => {
-      const net = fetch(req).then((res) => { if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); } return res; }).catch(() => hit);
+      const net = fetch(req.url, { cache: 'no-cache' }).then((res) => { if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); } return res; }).catch(() => hit);
       return hit || net.catch(() => (req.mode === 'navigate' ? caches.match('./index.html') : Response.error()));
     }),
   );
