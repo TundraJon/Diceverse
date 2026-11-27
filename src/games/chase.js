@@ -1,5 +1,5 @@
-// Dice Chase: pure rules module. No DOM, no timers, no Math.random.
-// A turn: roll a ROW of dice (faces 1 to 4 are the colours Ice, Leaf, Water, Fire worth 1 to 4 points; face 5 is a Sweep die; face 6 is a x2 die). A fairy
+// Fae Trail: pure rules module. No DOM, no timers, no Math.random.
+// A turn: build the PATH, a row of rolled dice (faces 1 to 4 are the colours Ice, Leaf, Water, Fire worth 1 to 4 points; face 5 is a Sweep die; face 6 is a x2 die). A fairy
 // starts left of the first die. Each step you roll the ACTION die: 1 to 4 = the fairy jumps to the next die on its right with that colour; 5 = to the next
 // special die (Sweep or x2); 6 = Surge: +3 points and the fairy stays. Landing scores the die (a special scores 2). Landing on a Sweep die arms it: the next
 // jump also scores every die it jumps over. Landing on a x2 die doubles the next jump. After each step you STOP (bank the turn's points) or ROLL again; if the
@@ -14,7 +14,7 @@ export const pointsOf = (face) => (face <= 4 ? face : SPECIAL);
 
 export const meta = {
   id: 'chase',
-  name: 'Dice Chase',
+  name: 'Fae Trail',
   players: { min: 1, max: 4 },
   soloOK: true,
   estMinutes: 8,
@@ -23,10 +23,10 @@ export const meta = {
   soloHide: [],
   houseRules: [
     {
-      key: 'row', label: 'Row size',
+      key: 'row', label: 'Path size',
       options: [6, 8, 10].map((v) => ({ value: v, label: `${v} dice` })),
       default: 8,
-      hint: () => 'How many dice are in the row. A short row has fewer places to jump to, so you bust more often.',
+      hint: () => 'How many dice are in the path. A short path has fewer places to jump to, so you bust more often.',
     },
     {
       key: 'target', label: 'Target score',
@@ -159,7 +159,7 @@ export function apply(state, action, rng) {
   if (s.winner !== null) throw new Error('Game is over');
   const t = s.turn;
   if (action.type === 'LAY') {
-    if (t.phase !== 'lay') throw new Error('The row is already rolled');
+    if (t.phase !== 'lay') throw new Error('The path is already built');
     t.row = Array.from({ length: s.options.row }, () => rng.die(6));
     t.phase = 'decide';
     events.push({ type: 'ROW_ROLLED', seat: s.current, row: t.row.slice() });

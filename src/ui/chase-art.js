@@ -1,4 +1,4 @@
-// Dice Chase pictures: simple drawings (placeholders the user can replace with their own art later, as with Martian Dice). Each is a small SVG, written once
+// Fae Trail pictures: simple drawings (placeholders the user can replace with their own art later, as with Martian Dice). Each is a small SVG, written once
 // into a style element as a CSS background image, so ten dice do not carry ten copies. The four colours also differ in SHAPE (snowflake, leaf, drop, flame),
 // so they can be told apart without seeing colour.
 const star = (cx, cy, ro, ri, n) => Array.from({ length: n * 2 }, (_, i) => {

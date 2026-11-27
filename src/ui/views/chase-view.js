@@ -1,4 +1,4 @@
-// Dice Chase view: the row of dice, the fairy that hops along it, the action die and the key of what each picture is worth.
+// Fae Trail view: the path of dice, the fairy that hops along it, the action die and the key of what each picture is worth.
 // Nothing that depends on a roll shows until the dice have stopped and a short pause has passed (the `ROW_ROLLED` and `ACTION_ROLLED` events wait SETTLE_MS before
 // the next event moves the fairy, changes the points or says what happened): while a die is rolling the fairy stays, no die is dimmed or lit, and the
 // buttons are off; the next presentation step (or the redraw from the game state at the end) shows the result.
@@ -42,11 +42,11 @@ const rowNames = (row) => row.map((f) => ROW_LABELS[f - 1]).join(', ');
 const ACTION_TEXT = ['jump to the next Ice die', 'jump to the next Leaf die', 'jump to the next Water die', 'jump to the next Fire die', 'jump to the next special die', `Surge: +${SURGE} points`];
 
 export const chaseView = {
-  title: 'DICE CHASE',
+  title: 'FAE TRAIL',
 
   rulesSheet(sheet, options) {
-    sheet.appendChild(el('h2', null, 'How to play Dice Chase'));
-    [`Roll the row: ${options && options.row ? options.row : 8} dice in a line. Four of the pictures are colours: Ice is worth 1, Leaf 2, Water 3 and Fire 4. A star die (Sweep) and a x2 die are worth 2 each.`,
+    sheet.appendChild(el('h2', null, 'How to play Fae Trail'));
+    [`Build the path: ${options && options.row ? options.row : 8} dice in a line. Four of the pictures are colours: Ice is worth 1, Leaf 2, Water 3 and Fire 4. A star die (Sweep) and a x2 die are worth 2 each.`,
      'Your fairy starts before the first die. Each step, roll the action die. Ice, Leaf, Water or Fire: the fairy jumps to the next die on its right with that colour. Special: it jumps to the next star or x2 die. Surge: you get 3 points and the fairy stays.',
      'When the fairy lands, you score that die. Dice it jumped over score nothing.',
      'Land on a star die and your next jump scores every die it jumps over too. Land on a x2 die and your next jump scores double.',
@@ -182,7 +182,7 @@ export const chaseView = {
     if (said) ui.turnline.textContent = said;
     else if (!over) {
       if (view.note) ui.turnline.textContent = view.note;
-      else if (isMe(cur)) ui.turnline.append(document.createTextNode(view.phase === 'lay' ? 'Your turn: roll the row' : 'Your turn'));
+      else if (isMe(cur)) ui.turnline.append(document.createTextNode(view.phase === 'lay' ? 'Your turn: build the path' : 'Your turn'));
       else ui.turnline.append(el('strong', null, cur.name), document.createTextNode(cur.isBot ? ' is thinking…' : "'s turn"));
     }
     ui.banner.hidden = !view.banner;
@@ -191,7 +191,7 @@ export const chaseView = {
 
     // the buttons at the bottom
     if (view.phase === 'lay') {
-      renderTurnBar(ui.controls, [{ label: 'ROLL THE ROW', cls: 'btn-roll span2', disabled: !human, onClick: () => ctx.act([{ type: 'LAY' }]) }]);
+      renderTurnBar(ui.controls, [{ label: 'BUILD THE PATH', cls: 'btn-roll span2', disabled: !human, onClick: () => ctx.act([{ type: 'LAY' }]) }]);
     } else {
       const deciding = view.phase === 'decide';
       renderTurnBar(ui.controls, [
@@ -230,7 +230,7 @@ export const chaseView = {
         view.note = '';
         tumble = true;
         delay = ctx.reduced ? REVEAL_MS : SETTLE_MS;
-        after = `${name(ev.seat)} rolled the row: ${rowNames(ev.row)}`; // spoken once the dice have settled
+        after = `${name(ev.seat)} built the path: ${rowNames(ev.row)}`; // spoken once the dice have settled
         break;
       case 'ACTION_ROLLED':
         view.phase = 'actionroll';
